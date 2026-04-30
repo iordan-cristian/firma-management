@@ -1,0 +1,2 @@
+rootProject.name = 'firma-management'
+include 'backend'

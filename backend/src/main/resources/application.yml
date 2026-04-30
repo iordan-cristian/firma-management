@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: firma-management
+  datasource:
+    url: jdbc:postgresql://localhost:5432/firma_management?options=-c%20client_encoding%3DUTF8
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false
+    open-in-view: false
+
+app:
+  jwt:
+    # Replace with a strong, base64-encoded 256-bit key in production.
+    secret: ZmlybWFNYW5hZ2VtZW50RGV2U2VjcmV0S2V5MTIzNDU2Nzg5MDEyMzQ1Ng==
+    expiration-ms: 86400000   # 24h
+  admin:
+    username: admin
+    password: admin
+
+logging:
+  level:
+    org.springframework.security: INFO
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

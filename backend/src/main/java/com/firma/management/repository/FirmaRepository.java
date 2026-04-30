@@ -1,0 +1,11 @@
+package com.firma.management.repository;
+
+import com.firma.management.entity.Firma;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.UUID;
+
+@Repository
+public interface FirmaRepository extends JpaRepository<Firma, UUID> {
+}

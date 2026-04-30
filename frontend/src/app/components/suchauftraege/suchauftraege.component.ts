@@ -1,0 +1,139 @@
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { SuchauftragService } from '../../services/suchauftrag.service';
+import { Suchauftrag, KERNBEREICH_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
+
+@Component({
+  selector: 'app-suchauftraege',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
+    <div class="page">
+      <header class="page-header">
+        <h1>Suchaufträge</h1>
+        <div class="header-right">
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="showAll" (change)="reload()" />
+            <span>Show all (regardless of status)</span>
+          </label>
+          <button class="btn-add" (click)="openAddModal()">+ Suchauftrag</button>
+        </div>
+      </header>
+
+      <p class="hint">
+        {{ showAll ? 'All Suchaufträge' : 'Showing only Suchaufträge with status "in Arbeit"' }}
+      </p>
+
+      <div class="cards">
+        <div class="card" *ngFor="let s of items">
+          <div class="card-title">{{ s.kernbereich }}</div>
+          <div class="card-row"><span>Status:</span>
+            <span class="badge" [class.done]="s.status === 'Fertig'">{{ s.status }}</span>
+          </div>
+          <div class="card-row"><span>Auftrag:</span> {{ s.auftragPlaceholder }}</div>
+          <div class="card-row"><span>Ansprechpartner:</span> {{ s.ansprechpartnerId }}</div>
+        </div>
+        <div *ngIf="!items.length" class="empty">Nothing to show.</div>
+      </div>
+
+      <!-- Add Suchauftrag Modal -->
+      <div class="modal-backdrop" *ngIf="addModalOpen" (click)="closeAddModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <h2>Neuer Suchauftrag</h2>
+          <label>Ansprechpartner ID *
+            <input [(ngModel)]="draft.ansprechpartnerId" placeholder="UUID" />
+          </label>
+          <label>Kernbereich *
+            <select [(ngModel)]="draft.kernbereich">
+              <option *ngFor="let k of kernbereichOptions" [value]="k">{{ k }}</option>
+            </select>
+          </label>
+          <label>Auftrag
+            <input [(ngModel)]="draft.auftragPlaceholder" placeholder="Beschreibung" />
+          </label>
+          <label>Status *
+            <select [(ngModel)]="draft.status">
+              <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+            </select>
+          </label>
+          <div class="modal-actions">
+            <button class="btn-save" (click)="saveSuchauftrag()">Speichern</button>
+            <button class="btn-cancel" (click)="closeAddModal()">Abbrechen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    h1 { margin: 0; color: #1f2a44; }
+    .header-right { display: flex; align-items: center; gap: 16px; }
+    .hint { color: #777; font-size: 13px; margin: 4px 0 16px; }
+    .toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #333; cursor: pointer; }
+    .btn-add { background: #3b5bdb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; }
+    .btn-add:hover { background: #2f4ac7; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+    .card { background: white; border: 1px solid #e5e9f3; border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .card-title { font-weight: 600; color: #1f2a44; margin-bottom: 8px; }
+    .card-row { font-size: 13px; margin: 4px 0; color: #333; }
+    .card-row span:first-child { color: #777; margin-right: 4px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; background: #f5d97c; font-size: 12px; }
+    .badge.done { background: #b6e3b6; }
+    .empty { color: #999; padding: 24px; text-align: center; }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      display: flex; align-items: center; justify-content: center; z-index: 2000;
+    }
+    .modal {
+      background: white; border-radius: 10px; padding: 28px; width: 400px; max-width: 90vw;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+    .modal h2 { margin: 0 0 20px; color: #1f2a44; font-size: 18px; }
+    .modal label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #555; margin-bottom: 14px; }
+    .modal input, .modal select { padding: 8px 10px; border: 1px solid #dfe3ee; border-radius: 6px; font-size: 14px; }
+    .modal input:focus, .modal select:focus { outline: none; border-color: #3b5bdb; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+    .btn-save { background: #3b5bdb; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
+    .btn-save:hover { background: #2f4ac7; }
+    .btn-cancel { background: transparent; border: 1px solid #dfe3ee; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
+  `]
+})
+export class SuchauftraegeComponent implements OnInit {
+  private service = inject(SuchauftragService);
+
+  items: Suchauftrag[] = [];
+  showAll = false;
+
+  readonly kernbereichOptions = KERNBEREICH_OPTIONS;
+  readonly statusOptions = STATUS_OPTIONS;
+
+  addModalOpen = false;
+  draft: Partial<Suchauftrag> = {};
+
+  ngOnInit(): void { this.reload(); }
+
+  reload(): void {
+    if (this.showAll) {
+      this.service.getAll().subscribe(list => (this.items = list));
+    } else {
+      this.service.getAll('in Arbeit').subscribe(list => (this.items = list));
+    }
+  }
+
+  openAddModal(): void {
+    this.draft = { kernbereich: 'Investoren', status: 'in Arbeit' };
+    this.addModalOpen = true;
+  }
+
+  closeAddModal(): void { this.addModalOpen = false; }
+
+  saveSuchauftrag(): void {
+    if (!this.draft.ansprechpartnerId || !this.draft.kernbereich || !this.draft.status) return;
+    this.service.create(this.draft as Suchauftrag).subscribe(() => {
+      this.reload();
+      this.closeAddModal();
+    });
+  }
+}
