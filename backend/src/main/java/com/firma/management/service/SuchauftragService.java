@@ -49,7 +49,7 @@ public class SuchauftragService {
     public Optional<Suchauftrag> update(UUID id, Suchauftrag input) {
         return repo.findById(id).map(existing -> {
             existing.setAnsprechpartnerId(input.getAnsprechpartnerId());
-            existing.setKernbereich(input.getKernbereich());
+            existing.setAktivitaet(input.getAktivitaet());
             existing.setAuftragPlaceholder(input.getAuftragPlaceholder());
             existing.setStatus(input.getStatus());
             return repo.save(existing);

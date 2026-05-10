@@ -23,8 +23,8 @@ public class Suchauftrag {
     private UUID ansprechpartnerId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "kernbereich", nullable = false)
-    private Kernbereich kernbereich;
+    @Column(name = "aktivitaet", nullable = false)
+    private Aktivitaet aktivitaet;
 
     @Column(name = "auftrag_placeholder", columnDefinition = "TEXT")
     private String auftragPlaceholder;

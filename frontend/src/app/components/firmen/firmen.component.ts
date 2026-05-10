@@ -7,7 +7,7 @@ import { SuchauftragService } from '../../services/suchauftrag.service';
 import { VertragService } from '../../services/vertrag.service';
 import { Firma } from '../../models/firma.model';
 import { Ansprechpartner } from '../../models/ansprechpartner.model';
-import { Suchauftrag, KERNBEREICH_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
+import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
 import { Vertrag } from '../../models/vertrag.model';
 
 type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
@@ -72,7 +72,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
 
                     <div class="cards" *ngIf="detailMode === 'suchauftraege'">
                       <div class="card" *ngFor="let s of suchauftragList">
-                        <div class="card-title">{{ s.kernbereich }}</div>
+                        <div class="card-title">{{ s.aktivitaet }}</div>
                         <div class="card-row"><span>Status:</span>
                           <span class="badge" [class.done]="s.status === 'Fertig'">{{ s.status }}</span>
                         </div>
@@ -174,9 +174,9 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
           <label>Ansprechpartner ID *
             <input [(ngModel)]="draftSuchauftrag.ansprechpartnerId" placeholder="UUID" />
           </label>
-          <label>Kernbereich *
-            <select [(ngModel)]="draftSuchauftrag.kernbereich">
-              <option *ngFor="let k of kernbereichOptions" [value]="k">{{ k }}</option>
+          <label>Aktivität *
+            <select [(ngModel)]="draftSuchauftrag.aktivitaet">
+              <option *ngFor="let k of aktivitaetOptions" [value]="k">{{ k }}</option>
             </select>
           </label>
           <label>Auftrag
@@ -310,7 +310,7 @@ export class FirmenComponent implements OnInit {
   suchauftragList: Suchauftrag[] = [];
   vertragList: Vertrag[] = [];
 
-  readonly kernbereichOptions = KERNBEREICH_OPTIONS;
+  readonly aktivitaetOptions = AKTIVITAET_OPTIONS;
   readonly statusOptions = STATUS_OPTIONS;
 
   // Add Firma
@@ -360,7 +360,7 @@ export class FirmenComponent implements OnInit {
 
   // ── Suchauftrag ──────────────────────────────────────────
   openAddSuchauftrag(): void {
-    this.draftSuchauftrag = { kernbereich: 'Investoren', status: 'in Arbeit' };
+    this.draftSuchauftrag = { aktivitaet: 'Investoren', status: 'in Arbeit' };
     this.addSuchauftragOpen = true;
   }
 

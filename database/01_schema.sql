@@ -61,8 +61,8 @@ COMMENT ON COLUMN ansprechpartner.informationen  IS 'Free-form notes; can be ver
 CREATE TABLE IF NOT EXISTS suchauftrag (
     id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     ansprechpartner_id   UUID NOT NULL REFERENCES ansprechpartner(id) ON DELETE CASCADE,
-    kernbereich          VARCHAR(32) NOT NULL
-        CHECK (kernbereich IN ('INVESTOREN', 'VERTRIEB', 'IMOBILIEN', 'PERSONAL')),
+    aktivitaet           VARCHAR(32) NOT NULL
+        CHECK (aktivitaet IN ('INVESTOREN', 'VERTRIEB', 'IMOBILIEN', 'PERSONAL')),
     auftrag_placeholder  TEXT,
     status               VARCHAR(32) NOT NULL
         CHECK (status IN ('IN_ARBEIT', 'FERTIG'))
@@ -73,7 +73,7 @@ CREATE INDEX IF NOT EXISTS idx_suchauftrag_status             ON suchauftrag(sta
 
 COMMENT ON TABLE  suchauftrag                     IS 'Search assignments tied to an Ansprechpartner';
 COMMENT ON COLUMN suchauftrag.ansprechpartner_id  IS 'FK to ansprechpartner.id';
-COMMENT ON COLUMN suchauftrag.kernbereich         IS 'Enum: INVESTOREN | VERTRIEB | IMOBILIEN | PERSONAL';
+COMMENT ON COLUMN suchauftrag.aktivitaet          IS 'Enum: INVESTOREN | VERTRIEB | IMOBILIEN | PERSONAL';
 COMMENT ON COLUMN suchauftrag.status              IS 'Enum: IN_ARBEIT | FERTIG';
 
 

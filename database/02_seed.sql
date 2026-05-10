@@ -67,10 +67,10 @@ ON CONFLICT (id) DO NOTHING;
 
 
 -- -- SUCHAUFTRAG -------------------------------------------------------------
--- Note: kernbereich and status use the enum NAMES (uppercase),
+-- Note: aktivitaet and status use the enum NAMES (uppercase),
 -- not the labels shown in the UI.
 INSERT INTO suchauftrag
-    (id, ansprechpartner_id, kernbereich, auftrag_placeholder, status) VALUES
+    (id, ansprechpartner_id, aktivitaet, auftrag_placeholder, status) VALUES
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb01',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01',
      'IMOBILIEN',

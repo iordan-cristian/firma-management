@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SuchauftragService } from '../../services/suchauftrag.service';
 import { AnsprechpartnerService } from '../../services/ansprechpartner.service';
-import { Suchauftrag, KERNBEREICH_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
+import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
 
 @Component({
   selector: 'app-suchauftraege',
@@ -28,7 +28,7 @@ import { Suchauftrag, KERNBEREICH_OPTIONS, STATUS_OPTIONS } from '../../models/s
 
       <div class="cards">
         <div class="card" *ngFor="let s of items">
-          <div class="card-title">{{ s.kernbereich }}</div>
+          <div class="card-title">{{ s.aktivitaet }}</div>
           <div class="card-row"><span>Status:</span>
             <span class="badge" [class.done]="s.status === 'Fertig'">{{ s.status }}</span>
           </div>
@@ -45,9 +45,9 @@ import { Suchauftrag, KERNBEREICH_OPTIONS, STATUS_OPTIONS } from '../../models/s
           <label>Ansprechpartner ID *
             <input [(ngModel)]="draft.ansprechpartnerId" placeholder="UUID" />
           </label>
-          <label>Kernbereich *
-            <select [(ngModel)]="draft.kernbereich">
-              <option *ngFor="let k of kernbereichOptions" [value]="k">{{ k }}</option>
+          <label>Aktivität *
+            <select [(ngModel)]="draft.aktivitaet">
+              <option *ngFor="let k of aktivitaetOptions" [value]="k">{{ k }}</option>
             </select>
           </label>
           <label>Auftrag
@@ -110,7 +110,7 @@ export class SuchauftraegeComponent implements OnInit {
   showAll = false;
   apNames = new Map<string, string>();
 
-  readonly kernbereichOptions = KERNBEREICH_OPTIONS;
+  readonly aktivitaetOptions = AKTIVITAET_OPTIONS;
   readonly statusOptions = STATUS_OPTIONS;
 
   addModalOpen = false;
@@ -138,14 +138,14 @@ export class SuchauftraegeComponent implements OnInit {
   }
 
   openAddModal(): void {
-    this.draft = { kernbereich: 'Investoren', status: 'in Arbeit' };
+    this.draft = { aktivitaet: 'Investoren', status: 'in Arbeit' };
     this.addModalOpen = true;
   }
 
   closeAddModal(): void { this.addModalOpen = false; }
 
   saveSuchauftrag(): void {
-    if (!this.draft.ansprechpartnerId || !this.draft.kernbereich || !this.draft.status) return;
+    if (!this.draft.ansprechpartnerId || !this.draft.aktivitaet || !this.draft.status) return;
     this.service.create(this.draft as Suchauftrag).subscribe(() => {
       this.reload();
       this.closeAddModal();
