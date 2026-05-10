@@ -28,21 +28,28 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
         <table>
           <thead>
             <tr>
+              <th>Name</th>
               <th>Standort</th>
               <th>Allgemeiner Schwerpunkt</th>
-              <th>Kontaktdaten</th>
+              <th>E-Mail</th>
+              <th>Telefon</th>
+              <th>Mobil</th>
             </tr>
           </thead>
           <tbody>
             <ng-container *ngFor="let f of firmen">
               <tr (contextmenu)="openMenu($event, f)"
+                  (dblclick)="openEditFirma(f)"
                   [class.selected]="expandedFirma?.id === f.id">
+                <td>{{ f.name }}</td>
                 <td>{{ f.standort }}</td>
                 <td>{{ f.allgemeinerSchwerpunkt }}</td>
-                <td>{{ f.kontaktdaten }}</td>
+                <td>{{ f.email }}</td>
+                <td>{{ f.telefon }}</td>
+                <td>{{ f.mobil }}</td>
               </tr>
               <tr *ngIf="expandedFirma?.id === f.id && detailMode" class="detail-row">
-                <td colspan="3">
+                <td colspan="6">
                   <div class="inline-detail">
                     <div class="inline-detail-header">
                       <strong>{{ detailTitle }}</strong>
@@ -58,31 +65,38 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                     </div>
 
                     <div class="cards" *ngIf="detailMode === 'ansprechpartner'">
-                      <div class="card" *ngFor="let a of ansprechpartnerList">
+                      <div class="card" *ngFor="let a of ansprechpartnerList" (dblclick)="openEditAnsprechpartner(a)">
                         <div class="card-title">{{ a.vorname }} {{ a.nachname }}</div>
                         <div class="card-row"><span>Position:</span> {{ a.position }}</div>
                         <div class="card-row"><span>Schwerpunkt:</span> {{ a.schwerpunkt }}</div>
                         <div class="card-row"><span>E-Mail:</span> {{ a.email }}</div>
                         <div class="card-row"><span>Telefon:</span> {{ a.telefonnummer }}</div>
                         <div class="card-row"><span>Kontaktinterval:</span> {{ a.kontaktinterval }}</div>
+                        <div class="card-row" *ngIf="a.socialMediaProfil"><span>Social Media:</span> <a [href]="a.socialMediaProfil" target="_blank" rel="noopener noreferrer" class="profile-link">{{ a.socialMediaProfil }}</a></div>
                         <div class="card-info" *ngIf="a.informationen">{{ a.informationen }}</div>
                       </div>
                       <div *ngIf="!ansprechpartnerList.length" class="empty">No Ansprechpartner.</div>
                     </div>
 
                     <div class="cards" *ngIf="detailMode === 'suchauftraege'">
-                      <div class="card" *ngFor="let s of suchauftragList">
+                      <div class="card" *ngFor="let s of suchauftragList" (dblclick)="openEditSuchauftrag(s)">
                         <div class="card-title">{{ s.aktivitaet }}</div>
                         <div class="card-row"><span>Status:</span>
                           <span class="badge" [class.done]="s.status === 'Fertig'">{{ s.status }}</span>
                         </div>
                         <div class="card-row"><span>Auftrag:</span> {{ s.auftragPlaceholder }}</div>
+                        <div class="card-row" *ngIf="s.ort"><span>Ort:</span> {{ s.ort }}</div>
+                        <div class="card-row" *ngIf="s.fachlicherSkill"><span>Fachlicher Skill:</span> {{ s.fachlicherSkill }}</div>
+                        <div class="card-row" *ngIf="s.gehalt"><span>Gehalt:</span> {{ s.gehalt }}</div>
+                        <div class="card-row" *ngIf="s.berufserfahrung"><span>Berufserfahrung:</span> {{ s.berufserfahrung }}</div>
+                        <div class="card-row" *ngIf="s.branchenkenntnisse"><span>Branchenkenntnisse:</span> {{ s.branchenkenntnisse }}</div>
+                        <div class="card-row" *ngIf="s.zertifikate"><span>Zertifikate:</span> {{ s.zertifikate }}</div>
                       </div>
                       <div *ngIf="!suchauftragList.length" class="empty">No Suchaufträge.</div>
                     </div>
 
                     <div class="cards" *ngIf="detailMode === 'vertraege'">
-                      <div class="card" *ngFor="let v of vertragList">
+                      <div class="card" *ngFor="let v of vertragList" (dblclick)="openEditVertrag(v)">
                         <div class="card-title">Vertrag</div>
                         <div class="card-row"><span>Wert:</span> {{ v.wert | number:'1.2-2' }} €</div>
                         <div class="card-row"><span>Bezahlbar am:</span> {{ v.bezahlbarAm }}</div>
@@ -96,7 +110,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 </td>
               </tr>
             </ng-container>
-            <tr *ngIf="!firmen.length"><td colspan="3" class="empty">No Firmen yet.</td></tr>
+            <tr *ngIf="!firmen.length"><td colspan="6" class="empty">No Firmen yet.</td></tr>
           </tbody>
         </table>
       </div>
@@ -115,15 +129,24 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
       <!-- Add Firma Modal -->
       <div class="modal-backdrop" *ngIf="addFirmaOpen" (click)="closeAddModal()">
         <div class="modal" (click)="$event.stopPropagation()">
-          <h2>Neue Firma</h2>
+          <h2>{{ editingFirmaId ? 'Firma bearbeiten' : 'Neue Firma' }}</h2>
+          <label>Name
+            <input [(ngModel)]="draftFirma.name" placeholder="Firmenname" />
+          </label>
           <label>Standort
             <input [(ngModel)]="draftFirma.standort" placeholder="Standort" />
           </label>
           <label>Allgemeiner Schwerpunkt
             <input [(ngModel)]="draftFirma.allgemeinerSchwerpunkt" placeholder="Schwerpunkt" />
           </label>
-          <label>Kontaktdaten
-            <input [(ngModel)]="draftFirma.kontaktdaten" placeholder="Kontaktdaten" />
+          <label>E-Mail
+            <input type="email" [(ngModel)]="draftFirma.email" placeholder="info@beispiel.de" />
+          </label>
+          <label>Telefon
+            <input [(ngModel)]="draftFirma.telefon" placeholder="+49 30 1234567" />
+          </label>
+          <label>Mobil
+            <input [(ngModel)]="draftFirma.mobil" placeholder="+49 170 1234567" />
           </label>
           <div class="modal-actions">
             <button class="btn-save" (click)="saveFirma()">Speichern</button>
@@ -134,8 +157,8 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
 
       <!-- Add Ansprechpartner Modal -->
       <div class="modal-backdrop" *ngIf="addAnsprechpartnerOpen" (click)="addAnsprechpartnerOpen = false">
-        <div class="modal" (click)="$event.stopPropagation()">
-          <h2>Neuer Ansprechpartner</h2>
+        <div class="modal modal-wide" (click)="$event.stopPropagation()">
+          <h2>{{ editingAnsprechpartnerId ? 'Ansprechpartner bearbeiten' : 'Neuer Ansprechpartner' }}</h2>
           <label>Vorname
             <input [(ngModel)]="draftAnsprechpartner.vorname" placeholder="Vorname" />
           </label>
@@ -157,8 +180,11 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
           <label>Kontaktinterval
             <input [(ngModel)]="draftAnsprechpartner.kontaktinterval" placeholder="z.B. wöchentlich" />
           </label>
+          <label>Social Media Profil
+            <input [(ngModel)]="draftAnsprechpartner.socialMediaProfil" placeholder="z.B. LinkedIn-URL" />
+          </label>
           <label>Informationen
-            <textarea [(ngModel)]="draftAnsprechpartner.informationen" placeholder="Notizen..." rows="3"></textarea>
+            <textarea [(ngModel)]="draftAnsprechpartner.informationen" placeholder="Notizen..." rows="8" style="min-height:160px"></textarea>
           </label>
           <div class="modal-actions">
             <button class="btn-save" (click)="saveAnsprechpartner()">Speichern</button>
@@ -170,7 +196,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
       <!-- Add Suchauftrag Modal -->
       <div class="modal-backdrop" *ngIf="addSuchauftragOpen" (click)="addSuchauftragOpen = false">
         <div class="modal" (click)="$event.stopPropagation()">
-          <h2>Neuer Suchauftrag</h2>
+          <h2>{{ editingSuchauftragId ? 'Suchauftrag bearbeiten' : 'Neuer Suchauftrag' }}</h2>
           <label>Ansprechpartner ID *
             <input [(ngModel)]="draftSuchauftrag.ansprechpartnerId" placeholder="UUID" />
           </label>
@@ -181,6 +207,24 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
           </label>
           <label>Auftrag
             <input [(ngModel)]="draftSuchauftrag.auftragPlaceholder" placeholder="Beschreibung" />
+          </label>
+          <label>Ort
+            <input [(ngModel)]="draftSuchauftrag.ort" placeholder="Ort" />
+          </label>
+          <label>Fachlicher Skill
+            <input [(ngModel)]="draftSuchauftrag.fachlicherSkill" placeholder="z.B. Java, SAP, CAD" />
+          </label>
+          <label>Gehalt
+            <input [(ngModel)]="draftSuchauftrag.gehalt" placeholder="z.B. 60000-80000" />
+          </label>
+          <label>Berufserfahrung
+            <input [(ngModel)]="draftSuchauftrag.berufserfahrung" placeholder="z.B. 5+ Jahre" />
+          </label>
+          <label>Branchenkenntnisse
+            <input [(ngModel)]="draftSuchauftrag.branchenkenntnisse" placeholder="z.B. Automotive, IT" />
+          </label>
+          <label>Zertifikate
+            <input [(ngModel)]="draftSuchauftrag.zertifikate" placeholder="z.B. PMP, ISO 9001" />
           </label>
           <label>Status *
             <select [(ngModel)]="draftSuchauftrag.status">
@@ -197,7 +241,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
       <!-- Add Vertrag Modal -->
       <div class="modal-backdrop" *ngIf="addVertragOpen" (click)="addVertragOpen = false">
         <div class="modal" (click)="$event.stopPropagation()">
-          <h2>Neuer Vertrag</h2>
+          <h2>{{ editingVertragId ? 'Vertrag bearbeiten' : 'Neuer Vertrag' }}</h2>
           <label>Ansprechpartner ID *
             <input [(ngModel)]="draftVertrag.ansprechpartnerId" placeholder="UUID" />
           </label>
@@ -257,13 +301,16 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .ctx-menu button:hover { background: #eef2fb; }
 
     .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; max-height: 300px; overflow-y: auto; }
-    .card { background: white; border: 1px solid #e5e9f3; border-radius: 8px; padding: 14px; }
+    .card { background: white; border: 1px solid #e5e9f3; border-radius: 8px; padding: 14px; cursor: pointer; }
+    .card:hover { border-color: #3b5bdb; }
     .card-title { font-weight: 600; margin-bottom: 8px; color: #1f2a44; }
     .card-row { font-size: 13px; margin: 4px 0; color: #333; }
     .card-row span:first-child { color: #777; margin-right: 4px; }
     .card-info { margin-top: 8px; font-size: 12px; color: #555; white-space: pre-wrap; }
     .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; background: #f5d97c; font-size: 12px; }
     .badge.done { background: #b6e3b6; }
+    .profile-link { color: #3b5bdb; text-decoration: none; font-size: 13px; word-break: break-all; }
+    .profile-link:hover { text-decoration: underline; }
     .close { background: transparent; border: 1px solid #dfe3ee; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; }
 
     .modal-backdrop {
@@ -284,6 +331,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
       outline: none; border-color: #3b5bdb;
     }
     .modal textarea { resize: vertical; }
+    .modal.modal-wide { width: 640px; }
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
     .btn-save { background: #3b5bdb; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
     .btn-save:hover { background: #2f4ac7; }
@@ -313,20 +361,24 @@ export class FirmenComponent implements OnInit {
   readonly aktivitaetOptions = AKTIVITAET_OPTIONS;
   readonly statusOptions = STATUS_OPTIONS;
 
-  // Add Firma
+  // Add / Edit Firma
   addFirmaOpen = false;
+  editingFirmaId: string | null = null;
   draftFirma: Partial<Firma> = {};
 
-  // Add Ansprechpartner
+  // Add / Edit Ansprechpartner
   addAnsprechpartnerOpen = false;
+  editingAnsprechpartnerId: string | null = null;
   draftAnsprechpartner: Partial<Ansprechpartner> = {};
 
-  // Add Suchauftrag
+  // Add / Edit Suchauftrag
   addSuchauftragOpen = false;
+  editingSuchauftragId: string | null = null;
   draftSuchauftrag: Partial<Suchauftrag> = {};
 
-  // Add Vertrag
+  // Add / Edit Vertrag
   addVertragOpen = false;
+  editingVertragId: string | null = null;
   draftVertrag: Partial<Vertrag> = {};
   bezahlbarAmInput = '';
 
@@ -335,47 +387,101 @@ export class FirmenComponent implements OnInit {
   }
 
   // ── Firma ────────────────────────────────────────────────
-  openAddModal(): void { this.draftFirma = {}; this.addFirmaOpen = true; }
+  openAddModal(): void { this.editingFirmaId = null; this.draftFirma = {}; this.addFirmaOpen = true; }
   closeAddModal(): void { this.addFirmaOpen = false; }
 
+  openEditFirma(f: Firma): void {
+    this.editingFirmaId = f.id ?? null;
+    this.draftFirma = { ...f };
+    this.addFirmaOpen = true;
+  }
+
   saveFirma(): void {
-    this.firmaService.create(this.draftFirma as Firma).subscribe(created => {
-      this.firmen = [...this.firmen, created];
-      this.closeAddModal();
-    });
+    if (this.editingFirmaId) {
+      this.firmaService.update(this.editingFirmaId, this.draftFirma as Firma).subscribe(updated => {
+        this.firmen = this.firmen.map(f => f.id === updated.id ? updated : f);
+        this.closeAddModal();
+      });
+    } else {
+      this.firmaService.create(this.draftFirma as Firma).subscribe(created => {
+        this.firmen = [...this.firmen, created];
+        this.closeAddModal();
+      });
+    }
   }
 
   // ── Ansprechpartner ──────────────────────────────────────
   openAddAnsprechpartner(): void {
+    this.editingAnsprechpartnerId = null;
     this.draftAnsprechpartner = { firmaId: this.expandedFirma!.id };
     this.addAnsprechpartnerOpen = true;
   }
 
+  openEditAnsprechpartner(a: Ansprechpartner): void {
+    this.editingAnsprechpartnerId = a.id ?? null;
+    this.draftAnsprechpartner = { ...a };
+    this.addAnsprechpartnerOpen = true;
+  }
+
   saveAnsprechpartner(): void {
-    this.ansprechpartnerService.create(this.draftAnsprechpartner as Ansprechpartner).subscribe(() => {
+    const refresh = () =>
       this.firmaService.getAnsprechpartnerForFirma(this.expandedFirma!.id!).subscribe(list => (this.ansprechpartnerList = list));
-      this.addAnsprechpartnerOpen = false;
-    });
+    if (this.editingAnsprechpartnerId) {
+      this.ansprechpartnerService.update(this.editingAnsprechpartnerId, this.draftAnsprechpartner as Ansprechpartner).subscribe(() => {
+        refresh(); this.addAnsprechpartnerOpen = false; this.editingAnsprechpartnerId = null;
+      });
+    } else {
+      this.ansprechpartnerService.create(this.draftAnsprechpartner as Ansprechpartner).subscribe(() => {
+        refresh(); this.addAnsprechpartnerOpen = false;
+      });
+    }
   }
 
   // ── Suchauftrag ──────────────────────────────────────────
   openAddSuchauftrag(): void {
+    this.editingSuchauftragId = null;
     this.draftSuchauftrag = { aktivitaet: 'Investoren', status: 'in Arbeit' };
+    this.addSuchauftragOpen = true;
+  }
+
+  openEditSuchauftrag(s: Suchauftrag): void {
+    this.editingSuchauftragId = s.id ?? null;
+    this.draftSuchauftrag = { ...s };
     this.addSuchauftragOpen = true;
   }
 
   saveSuchauftrag(): void {
     if (!this.draftSuchauftrag.ansprechpartnerId) return;
-    this.suchauftragService.create(this.draftSuchauftrag as Suchauftrag).subscribe(() => {
+    const refresh = () =>
       this.firmaService.getSuchauftragForFirma(this.expandedFirma!.id!).subscribe(list => (this.suchauftragList = list));
-      this.addSuchauftragOpen = false;
-    });
+    if (this.editingSuchauftragId) {
+      this.suchauftragService.update(this.editingSuchauftragId, this.draftSuchauftrag as Suchauftrag).subscribe(() => {
+        refresh(); this.addSuchauftragOpen = false; this.editingSuchauftragId = null;
+      });
+    } else {
+      this.suchauftragService.create(this.draftSuchauftrag as Suchauftrag).subscribe(() => {
+        refresh(); this.addSuchauftragOpen = false;
+      });
+    }
   }
 
   // ── Vertrag ──────────────────────────────────────────────
   openAddVertrag(): void {
+    this.editingVertragId = null;
     this.draftVertrag = { firmaId: this.expandedFirma!.id, bezahlt: false };
     this.bezahlbarAmInput = '';
+    this.addVertragOpen = true;
+  }
+
+  openEditVertrag(v: Vertrag): void {
+    this.editingVertragId = v.id ?? null;
+    this.draftVertrag = { ...v };
+    if (v.bezahlbarAm) {
+      const [d, m, y] = v.bezahlbarAm.split('/');
+      this.bezahlbarAmInput = `${y}-${m}-${d}`;
+    } else {
+      this.bezahlbarAmInput = '';
+    }
     this.addVertragOpen = true;
   }
 
@@ -385,10 +491,17 @@ export class FirmenComponent implements OnInit {
       const [y, m, d] = this.bezahlbarAmInput.split('-');
       this.draftVertrag.bezahlbarAm = `${d}/${m}/${y}`;
     }
-    this.vertragService.create(this.draftVertrag as Vertrag).subscribe(() => {
+    const refresh = () =>
       this.firmaService.getVertragForFirma(this.expandedFirma!.id!).subscribe(list => (this.vertragList = list));
-      this.addVertragOpen = false;
-    });
+    if (this.editingVertragId) {
+      this.vertragService.update(this.editingVertragId, this.draftVertrag as Vertrag).subscribe(() => {
+        refresh(); this.addVertragOpen = false; this.editingVertragId = null;
+      });
+    } else {
+      this.vertragService.create(this.draftVertrag as Vertrag).subscribe(() => {
+        refresh(); this.addVertragOpen = false;
+      });
+    }
   }
 
   // ── Context menu & detail ────────────────────────────────
@@ -414,13 +527,13 @@ export class FirmenComponent implements OnInit {
 
     this.detailMode = mode;
     if (mode === 'ansprechpartner') {
-      this.detailTitle = `Ansprechpartner — ${this.expandedFirma.standort ?? ''}`;
+      this.detailTitle = `Ansprechpartner — ${this.expandedFirma.name ?? this.expandedFirma.standort ?? ''}`;
       this.firmaService.getAnsprechpartnerForFirma(id).subscribe(list => (this.ansprechpartnerList = list));
     } else if (mode === 'suchauftraege') {
-      this.detailTitle = `Suchaufträge — ${this.expandedFirma.standort ?? ''}`;
+      this.detailTitle = `Suchaufträge — ${this.expandedFirma.name ?? this.expandedFirma.standort ?? ''}`;
       this.firmaService.getSuchauftragForFirma(id).subscribe(list => (this.suchauftragList = list));
     } else if (mode === 'vertraege') {
-      this.detailTitle = `Verträge — ${this.expandedFirma.standort ?? ''}`;
+      this.detailTitle = `Verträge — ${this.expandedFirma.name ?? this.expandedFirma.standort ?? ''}`;
       this.firmaService.getVertragForFirma(id).subscribe(list => (this.vertragList = list));
     }
   }

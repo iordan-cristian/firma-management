@@ -29,6 +29,24 @@ public class Suchauftrag {
     @Column(name = "auftrag_placeholder", columnDefinition = "TEXT")
     private String auftragPlaceholder;
 
+    @Column(columnDefinition = "TEXT")
+    private String ort;
+
+    @Column(name = "fachlicher_skill", columnDefinition = "TEXT")
+    private String fachlicherSkill;
+
+    @Column(columnDefinition = "TEXT")
+    private String gehalt;
+
+    @Column(columnDefinition = "TEXT")
+    private String berufserfahrung;
+
+    @Column(columnDefinition = "TEXT")
+    private String branchenkenntnisse;
+
+    @Column(columnDefinition = "TEXT")
+    private String zertifikate;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private Status status;

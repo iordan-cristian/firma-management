@@ -2,34 +2,57 @@
 -- Connect to the firma_management database before running this file:
 --   psql -U postgres -d firma_management -f 01_schema.sql
 --
--- This script is idempotent (uses IF NOT EXISTS) so it is safe to re-run.
+-- This script drops and recreates all tables so it always reflects the
+-- current state. Run it on a fresh database or to reset an existing one.
+-- WARNING: all data will be lost when re-run against an existing database.
+--
 -- Column names use snake_case; this matches the Hibernate physical naming
--- strategy used by the Spring Boot backend.
+-- strategy used by the Spring Boot backend (ddl-auto: update will keep the
+-- tables in sync for additive changes, but this script is the source of truth).
+--
+-- Enum columns store the Java enum NAME (uppercase), e.g. 'MAENNLICH'.
+-- The frontend sends/receives human-readable labels (e.g. 'männlich') and
+-- the backend converts them via @JsonCreator / @JsonValue.
 
--- gen_random_uuid() is built into Postgres 13+. For older versions, enable pgcrypto:
--- CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- gen_random_uuid() is built into Postgres 13+.
+
+
+-- ---------------------------------------------------------------------------
+-- Drop all tables (reverse FK order)
+-- ---------------------------------------------------------------------------
+DROP TABLE IF EXISTS vertrag        CASCADE;
+DROP TABLE IF EXISTS suchauftrag    CASCADE;
+DROP TABLE IF EXISTS ansprechpartner CASCADE;
+DROP TABLE IF EXISTS kandidat       CASCADE;
+DROP TABLE IF EXISTS firma          CASCADE;
+DROP TABLE IF EXISTS app_user       CASCADE;
 
 
 -- ---------------------------------------------------------------------------
 -- Table: firma
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS firma (
+CREATE TABLE firma (
     id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    kontaktdaten             TEXT,
+    name                     TEXT,
     standort                 TEXT,
-    allgemeiner_schwerpunkt  TEXT
+    allgemeiner_schwerpunkt  TEXT,
+    email                    TEXT,
+    telefon                  TEXT,
+    mobil                    TEXT
 );
 
-COMMENT ON TABLE  firma                          IS 'Companies tracked in the system';
-COMMENT ON COLUMN firma.kontaktdaten             IS 'Free-text contact details';
-COMMENT ON COLUMN firma.standort                 IS 'Location';
-COMMENT ON COLUMN firma.allgemeiner_schwerpunkt  IS 'General focus / industry';
+COMMENT ON TABLE  firma                         IS 'Companies tracked in the system';
+COMMENT ON COLUMN firma.standort                IS 'Location';
+COMMENT ON COLUMN firma.allgemeiner_schwerpunkt IS 'General focus / industry';
+COMMENT ON COLUMN firma.email                   IS 'Company e-mail address (validated by the API)';
+COMMENT ON COLUMN firma.telefon                 IS 'Company phone number (validated by the API)';
+COMMENT ON COLUMN firma.mobil                   IS 'Company mobile phone number (validated by the API)';
 
 
 -- ---------------------------------------------------------------------------
 -- Table: ansprechpartner
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS ansprechpartner (
+CREATE TABLE ansprechpartner (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     firma_id         UUID NOT NULL REFERENCES firma(id) ON DELETE CASCADE,
     vorname          TEXT,
@@ -38,49 +61,55 @@ CREATE TABLE IF NOT EXISTS ansprechpartner (
     position         TEXT,
     telefonnummer    TEXT,
     email            TEXT,
-    kontaktinterval  TEXT,
-    informationen    TEXT
+    kontaktinterval      TEXT,
+    informationen        TEXT,
+    social_media_profil  TEXT
 );
 
-CREATE INDEX IF NOT EXISTS idx_ansprechpartner_firma_id ON ansprechpartner(firma_id);
+CREATE INDEX idx_ansprechpartner_firma_id ON ansprechpartner(firma_id);
 
-COMMENT ON TABLE  ansprechpartner                IS 'Contact persons attached to a Firma';
-COMMENT ON COLUMN ansprechpartner.firma_id       IS 'FK to firma.id';
-COMMENT ON COLUMN ansprechpartner.telefonnummer  IS 'Phone number (basic format validated by the API)';
-COMMENT ON COLUMN ansprechpartner.email          IS 'E-mail address (basic format validated by the API)';
-COMMENT ON COLUMN ansprechpartner.informationen  IS 'Free-form notes; can be very long';
+COMMENT ON TABLE  ansprechpartner               IS 'Contact persons attached to a Firma';
+COMMENT ON COLUMN ansprechpartner.firma_id      IS 'FK → firma.id';
+COMMENT ON COLUMN ansprechpartner.telefonnummer IS 'Phone number (basic format validated by the API)';
+COMMENT ON COLUMN ansprechpartner.email         IS 'E-mail address (basic format validated by the API)';
+COMMENT ON COLUMN ansprechpartner.informationen IS 'Free-form notes';
 
 
 -- ---------------------------------------------------------------------------
 -- Table: suchauftrag
 -- ---------------------------------------------------------------------------
--- kernbereich and status are stored as the Java enum NAME (uppercase),
--- because the JPA mapping uses @Enumerated(EnumType.STRING).
--- The frontend sends/receives the labels (e.g. "in Arbeit") and the
+-- aktivitaet and status are stored as the Java enum NAME (uppercase).
+-- The frontend sends/receives labels (e.g. "in Arbeit") and the
 -- backend converts them.
-CREATE TABLE IF NOT EXISTS suchauftrag (
+CREATE TABLE suchauftrag (
     id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     ansprechpartner_id   UUID NOT NULL REFERENCES ansprechpartner(id) ON DELETE CASCADE,
     aktivitaet           VARCHAR(32) NOT NULL
         CHECK (aktivitaet IN ('INVESTOREN', 'VERTRIEB', 'IMOBILIEN', 'PERSONAL')),
     auftrag_placeholder  TEXT,
+    ort                  TEXT,
+    fachlicher_skill     TEXT,
+    gehalt               TEXT,
+    berufserfahrung      TEXT,
+    branchenkenntnisse   TEXT,
+    zertifikate          TEXT,
     status               VARCHAR(32) NOT NULL
         CHECK (status IN ('IN_ARBEIT', 'FERTIG'))
 );
 
-CREATE INDEX IF NOT EXISTS idx_suchauftrag_ansprechpartner_id ON suchauftrag(ansprechpartner_id);
-CREATE INDEX IF NOT EXISTS idx_suchauftrag_status             ON suchauftrag(status);
+CREATE INDEX idx_suchauftrag_ansprechpartner_id ON suchauftrag(ansprechpartner_id);
+CREATE INDEX idx_suchauftrag_status             ON suchauftrag(status);
 
-COMMENT ON TABLE  suchauftrag                     IS 'Search assignments tied to an Ansprechpartner';
-COMMENT ON COLUMN suchauftrag.ansprechpartner_id  IS 'FK to ansprechpartner.id';
-COMMENT ON COLUMN suchauftrag.aktivitaet          IS 'Enum: INVESTOREN | VERTRIEB | IMOBILIEN | PERSONAL';
-COMMENT ON COLUMN suchauftrag.status              IS 'Enum: IN_ARBEIT | FERTIG';
+COMMENT ON TABLE  suchauftrag                    IS 'Search assignments tied to an Ansprechpartner';
+COMMENT ON COLUMN suchauftrag.ansprechpartner_id IS 'FK → ansprechpartner.id';
+COMMENT ON COLUMN suchauftrag.aktivitaet         IS 'Enum: INVESTOREN | VERTRIEB | IMOBILIEN | PERSONAL';
+COMMENT ON COLUMN suchauftrag.status             IS 'Enum: IN_ARBEIT | FERTIG';
 
 
 -- ---------------------------------------------------------------------------
 -- Table: vertrag
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS vertrag (
+CREATE TABLE vertrag (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     ansprechpartner_id  UUID NOT NULL REFERENCES ansprechpartner(id) ON DELETE CASCADE,
     firma_id            UUID NOT NULL REFERENCES firma(id) ON DELETE CASCADE,
@@ -90,42 +119,39 @@ CREATE TABLE IF NOT EXISTS vertrag (
     bezahlt             BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE INDEX IF NOT EXISTS idx_vertrag_firma_id            ON vertrag(firma_id);
-CREATE INDEX IF NOT EXISTS idx_vertrag_ansprechpartner_id  ON vertrag(ansprechpartner_id);
-CREATE INDEX IF NOT EXISTS idx_vertrag_suchauftrag_id      ON vertrag(suchauftrag_id);
-CREATE INDEX IF NOT EXISTS idx_vertrag_bezahlbar_am        ON vertrag(bezahlbar_am);
+CREATE INDEX idx_vertrag_firma_id           ON vertrag(firma_id);
+CREATE INDEX idx_vertrag_ansprechpartner_id ON vertrag(ansprechpartner_id);
+CREATE INDEX idx_vertrag_suchauftrag_id     ON vertrag(suchauftrag_id);
+CREATE INDEX idx_vertrag_bezahlbar_am       ON vertrag(bezahlbar_am);
 
-COMMENT ON TABLE  vertrag                IS 'Contracts referencing a Firma, Ansprechpartner, and (optionally) a Suchauftrag';
-COMMENT ON COLUMN vertrag.wert           IS 'Decimal monetary amount';
-COMMENT ON COLUMN vertrag.bezahlbar_am   IS 'Due date (stored as DATE; the API serializes as dd/MM/yyyy)';
-COMMENT ON COLUMN vertrag.bezahlt        IS 'Whether the contract has been paid';
+COMMENT ON TABLE  vertrag              IS 'Contracts referencing a Firma, Ansprechpartner, and optionally a Suchauftrag';
+COMMENT ON COLUMN vertrag.wert         IS 'Decimal monetary amount';
+COMMENT ON COLUMN vertrag.bezahlbar_am IS 'Due date (stored as DATE; the API serialises as dd/MM/yyyy)';
+COMMENT ON COLUMN vertrag.bezahlt      IS 'Whether the contract has been paid';
 
 
 -- ---------------------------------------------------------------------------
 -- Table: app_user
 -- ---------------------------------------------------------------------------
 -- The admin user is seeded automatically by the Spring Boot DataInitializer
--- on first startup, so no INSERT is required here.
-CREATE TABLE IF NOT EXISTS app_user (
-    id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- on first startup, so no INSERT is needed here.
+CREATE TABLE app_user (
+    id        UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     username  VARCHAR(255) NOT NULL UNIQUE,
     password  VARCHAR(255) NOT NULL,
     role      VARCHAR(64)  NOT NULL
 );
 
-COMMENT ON TABLE  app_user           IS 'Application users with BCrypt-hashed passwords';
-COMMENT ON COLUMN app_user.password  IS 'BCrypt hash, never plaintext';
-COMMENT ON COLUMN app_user.role      IS 'Role name without the ROLE_ prefix (e.g. ADMIN)';
+COMMENT ON TABLE  app_user          IS 'Application users with BCrypt-hashed passwords';
+COMMENT ON COLUMN app_user.password IS 'BCrypt hash, never plaintext';
+COMMENT ON COLUMN app_user.role     IS 'Role name without the ROLE_ prefix (e.g. ADMIN)';
 
 
 -- ---------------------------------------------------------------------------
 -- Table: kandidat
 -- ---------------------------------------------------------------------------
--- Enum columns store the Java enum NAME (uppercase), e.g. 'MAENNLICH'.
--- The frontend sends/receives the labels (e.g. 'männlich') and the
--- backend converts them via @JsonCreator / @JsonValue.
-CREATE TABLE IF NOT EXISTS kandidat (
-    id                                   UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE kandidat (
+    id                                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- Persönliche Daten
     geschlecht                           VARCHAR(32)
@@ -152,7 +178,7 @@ CREATE TABLE IF NOT EXISTS kandidat (
 
     -- Sprachkenntnisse
     deutsch                              VARCHAR(16)
-        CHECK (deutsch IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'MUTTERSPRACHE')),
+        CHECK (deutsch  IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'MUTTERSPRACHE')),
     englisch                             VARCHAR(16)
         CHECK (englisch IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'MUTTERSPRACHE')),
     sonstige_sprachen                    TEXT,
@@ -176,14 +202,14 @@ CREATE TABLE IF NOT EXISTS kandidat (
     erstes_online_meeting                TEXT
 );
 
-CREATE INDEX IF NOT EXISTS idx_kandidat_nachname ON kandidat(nachname);
+CREATE INDEX idx_kandidat_nachname ON kandidat(nachname);
 
-COMMENT ON TABLE  kandidat                                IS 'Job candidates managed in the system';
-COMMENT ON COLUMN kandidat.geschlecht                     IS 'Enum: MAENNLICH | WEIBLICH | DIVERS | BEVORZUGE_NICHT_ZU_SAGEN';
-COMMENT ON COLUMN kandidat.titel                          IS 'Enum: DR | ING';
-COMMENT ON COLUMN kandidat.wochenstunden                  IS 'Stored as text; may be a single number or a range (e.g. 40 or 30-40)';
-COMMENT ON COLUMN kandidat.gehaltsrange                   IS 'Stored as text; may be a single number or a range (e.g. 60000 or 55000-70000)';
-COMMENT ON COLUMN kandidat.deutsch                        IS 'Enum: A1 | A2 | B1 | B2 | C1 | C2 | MUTTERSPRACHE';
-COMMENT ON COLUMN kandidat.englisch                       IS 'Enum: A1 | A2 | B1 | B2 | C1 | C2 | MUTTERSPRACHE';
-COMMENT ON COLUMN kandidat.autofuehrerschein              IS 'Enum: VORHANDEN | NICHT_VORHANDEN';
-COMMENT ON COLUMN kandidat.taegliche_fahrzeit             IS 'Daily commute time in minutes';
+COMMENT ON TABLE  kandidat                               IS 'Job candidates managed in the system';
+COMMENT ON COLUMN kandidat.geschlecht                    IS 'Enum: MAENNLICH | WEIBLICH | DIVERS | BEVORZUGE_NICHT_ZU_SAGEN';
+COMMENT ON COLUMN kandidat.titel                         IS 'Enum: DR | ING';
+COMMENT ON COLUMN kandidat.wochenstunden                 IS 'Text; single value or range, e.g. 40 or 30-40';
+COMMENT ON COLUMN kandidat.gehaltsrange                  IS 'Text; single value or range, e.g. 60000 or 55000-70000';
+COMMENT ON COLUMN kandidat.deutsch                       IS 'Enum: A1 | A2 | B1 | B2 | C1 | C2 | MUTTERSPRACHE';
+COMMENT ON COLUMN kandidat.englisch                      IS 'Enum: A1 | A2 | B1 | B2 | C1 | C2 | MUTTERSPRACHE';
+COMMENT ON COLUMN kandidat.autofuehrerschein             IS 'Enum: VORHANDEN | NICHT_VORHANDEN';
+COMMENT ON COLUMN kandidat.taegliche_fahrzeit            IS 'Daily commute time in minutes';

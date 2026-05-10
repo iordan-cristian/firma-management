@@ -54,7 +54,9 @@ public class Ansprechpartner {
     @Column(columnDefinition = "TEXT")
     private String kontaktinterval;
 
-    /** Free-form notes; can be very long. */
     @Column(columnDefinition = "TEXT")
     private String informationen;
+
+    @Column(name = "social_media_profil", columnDefinition = "TEXT")
+    private String socialMediaProfil;
 }

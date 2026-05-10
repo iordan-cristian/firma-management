@@ -51,6 +51,12 @@ public class SuchauftragService {
             existing.setAnsprechpartnerId(input.getAnsprechpartnerId());
             existing.setAktivitaet(input.getAktivitaet());
             existing.setAuftragPlaceholder(input.getAuftragPlaceholder());
+            existing.setOrt(input.getOrt());
+            existing.setFachlicherSkill(input.getFachlicherSkill());
+            existing.setGehalt(input.getGehalt());
+            existing.setBerufserfahrung(input.getBerufserfahrung());
+            existing.setBranchenkenntnisse(input.getBranchenkenntnisse());
+            existing.setZertifikate(input.getZertifikate());
             existing.setStatus(input.getStatus());
             return repo.save(existing);
         });

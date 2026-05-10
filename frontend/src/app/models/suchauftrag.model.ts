@@ -9,5 +9,11 @@ export interface Suchauftrag {
   ansprechpartnerId: string;
   aktivitaet: Aktivitaet;
   auftragPlaceholder?: string;
+  ort?: string;
+  fachlicherSkill?: string;
+  gehalt?: string;
+  berufserfahrung?: string;
+  branchenkenntnisse?: string;
+  zertifikate?: string;
   status: SuchauftragStatus;
 }

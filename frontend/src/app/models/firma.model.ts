@@ -1,6 +1,9 @@
 export interface Firma {
   id?: string;
-  kontaktdaten?: string;
+  name?: string;
   standort?: string;
   allgemeinerSchwerpunkt?: string;
+  email?: string;
+  telefon?: string;
+  mobil?: string;
 }

@@ -28,9 +28,12 @@ public class FirmaService {
 
     public Optional<Firma> update(UUID id, Firma input) {
         return repo.findById(id).map(existing -> {
-            existing.setKontaktdaten(input.getKontaktdaten());
+            existing.setName(input.getName());
             existing.setStandort(input.getStandort());
             existing.setAllgemeinerSchwerpunkt(input.getAllgemeinerSchwerpunkt());
+            existing.setEmail(input.getEmail());
+            existing.setTelefon(input.getTelefon());
+            existing.setMobil(input.getMobil());
             return repo.save(existing);
         });
     }

@@ -1,7 +1,10 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { VertragService } from '../../services/vertrag.service';
+import { FirmaService } from '../../services/firma.service';
+import { AnsprechpartnerService } from '../../services/ansprechpartner.service';
 import { Vertrag } from '../../models/vertrag.model';
 
 @Component({
@@ -23,19 +26,19 @@ import { Vertrag } from '../../models/vertrag.model';
               <th>Bezahlbar am</th>
               <th>Wert</th>
               <th>Bezahlt</th>
-              <th>Firma ID</th>
-              <th>Ansprechpartner ID</th>
+              <th>Firma</th>
+              <th>Ansprechpartner</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let v of items">
+            <tr *ngFor="let v of items" (dblclick)="openEditModal(v)" style="cursor:pointer">
               <td>{{ v.bezahlbarAm }}</td>
               <td>{{ v.wert | number:'1.2-2' }} €</td>
               <td>
                 <span class="badge" [class.done]="v.bezahlt">{{ v.bezahlt ? 'Ja' : 'Nein' }}</span>
               </td>
-              <td class="mono">{{ v.firmaId }}</td>
-              <td class="mono">{{ v.ansprechpartnerId }}</td>
+              <td>{{ firmaName(v.firmaId) }}</td>
+              <td>{{ apName(v.ansprechpartnerId) }}</td>
             </tr>
             <tr *ngIf="!items.length"><td colspan="5" class="empty">No Verträge yet.</td></tr>
           </tbody>
@@ -45,7 +48,7 @@ import { Vertrag } from '../../models/vertrag.model';
       <!-- Add Vertrag Modal -->
       <div class="modal-backdrop" *ngIf="addModalOpen" (click)="closeAddModal()">
         <div class="modal" (click)="$event.stopPropagation()">
-          <h2>Neuer Vertrag</h2>
+          <h2>{{ editingId ? 'Vertrag bearbeiten' : 'Neuer Vertrag' }}</h2>
           <label>Ansprechpartner ID *
             <input [(ngModel)]="draft.ansprechpartnerId" placeholder="UUID" />
           </label>
@@ -87,7 +90,6 @@ import { Vertrag } from '../../models/vertrag.model';
     tbody tr:hover { background: #fafbff; }
     .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; background: #f5d97c; font-size: 12px; }
     .badge.done { background: #b6e3b6; }
-    .mono { font-family: ui-monospace, monospace; font-size: 11px; color: #666; }
     .empty { color: #999; text-align: center; padding: 18px; }
 
     .modal-backdrop {
@@ -114,19 +116,50 @@ import { Vertrag } from '../../models/vertrag.model';
 })
 export class VertraegeComponent implements OnInit {
   private service = inject(VertragService);
+  private firmaService = inject(FirmaService);
+  private apService = inject(AnsprechpartnerService);
 
   items: Vertrag[] = [];
+  firmaNames = new Map<string, string>();
+  apNames = new Map<string, string>();
+
   addModalOpen = false;
+  editingId: string | null = null;
   draft: Partial<Vertrag> = {};
   bezahlbarAmInput = '';
 
   ngOnInit(): void {
-    this.service.getAll().subscribe(list => (this.items = list));
+    forkJoin({
+      firmen: this.firmaService.getAll(),
+      aps: this.apService.getAll()
+    }).subscribe(({ firmen, aps }) => {
+      firmen.forEach(f => { if (f.id) this.firmaNames.set(f.id, f.name ?? f.standort ?? f.id); });
+      aps.forEach(a => {
+        if (a.id) this.apNames.set(a.id, [a.vorname, a.nachname].filter(Boolean).join(' '));
+      });
+      this.service.getAll().subscribe(list => (this.items = list));
+    });
   }
 
+  firmaName(id: string): string { return this.firmaNames.get(id) ?? id; }
+  apName(id: string): string    { return this.apNames.get(id) ?? id; }
+
   openAddModal(): void {
+    this.editingId = null;
     this.draft = { bezahlt: false };
     this.bezahlbarAmInput = '';
+    this.addModalOpen = true;
+  }
+
+  openEditModal(v: Vertrag): void {
+    this.editingId = v.id ?? null;
+    this.draft = { ...v };
+    if (v.bezahlbarAm) {
+      const [d, m, y] = v.bezahlbarAm.split('/');
+      this.bezahlbarAmInput = `${y}-${m}-${d}`;
+    } else {
+      this.bezahlbarAmInput = '';
+    }
     this.addModalOpen = true;
   }
 
@@ -138,9 +171,17 @@ export class VertraegeComponent implements OnInit {
       const [y, m, d] = this.bezahlbarAmInput.split('-');
       this.draft.bezahlbarAm = `${d}/${m}/${y}`;
     }
-    this.service.create(this.draft as Vertrag).subscribe(() => {
-      this.service.getAll().subscribe(list => (this.items = list));
-      this.closeAddModal();
-    });
+    const refresh = () => this.service.getAll().subscribe(list => (this.items = list));
+    if (this.editingId) {
+      this.service.update(this.editingId, this.draft as Vertrag).subscribe(() => {
+        refresh();
+        this.closeAddModal();
+      });
+    } else {
+      this.service.create(this.draft as Vertrag).subscribe(() => {
+        refresh();
+        this.closeAddModal();
+      });
+    }
   }
 }

@@ -27,12 +27,18 @@ import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/su
       </p>
 
       <div class="cards">
-        <div class="card" *ngFor="let s of items">
+        <div class="card" *ngFor="let s of items" (dblclick)="openEditModal(s)">
           <div class="card-title">{{ s.aktivitaet }}</div>
           <div class="card-row"><span>Status:</span>
             <span class="badge" [class.done]="s.status === 'Fertig'">{{ s.status }}</span>
           </div>
           <div class="card-row"><span>Auftrag:</span> {{ s.auftragPlaceholder }}</div>
+          <div class="card-row" *ngIf="s.ort"><span>Ort:</span> {{ s.ort }}</div>
+          <div class="card-row" *ngIf="s.fachlicherSkill"><span>Fachlicher Skill:</span> {{ s.fachlicherSkill }}</div>
+          <div class="card-row" *ngIf="s.gehalt"><span>Gehalt:</span> {{ s.gehalt }}</div>
+          <div class="card-row" *ngIf="s.berufserfahrung"><span>Berufserfahrung:</span> {{ s.berufserfahrung }}</div>
+          <div class="card-row" *ngIf="s.branchenkenntnisse"><span>Branchenkenntnisse:</span> {{ s.branchenkenntnisse }}</div>
+          <div class="card-row" *ngIf="s.zertifikate"><span>Zertifikate:</span> {{ s.zertifikate }}</div>
           <div class="card-row"><span>Ansprechpartner:</span> {{ apName(s.ansprechpartnerId) }}</div>
         </div>
         <div *ngIf="!items.length" class="empty">Nothing to show.</div>
@@ -41,7 +47,7 @@ import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/su
       <!-- Add Suchauftrag Modal -->
       <div class="modal-backdrop" *ngIf="addModalOpen" (click)="closeAddModal()">
         <div class="modal" (click)="$event.stopPropagation()">
-          <h2>Neuer Suchauftrag</h2>
+          <h2>{{ editingId ? 'Suchauftrag bearbeiten' : 'Neuer Suchauftrag' }}</h2>
           <label>Ansprechpartner ID *
             <input [(ngModel)]="draft.ansprechpartnerId" placeholder="UUID" />
           </label>
@@ -52,6 +58,24 @@ import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/su
           </label>
           <label>Auftrag
             <input [(ngModel)]="draft.auftragPlaceholder" placeholder="Beschreibung" />
+          </label>
+          <label>Ort
+            <input [(ngModel)]="draft.ort" placeholder="Ort" />
+          </label>
+          <label>Fachlicher Skill
+            <input [(ngModel)]="draft.fachlicherSkill" placeholder="z.B. Java, SAP, CAD" />
+          </label>
+          <label>Gehalt
+            <input [(ngModel)]="draft.gehalt" placeholder="z.B. 60000-80000" />
+          </label>
+          <label>Berufserfahrung
+            <input [(ngModel)]="draft.berufserfahrung" placeholder="z.B. 5+ Jahre" />
+          </label>
+          <label>Branchenkenntnisse
+            <input [(ngModel)]="draft.branchenkenntnisse" placeholder="z.B. Automotive, IT" />
+          </label>
+          <label>Zertifikate
+            <input [(ngModel)]="draft.zertifikate" placeholder="z.B. PMP, ISO 9001" />
           </label>
           <label>Status *
             <select [(ngModel)]="draft.status">
@@ -75,7 +99,8 @@ import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/su
     .btn-add { background: #3b5bdb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; }
     .btn-add:hover { background: #2f4ac7; }
     .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
-    .card { background: white; border: 1px solid #e5e9f3; border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .card { background: white; border: 1px solid #e5e9f3; border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); cursor: pointer; }
+    .card:hover { border-color: #3b5bdb; }
     .card-title { font-weight: 600; color: #1f2a44; margin-bottom: 8px; }
     .card-row { font-size: 13px; margin: 4px 0; color: #333; }
     .card-row span:first-child { color: #777; margin-right: 4px; }
@@ -114,6 +139,7 @@ export class SuchauftraegeComponent implements OnInit {
   readonly statusOptions = STATUS_OPTIONS;
 
   addModalOpen = false;
+  editingId: string | null = null;
   draft: Partial<Suchauftrag> = {};
 
   ngOnInit(): void {
@@ -138,7 +164,14 @@ export class SuchauftraegeComponent implements OnInit {
   }
 
   openAddModal(): void {
+    this.editingId = null;
     this.draft = { aktivitaet: 'Investoren', status: 'in Arbeit' };
+    this.addModalOpen = true;
+  }
+
+  openEditModal(s: Suchauftrag): void {
+    this.editingId = s.id ?? null;
+    this.draft = { ...s };
     this.addModalOpen = true;
   }
 
@@ -146,9 +179,16 @@ export class SuchauftraegeComponent implements OnInit {
 
   saveSuchauftrag(): void {
     if (!this.draft.ansprechpartnerId || !this.draft.aktivitaet || !this.draft.status) return;
-    this.service.create(this.draft as Suchauftrag).subscribe(() => {
-      this.reload();
-      this.closeAddModal();
-    });
+    if (this.editingId) {
+      this.service.update(this.editingId, this.draft as Suchauftrag).subscribe(() => {
+        this.reload();
+        this.closeAddModal();
+      });
+    } else {
+      this.service.create(this.draft as Suchauftrag).subscribe(() => {
+        this.reload();
+        this.closeAddModal();
+      });
+    }
   }
 }
