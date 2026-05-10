@@ -5,6 +5,7 @@ import { LandingComponent } from './components/landing/landing.component';
 import { FirmenComponent } from './components/firmen/firmen.component';
 import { SuchauftraegeComponent } from './components/suchauftraege/suchauftraege.component';
 import { VertraegeComponent } from './components/vertraege/vertraege.component';
+import { KandidatenComponent } from './components/kandidaten/kandidaten.component';
 import { authGuard } from './guards/auth.guard';
 
 export const appRoutes: Routes = [
@@ -17,7 +18,8 @@ export const appRoutes: Routes = [
       { path: '', component: LandingComponent },
       { path: 'firmen', component: FirmenComponent },
       { path: 'suchauftraege', component: SuchauftraegeComponent },
-      { path: 'vertraege', component: VertraegeComponent }
+      { path: 'vertraege', component: VertraegeComponent },
+      { path: 'kandidaten', component: KandidatenComponent }
     ]
   },
   { path: '**', redirectTo: '' }

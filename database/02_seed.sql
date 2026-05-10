@@ -129,4 +129,78 @@ INSERT INTO vertrag
      15750.00, DATE '2026-05-01', TRUE)
 ON CONFLICT (id) DO NOTHING;
 
+-- -- KANDIDAT ----------------------------------------------------------------
+INSERT INTO kandidat (
+    id, geschlecht, titel, vorname, nachname, postleitzahl, ort, geburtsjahr,
+    staatsangehoerigkeit, familienstand, kinder,
+    wochenstunden, gehaltsrange, wochenendbereitschaft, homeoffice,
+    firmenwagenregelung, reisetaetigkeiten_mit_uebernachtung, taegliche_fahrzeit,
+    deutsch, englisch, sonstige_sprachen,
+    hochschulabschluss, berufsausbildung, autofuehrerschein, fachspezifische_zertifikate,
+    branchenkenntnisse, aktuelle_taetigkeiten, aktuelle_position,
+    wechselgruende, zukuenftige_position_taetigkeiten, kuendigungsfrist, erstes_online_meeting
+) VALUES
+    ('dddddddd-dddd-dddd-dddd-dddddddddd01',
+     'MAENNLICH', 'DR', 'Thomas', 'Müller', 80331, 'München', 1982,
+     'Deutsch', 'verheiratet', '2',
+     '40', '90000-110000', 'nein', '2 Tage/Woche',
+     'gewünscht', 'bis 5 Tage/Monat', 30,
+     'MUTTERSPRACHE', 'C1', 'Französisch B1',
+     'M.Sc. Maschinenbau (TU München)', NULL, 'VORHANDEN', 'PMP, Six Sigma Green Belt',
+     'Automotive, Maschinenbau', 'Leitung von Entwicklungsprojekten, Teamführung',
+     'Senior Project Manager',
+     'Fehlende Aufstiegsmöglichkeiten', 'Head of Engineering / VP Engineering',
+     '3 Monate', 'KW 22, flexibel'),
+
+    ('dddddddd-dddd-dddd-dddd-dddddddddd02',
+     'WEIBLICH', NULL, 'Sarah', 'Fischer', 10115, 'Berlin', 1990,
+     'Deutsch', 'ledig', 'keine',
+     '38-40', '70000-85000', 'gelegentlich', '3 Tage/Woche',
+     'nicht gewünscht', 'nein', 45,
+     'MUTTERSPRACHE', 'C2', 'Spanisch B2',
+     'B.Sc. Wirtschaftsinformatik (HU Berlin)', NULL, 'VORHANDEN', 'Scrum Master, AWS Cloud Practitioner',
+     'IT, E-Commerce, FinTech', 'Produktentwicklung, Stakeholder Management, Agile Coaching',
+     'Product Manager',
+     'Startup-Umgebung zu unstrukturiert', 'Senior Product Manager / Head of Product',
+     '1 Monat', 'Ab sofort, bevorzugt morgens'),
+
+    ('dddddddd-dddd-dddd-dddd-dddddddddd03',
+     'MAENNLICH', 'ING', 'Klaus', 'Weber', 40213, 'Düsseldorf', 1975,
+     'Deutsch', 'verheiratet', '3',
+     '40-45', '95000-120000', 'ja', '1 Tag/Woche',
+     'vorhanden', 'bis 10 Tage/Monat', 60,
+     'MUTTERSPRACHE', 'B2', NULL,
+     NULL, 'Industriemechaniker', 'VORHANDEN', 'ISO 9001 Auditor',
+     'Industrie, Produktion, Anlagenbau', 'Produktionsplanung, Qualitätssicherung, Lieferantenmanagement',
+     'Werksleiter Produktion',
+     'Werksschließung geplant', 'Plant Manager / Operations Director',
+     '6 Monate', 'KW 23 oder 24, nachmittags'),
+
+    ('dddddddd-dddd-dddd-dddd-dddddddddd04',
+     'WEIBLICH', NULL, 'Maria', 'Schmidt', 20095, 'Hamburg', 1988,
+     'Deutsch', 'ledig', 'keine',
+     '30-35', '55000-65000', 'nein', 'vollständig möglich',
+     'nicht gewünscht', 'nein', 20,
+     'MUTTERSPRACHE', 'C1', 'Niederländisch A2',
+     'M.A. Marketing (Uni Hamburg)', NULL, 'VORHANDEN', 'Google Ads, HubSpot',
+     'FMCG, Handel, digitale Medien', 'Content-Strategie, Social Media, Kampagnenmanagement',
+     'Marketing Managerin',
+     'Wunsch nach mehr Remote-Flexibilität und internationalem Umfeld',
+     'Head of Marketing / Senior Marketing Manager',
+     '2 Monate', 'Flexibel, bevorzugt Donnerstag'),
+
+    ('dddddddd-dddd-dddd-dddd-dddddddddd05',
+     'MAENNLICH', NULL, 'Michael', 'Braun', 70173, 'Stuttgart', 1985,
+     'Deutsch', 'verheiratet', '1',
+     '40', '75000-90000', 'gelegentlich', '2 Tage/Woche',
+     'vorhanden', 'bis 8 Tage/Monat', 40,
+     'MUTTERSPRACHE', 'B2', NULL,
+     'B.A. Betriebswirtschaft (Uni Stuttgart)', NULL, 'VORHANDEN', NULL,
+     'Logistik, Supply Chain, Handel', 'Prozessoptimierung, Teamführung, Budgetplanung',
+     'Operations Manager',
+     'Unternehmensfusion, neue Ausrichtung gewünscht',
+     'Head of Operations / Supply Chain Manager',
+     '3 Monate', 'KW 21, flexibel')
+ON CONFLICT (id) DO NOTHING;
+
 COMMIT;

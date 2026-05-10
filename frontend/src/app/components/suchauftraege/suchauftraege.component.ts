@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SuchauftragService } from '../../services/suchauftrag.service';
+import { AnsprechpartnerService } from '../../services/ansprechpartner.service';
 import { Suchauftrag, KERNBEREICH_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
 
 @Component({
@@ -32,7 +33,7 @@ import { Suchauftrag, KERNBEREICH_OPTIONS, STATUS_OPTIONS } from '../../models/s
             <span class="badge" [class.done]="s.status === 'Fertig'">{{ s.status }}</span>
           </div>
           <div class="card-row"><span>Auftrag:</span> {{ s.auftragPlaceholder }}</div>
-          <div class="card-row"><span>Ansprechpartner:</span> {{ s.ansprechpartnerId }}</div>
+          <div class="card-row"><span>Ansprechpartner:</span> {{ apName(s.ansprechpartnerId) }}</div>
         </div>
         <div *ngIf="!items.length" class="empty">Nothing to show.</div>
       </div>
@@ -98,13 +99,16 @@ import { Suchauftrag, KERNBEREICH_OPTIONS, STATUS_OPTIONS } from '../../models/s
     .btn-save { background: #3b5bdb; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
     .btn-save:hover { background: #2f4ac7; }
     .btn-cancel { background: transparent; border: 1px solid #dfe3ee; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
+
   `]
 })
 export class SuchauftraegeComponent implements OnInit {
   private service = inject(SuchauftragService);
+  private apService = inject(AnsprechpartnerService);
 
   items: Suchauftrag[] = [];
   showAll = false;
+  apNames = new Map<string, string>();
 
   readonly kernbereichOptions = KERNBEREICH_OPTIONS;
   readonly statusOptions = STATUS_OPTIONS;
@@ -112,7 +116,18 @@ export class SuchauftraegeComponent implements OnInit {
   addModalOpen = false;
   draft: Partial<Suchauftrag> = {};
 
-  ngOnInit(): void { this.reload(); }
+  ngOnInit(): void {
+    this.apService.getAll().subscribe(list => {
+      list.forEach(a => {
+        if (a.id) this.apNames.set(a.id, [a.vorname, a.nachname].filter(Boolean).join(' '));
+      });
+      this.reload();
+    });
+  }
+
+  apName(id: string): string {
+    return this.apNames.get(id) ?? '–';
+  }
 
   reload(): void {
     if (this.showAll) {

@@ -116,3 +116,74 @@ CREATE TABLE IF NOT EXISTS app_user (
 COMMENT ON TABLE  app_user           IS 'Application users with BCrypt-hashed passwords';
 COMMENT ON COLUMN app_user.password  IS 'BCrypt hash, never plaintext';
 COMMENT ON COLUMN app_user.role      IS 'Role name without the ROLE_ prefix (e.g. ADMIN)';
+
+
+-- ---------------------------------------------------------------------------
+-- Table: kandidat
+-- ---------------------------------------------------------------------------
+-- Enum columns store the Java enum NAME (uppercase), e.g. 'MAENNLICH'.
+-- The frontend sends/receives the labels (e.g. 'männlich') and the
+-- backend converts them via @JsonCreator / @JsonValue.
+CREATE TABLE IF NOT EXISTS kandidat (
+    id                                   UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    -- Persönliche Daten
+    geschlecht                           VARCHAR(32)
+        CHECK (geschlecht IN ('MAENNLICH', 'WEIBLICH', 'DIVERS', 'BEVORZUGE_NICHT_ZU_SAGEN')),
+    titel                                VARCHAR(16)
+        CHECK (titel IN ('DR', 'ING')),
+    vorname                              TEXT,
+    nachname                             TEXT,
+    postleitzahl                         INTEGER,
+    ort                                  TEXT,
+    geburtsjahr                          INTEGER CHECK (geburtsjahr BETWEEN 1000 AND 9999),
+    staatsangehoerigkeit                 TEXT,
+    familienstand                        TEXT,
+    kinder                               TEXT,
+
+    -- Berufliche Anforderungen
+    wochenstunden                        TEXT,
+    gehaltsrange                         TEXT,
+    wochenendbereitschaft                TEXT,
+    homeoffice                           TEXT,
+    firmenwagenregelung                  TEXT,
+    reisetaetigkeiten_mit_uebernachtung  TEXT,
+    taegliche_fahrzeit                   INTEGER,
+
+    -- Sprachkenntnisse
+    deutsch                              VARCHAR(16)
+        CHECK (deutsch IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'MUTTERSPRACHE')),
+    englisch                             VARCHAR(16)
+        CHECK (englisch IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'MUTTERSPRACHE')),
+    sonstige_sprachen                    TEXT,
+
+    -- Qualifikationen
+    hochschulabschluss                   TEXT,
+    berufsausbildung                     TEXT,
+    autofuehrerschein                    VARCHAR(16)
+        CHECK (autofuehrerschein IN ('VORHANDEN', 'NICHT_VORHANDEN')),
+    fachspezifische_zertifikate          TEXT,
+
+    -- Berufserfahrung
+    branchenkenntnisse                   TEXT,
+    aktuelle_taetigkeiten                TEXT,
+    aktuelle_position                    TEXT,
+
+    -- Wechsel & Zukunft
+    wechselgruende                       TEXT,
+    zukuenftige_position_taetigkeiten    TEXT,
+    kuendigungsfrist                     TEXT,
+    erstes_online_meeting                TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_kandidat_nachname ON kandidat(nachname);
+
+COMMENT ON TABLE  kandidat                                IS 'Job candidates managed in the system';
+COMMENT ON COLUMN kandidat.geschlecht                     IS 'Enum: MAENNLICH | WEIBLICH | DIVERS | BEVORZUGE_NICHT_ZU_SAGEN';
+COMMENT ON COLUMN kandidat.titel                          IS 'Enum: DR | ING';
+COMMENT ON COLUMN kandidat.wochenstunden                  IS 'Stored as text; may be a single number or a range (e.g. 40 or 30-40)';
+COMMENT ON COLUMN kandidat.gehaltsrange                   IS 'Stored as text; may be a single number or a range (e.g. 60000 or 55000-70000)';
+COMMENT ON COLUMN kandidat.deutsch                        IS 'Enum: A1 | A2 | B1 | B2 | C1 | C2 | MUTTERSPRACHE';
+COMMENT ON COLUMN kandidat.englisch                       IS 'Enum: A1 | A2 | B1 | B2 | C1 | C2 | MUTTERSPRACHE';
+COMMENT ON COLUMN kandidat.autofuehrerschein              IS 'Enum: VORHANDEN | NICHT_VORHANDEN';
+COMMENT ON COLUMN kandidat.taegliche_fahrzeit             IS 'Daily commute time in minutes';
