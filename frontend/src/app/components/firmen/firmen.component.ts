@@ -197,8 +197,11 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
       <div class="modal-backdrop" *ngIf="addSuchauftragOpen" (click)="addSuchauftragOpen = false">
         <div class="modal" (click)="$event.stopPropagation()">
           <h2>{{ editingSuchauftragId ? 'Suchauftrag bearbeiten' : 'Neuer Suchauftrag' }}</h2>
-          <label>Ansprechpartner ID *
-            <input [(ngModel)]="draftSuchauftrag.ansprechpartnerId" placeholder="UUID" />
+          <label>Ansprechpartner *
+            <select [(ngModel)]="draftSuchauftrag.ansprechpartnerId">
+              <option value="" disabled>— auswählen —</option>
+              <option *ngFor="let a of ansprechpartnerList" [value]="a.id">{{ a.vorname }} {{ a.nachname }}</option>
+            </select>
           </label>
           <label>Aktivität *
             <select [(ngModel)]="draftSuchauftrag.aktivitaet">
@@ -441,13 +444,21 @@ export class FirmenComponent implements OnInit {
   openAddSuchauftrag(): void {
     this.editingSuchauftragId = null;
     this.draftSuchauftrag = { aktivitaet: 'Investoren', status: 'in Arbeit' };
-    this.addSuchauftragOpen = true;
+    this.ensureAnsprechpartnerLoaded(() => (this.addSuchauftragOpen = true));
   }
 
   openEditSuchauftrag(s: Suchauftrag): void {
     this.editingSuchauftragId = s.id ?? null;
     this.draftSuchauftrag = { ...s };
-    this.addSuchauftragOpen = true;
+    this.ensureAnsprechpartnerLoaded(() => (this.addSuchauftragOpen = true));
+  }
+
+  private ensureAnsprechpartnerLoaded(then: () => void): void {
+    if (this.ansprechpartnerList.length > 0) { then(); return; }
+    this.firmaService.getAnsprechpartnerForFirma(this.expandedFirma!.id!).subscribe(list => {
+      this.ansprechpartnerList = list;
+      then();
+    });
   }
 
   saveSuchauftrag(): void {

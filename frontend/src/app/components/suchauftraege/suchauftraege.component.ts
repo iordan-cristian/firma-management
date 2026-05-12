@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { SuchauftragService } from '../../services/suchauftrag.service';
 import { AnsprechpartnerService } from '../../services/ansprechpartner.service';
 import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
+import { Ansprechpartner } from '../../models/ansprechpartner.model';
 
 @Component({
   selector: 'app-suchauftraege',
@@ -48,8 +49,11 @@ import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/su
       <div class="modal-backdrop" *ngIf="addModalOpen" (click)="closeAddModal()">
         <div class="modal" (click)="$event.stopPropagation()">
           <h2>{{ editingId ? 'Suchauftrag bearbeiten' : 'Neuer Suchauftrag' }}</h2>
-          <label>Ansprechpartner ID *
-            <input [(ngModel)]="draft.ansprechpartnerId" placeholder="UUID" />
+          <label>Ansprechpartner *
+            <select [(ngModel)]="draft.ansprechpartnerId">
+              <option value="" disabled>— auswählen —</option>
+              <option *ngFor="let a of apList" [value]="a.id">{{ a.vorname }} {{ a.nachname }}</option>
+            </select>
           </label>
           <label>Aktivität *
             <select [(ngModel)]="draft.aktivitaet">
@@ -134,6 +138,7 @@ export class SuchauftraegeComponent implements OnInit {
   items: Suchauftrag[] = [];
   showAll = false;
   apNames = new Map<string, string>();
+  apList: Ansprechpartner[] = [];
 
   readonly aktivitaetOptions = AKTIVITAET_OPTIONS;
   readonly statusOptions = STATUS_OPTIONS;
@@ -144,6 +149,7 @@ export class SuchauftraegeComponent implements OnInit {
 
   ngOnInit(): void {
     this.apService.getAll().subscribe(list => {
+      this.apList = list;
       list.forEach(a => {
         if (a.id) this.apNames.set(a.id, [a.vorname, a.nachname].filter(Boolean).join(' '));
       });
