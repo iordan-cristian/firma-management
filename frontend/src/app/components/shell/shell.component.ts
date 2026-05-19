@@ -20,7 +20,6 @@ import { AuthService } from '../../services/auth.service';
         <nav>
           <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
           <a routerLink="/firmen" routerLinkActive="active">Firmen</a>
-          <a routerLink="/suchauftraege" routerLinkActive="active">Suchaufträge</a>
           <a routerLink="/vertraege" routerLinkActive="active">Verträge</a>
           <a routerLink="/kandidaten" routerLinkActive="active">Kandidaten</a>
         </nav>
