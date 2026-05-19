@@ -35,7 +35,8 @@ CREATE TABLE firma (
     id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name                     TEXT,
     standort                 TEXT,
-    allgemeiner_schwerpunkt  TEXT,
+    allgemeiner_schwerpunkt  VARCHAR(32)
+        CHECK (allgemeiner_schwerpunkt IN ('GEBAEUDETECHNIK', 'ENERGIETECHNIK', 'MASCHINENBAU', 'INFORMATIK', 'KAUFMAENNISCH')),
     email                    TEXT,
     telefon                  TEXT,
     mobil                    TEXT

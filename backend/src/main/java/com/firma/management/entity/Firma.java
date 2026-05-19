@@ -27,8 +27,9 @@ public class Firma {
     @Column(columnDefinition = "TEXT")
     private String standort;
 
-    @Column(name = "allgemeiner_schwerpunkt", columnDefinition = "TEXT")
-    private String allgemeinerSchwerpunkt;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "allgemeiner_schwerpunkt")
+    private AllgemeinerSchwerpunkt allgemeinerSchwerpunkt;
 
     @Email(message = "email must be a valid e-mail address")
     @Column(columnDefinition = "TEXT")

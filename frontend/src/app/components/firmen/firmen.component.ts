@@ -5,7 +5,7 @@ import { FirmaService } from '../../services/firma.service';
 import { AnsprechpartnerService } from '../../services/ansprechpartner.service';
 import { SuchauftragService } from '../../services/suchauftrag.service';
 import { VertragService } from '../../services/vertrag.service';
-import { Firma } from '../../models/firma.model';
+import { Firma, SCHWERPUNKT_OPTIONS } from '../../models/firma.model';
 import { Ansprechpartner } from '../../models/ansprechpartner.model';
 import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
 import { Vertrag } from '../../models/vertrag.model';
@@ -138,7 +138,10 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
             <input [(ngModel)]="draftFirma.standort" placeholder="Standort" />
           </label>
           <label>Allgemeiner Schwerpunkt
-            <input [(ngModel)]="draftFirma.allgemeinerSchwerpunkt" placeholder="Schwerpunkt" />
+            <select [(ngModel)]="draftFirma.allgemeinerSchwerpunkt">
+              <option value="" disabled>— auswählen —</option>
+              <option *ngFor="let s of schwerpunktOptions" [value]="s">{{ s }}</option>
+            </select>
           </label>
           <label>E-Mail
             <input type="email" [(ngModel)]="draftFirma.email" placeholder="info@beispiel.de" />
@@ -197,7 +200,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
       <!-- Add Suchauftrag Modal -->
       <div class="modal-backdrop" *ngIf="addSuchauftragOpen" (click)="addSuchauftragOpen = false">
         <div class="modal" (click)="$event.stopPropagation()">
-          <h2>{{ editingSuchauftragId ? 'Suchauftrag bearbeiten' : 'Neuer Suchauftrag' }}</h2>
+          <h2>{{ editingSuchauftragId ? 'Suchauftrag der ' + expandedFirma?.name + ' bearbeiten' : 'Neuer Suchauftrag für ' + expandedFirma?.name }}</h2>
           <label>Ansprechpartner *
             <select [(ngModel)]="draftSuchauftrag.ansprechpartnerId">
               <option value="" disabled>— auswählen —</option>
@@ -365,6 +368,7 @@ export class FirmenComponent implements OnInit {
   suchauftragList: Suchauftrag[] = [];
   vertragList: Vertrag[] = [];
 
+  readonly schwerpunktOptions = SCHWERPUNKT_OPTIONS;
   readonly aktivitaetOptions = AKTIVITAET_OPTIONS;
   readonly statusOptions = STATUS_OPTIONS;
 
