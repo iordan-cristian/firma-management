@@ -58,6 +58,7 @@ public class SuchauftragService {
             existing.setBranchenkenntnisse(input.getBranchenkenntnisse());
             existing.setZertifikate(input.getZertifikate());
             existing.setStatus(input.getStatus());
+            existing.setAnlageDatum(input.getAnlageDatum());
             return repo.save(existing);
         });
     }

@@ -94,7 +94,8 @@ CREATE TABLE suchauftrag (
     branchenkenntnisse   TEXT,
     zertifikate          TEXT,
     status               VARCHAR(32) NOT NULL
-        CHECK (status IN ('IN_ARBEIT', 'FERTIG'))
+        CHECK (status IN ('IN_ARBEIT', 'FERTIG')),
+    anlage_datum         DATE
 );
 
 CREATE INDEX idx_suchauftrag_ansprechpartner_id ON suchauftrag(ansprechpartner_id);

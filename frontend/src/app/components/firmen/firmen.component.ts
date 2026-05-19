@@ -91,6 +91,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                         <div class="card-row" *ngIf="s.berufserfahrung"><span>Berufserfahrung:</span> {{ s.berufserfahrung }}</div>
                         <div class="card-row" *ngIf="s.branchenkenntnisse"><span>Branchenkenntnisse:</span> {{ s.branchenkenntnisse }}</div>
                         <div class="card-row" *ngIf="s.zertifikate"><span>Zertifikate:</span> {{ s.zertifikate }}</div>
+                        <div class="card-row" *ngIf="s.anlageDatum"><span>Anlage Datum:</span> {{ s.anlageDatum }}</div>
                       </div>
                       <div *ngIf="!suchauftragList.length" class="empty">No Suchaufträge.</div>
                     </div>
@@ -233,6 +234,9 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
             <select [(ngModel)]="draftSuchauftrag.status">
               <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
             </select>
+          </label>
+          <label>Anlage Datum
+            <input type="date" [(ngModel)]="anlageDatumInput" />
           </label>
           <div class="modal-actions">
             <button class="btn-save" (click)="saveSuchauftrag()">Speichern</button>
@@ -378,6 +382,7 @@ export class FirmenComponent implements OnInit {
   addSuchauftragOpen = false;
   editingSuchauftragId: string | null = null;
   draftSuchauftrag: Partial<Suchauftrag> = {};
+  anlageDatumInput = '';
 
   // Add / Edit Vertrag
   addVertragOpen = false;
@@ -444,12 +449,22 @@ export class FirmenComponent implements OnInit {
   openAddSuchauftrag(): void {
     this.editingSuchauftragId = null;
     this.draftSuchauftrag = { aktivitaet: 'Investoren', status: 'in Arbeit' };
+    const now = new Date();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    this.anlageDatumInput = `${now.getFullYear()}-${m}-${d}`;
     this.ensureAnsprechpartnerLoaded(() => (this.addSuchauftragOpen = true));
   }
 
   openEditSuchauftrag(s: Suchauftrag): void {
     this.editingSuchauftragId = s.id ?? null;
     this.draftSuchauftrag = { ...s };
+    if (s.anlageDatum) {
+      const [d, m, y] = s.anlageDatum.split('/');
+      this.anlageDatumInput = `${y}-${m}-${d}`;
+    } else {
+      this.anlageDatumInput = '';
+    }
     this.ensureAnsprechpartnerLoaded(() => (this.addSuchauftragOpen = true));
   }
 
@@ -463,6 +478,12 @@ export class FirmenComponent implements OnInit {
 
   saveSuchauftrag(): void {
     if (!this.draftSuchauftrag.ansprechpartnerId) return;
+    if (this.anlageDatumInput) {
+      const [y, m, d] = this.anlageDatumInput.split('-');
+      this.draftSuchauftrag.anlageDatum = `${d}/${m}/${y}`;
+    } else {
+      this.draftSuchauftrag.anlageDatum = undefined;
+    }
     const refresh = () =>
       this.firmaService.getSuchauftragForFirma(this.expandedFirma!.id!).subscribe(list => (this.suchauftragList = list));
     if (this.editingSuchauftragId) {

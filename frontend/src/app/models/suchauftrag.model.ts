@@ -16,4 +16,5 @@ export interface Suchauftrag {
   branchenkenntnisse?: string;
   zertifikate?: string;
   status: SuchauftragStatus;
+  anlageDatum?: string;
 }
