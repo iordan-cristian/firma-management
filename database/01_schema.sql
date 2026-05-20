@@ -201,7 +201,10 @@ CREATE TABLE kandidat (
     wechselgruende                       TEXT,
     zukuenftige_position_taetigkeiten    TEXT,
     kuendigungsfrist                     TEXT,
-    erstes_online_meeting                TEXT
+    erstes_online_meeting                TEXT,
+
+    allgemeiner_schwerpunkt              VARCHAR(32)
+        CHECK (allgemeiner_schwerpunkt IN ('GEBAEUDETECHNIK', 'ENERGIETECHNIK', 'MASCHINENBAU', 'INFORMATIK', 'KAUFMAENNISCH'))
 );
 
 CREATE INDEX idx_kandidat_nachname ON kandidat(nachname);

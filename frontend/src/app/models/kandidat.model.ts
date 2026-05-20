@@ -1,3 +1,6 @@
+export { AllgemeinerSchwerpunkt, SCHWERPUNKT_OPTIONS } from './firma.model';
+import { AllgemeinerSchwerpunkt } from './firma.model';
+
 export type Geschlecht = 'männlich' | 'weiblich' | 'divers' | 'Bevorzuge nicht zu sagen';
 export type Titel = 'Dr.' | 'Ing.';
 export type Sprachniveau = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2' | 'Muttersprache';
@@ -41,4 +44,5 @@ export interface Kandidat {
   zukuenftigePositionTaetigkeiten?: string;
   kuendigungsfrist?: string;
   erstesOnlineMeeting?: string;
+  allgemeinerSchwerpunkt?: AllgemeinerSchwerpunkt;
 }

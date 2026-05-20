@@ -109,4 +109,8 @@ public class Kandidat {
 
     @Column(name = "erstes_online_meeting", columnDefinition = "TEXT")
     private String erstesOnlineMeeting;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "allgemeiner_schwerpunkt")
+    private AllgemeinerSchwerpunkt allgemeinerSchwerpunkt;
 }

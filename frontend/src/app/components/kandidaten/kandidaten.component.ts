@@ -8,6 +8,7 @@ import {
   TITEL_OPTIONS,
   SPRACHNIVEAU_OPTIONS,
   FUEHRERSCHEIN_OPTIONS,
+  SCHWERPUNKT_OPTIONS,
 } from '../../models/kandidat.model';
 
 @Component({
@@ -189,6 +190,12 @@ import {
             </div>
 
             <div class="section-title">Berufserfahrung</div>
+            <label>Allgemeiner Schwerpunkt
+              <select [(ngModel)]="draft.allgemeinerSchwerpunkt">
+                <option [ngValue]="undefined">–</option>
+                <option *ngFor="let o of schwerpunktOptions" [value]="o">{{ o }}</option>
+              </select>
+            </label>
             <label>Branchenkenntnisse
               <input [(ngModel)]="draft.branchenkenntnisse" placeholder="z.B. IT, Automotive" />
             </label>
@@ -286,6 +293,7 @@ export class KandidatenComponent implements OnInit {
   readonly titelOptions = TITEL_OPTIONS;
   readonly sprachniveauOptions = SPRACHNIVEAU_OPTIONS;
   readonly fuehrerscheinOptions = FUEHRERSCHEIN_OPTIONS;
+  readonly schwerpunktOptions = SCHWERPUNKT_OPTIONS;
 
   addModalOpen = false;
   editingId: string | null = null;
