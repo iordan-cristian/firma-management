@@ -10,7 +10,7 @@ import { Firma, SCHWERPUNKT_OPTIONS } from '../../models/firma.model';
 import { Ansprechpartner } from '../../models/ansprechpartner.model';
 import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
 import { Vertrag } from '../../models/vertrag.model';
-import { Kandidat } from '../../models/kandidat.model';
+import { Kandidat, GESCHLECHT_OPTIONS, TITEL_OPTIONS, SPRACHNIVEAU_OPTIONS, FUEHRERSCHEIN_OPTIONS } from '../../models/kandidat.model';
 
 type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
 
@@ -202,48 +202,50 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
       <!-- Add Suchauftrag Modal -->
       <div class="modal-backdrop" *ngIf="addSuchauftragOpen" (click)="closeSuchauftragModal()">
         <div [class]="matchedKandidatenOpen ? 'modal-duo' : ''" (click)="$event.stopPropagation()">
-          <div class="modal">
+          <div class="modal modal-suchauftrag">
             <h2>{{ editingSuchauftragId ? 'Suchauftrag der ' + expandedFirma?.name + ' bearbeiten' : 'Neuer Suchauftrag für ' + expandedFirma?.name }}</h2>
-            <label>Ansprechpartner *
-              <select [(ngModel)]="draftSuchauftrag.ansprechpartnerId">
-                <option value="" disabled>— auswählen —</option>
-                <option *ngFor="let a of ansprechpartnerList" [value]="a.id">{{ a.vorname }} {{ a.nachname }}</option>
-              </select>
-            </label>
-            <label>Aktivität *
-              <select [(ngModel)]="draftSuchauftrag.aktivitaet">
-                <option *ngFor="let k of aktivitaetOptions" [value]="k">{{ k }}</option>
-              </select>
-            </label>
-            <label>Auftrag
-              <input [(ngModel)]="draftSuchauftrag.auftragPlaceholder" placeholder="Beschreibung" />
-            </label>
-            <label>Ort
-              <input [(ngModel)]="draftSuchauftrag.ort" placeholder="Ort" />
-            </label>
-            <label>Fachlicher Skill
-              <input [(ngModel)]="draftSuchauftrag.fachlicherSkill" placeholder="z.B. Java, SAP, CAD" />
-            </label>
-            <label>Gehalt
-              <input [(ngModel)]="draftSuchauftrag.gehalt" placeholder="z.B. 60000-80000" />
-            </label>
-            <label>Berufserfahrung
-              <input [(ngModel)]="draftSuchauftrag.berufserfahrung" placeholder="z.B. 5+ Jahre" />
-            </label>
-            <label>Branchenkenntnisse
-              <input [(ngModel)]="draftSuchauftrag.branchenkenntnisse" placeholder="z.B. Automotive, IT" />
-            </label>
-            <label>Zertifikate
-              <input [(ngModel)]="draftSuchauftrag.zertifikate" placeholder="z.B. PMP, ISO 9001" />
-            </label>
-            <label>Status *
-              <select [(ngModel)]="draftSuchauftrag.status">
-                <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
-              </select>
-            </label>
-            <label>Anlage Datum
-              <input type="date" [(ngModel)]="anlageDatumInput" />
-            </label>
+            <div class="modal-form-content">
+              <label>Ansprechpartner *
+                <select [(ngModel)]="draftSuchauftrag.ansprechpartnerId">
+                  <option value="" disabled>— auswählen —</option>
+                  <option *ngFor="let a of ansprechpartnerList" [value]="a.id">{{ a.vorname }} {{ a.nachname }}</option>
+                </select>
+              </label>
+              <label>Aktivität *
+                <select [(ngModel)]="draftSuchauftrag.aktivitaet">
+                  <option *ngFor="let k of aktivitaetOptions" [value]="k">{{ k }}</option>
+                </select>
+              </label>
+              <label>Auftrag
+                <input [(ngModel)]="draftSuchauftrag.auftragPlaceholder" placeholder="Beschreibung" />
+              </label>
+              <label>Ort
+                <input [(ngModel)]="draftSuchauftrag.ort" placeholder="Ort" />
+              </label>
+              <label>Fachlicher Skill
+                <input [(ngModel)]="draftSuchauftrag.fachlicherSkill" placeholder="z.B. Java, SAP, CAD" />
+              </label>
+              <label>Gehalt
+                <input [(ngModel)]="draftSuchauftrag.gehalt" placeholder="z.B. 60000-80000" />
+              </label>
+              <label>Berufserfahrung
+                <input [(ngModel)]="draftSuchauftrag.berufserfahrung" placeholder="z.B. 5+ Jahre" />
+              </label>
+              <label>Branchenkenntnisse
+                <input [(ngModel)]="draftSuchauftrag.branchenkenntnisse" placeholder="z.B. Automotive, IT" />
+              </label>
+              <label>Zertifikate
+                <input [(ngModel)]="draftSuchauftrag.zertifikate" placeholder="z.B. PMP, ISO 9001" />
+              </label>
+              <label>Status *
+                <select [(ngModel)]="draftSuchauftrag.status">
+                  <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+                </select>
+              </label>
+              <label>Anlage Datum
+                <input type="date" [(ngModel)]="anlageDatumInput" />
+              </label>
+            </div>
             <div class="modal-actions">
               <button class="btn-save" (click)="saveSuchauftrag()">Speichern</button>
               <button class="btn-match" (click)="openMatchedKandidaten()">Match option</button>
@@ -255,11 +257,13 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
           <div class="modal modal-match" *ngIf="matchedKandidatenOpen">
             <div class="match-header">
               <h2>Matched Kandidaten</h2>
-              <button class="close" (click)="matchedKandidatenOpen = false">✕</button>
+              <button class="close" (click)="matchedKandidatenOpen = false; kandidatDetailOpen = false">✕</button>
             </div>
             <div *ngIf="!matchedKandidaten.length" class="empty">Keine Treffer gefunden.</div>
             <div class="match-list">
-              <div class="match-card" *ngFor="let k of matchedKandidaten">
+              <div class="match-card" *ngFor="let k of matchedKandidaten"
+                   (dblclick)="openKandidatDetail(k)"
+                   [class.match-card-selected]="selectedKandidat?.id === k.id">
                 <div class="card-title">{{ k.vorname }} {{ k.nachname }}</div>
                 <div class="card-row" *ngIf="k.aktuellePosition"><span>Position:</span> {{ k.aktuellePosition }}</div>
                 <div class="card-row" *ngIf="k.ort"><span>Ort:</span> {{ k.ort }}</div>
@@ -268,6 +272,117 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <div class="card-row" *ngIf="k.fachspezifischeZertifikate"><span>Zertifikate:</span> {{ k.fachspezifischeZertifikate }}</div>
                 <div class="card-row" *ngIf="k.allgemeinerSchwerpunkt"><span>Schwerpunkt:</span> {{ k.allgemeinerSchwerpunkt }}</div>
               </div>
+            </div>
+          </div>
+
+          <!-- Full Kandidat detail panel -->
+          <div class="modal modal-kandidat-detail" *ngIf="kandidatDetailOpen">
+            <div class="match-header">
+              <h2>{{ draftKandidat.vorname }} {{ draftKandidat.nachname }}</h2>
+              <button class="close" (click)="kandidatDetailOpen = false">✕</button>
+            </div>
+            <div class="modal-form-content">
+              <div class="k-section">Persönliche Daten</div>
+              <div class="form-row">
+                <label>Geschlecht
+                  <select [(ngModel)]="draftKandidat.geschlecht">
+                    <option [ngValue]="undefined">–</option>
+                    <option *ngFor="let o of geschlechtOptions" [value]="o">{{ o }}</option>
+                  </select>
+                </label>
+                <label>Titel
+                  <select [(ngModel)]="draftKandidat.titel">
+                    <option [ngValue]="undefined">–</option>
+                    <option *ngFor="let o of titelOptions" [value]="o">{{ o }}</option>
+                  </select>
+                </label>
+              </div>
+              <div class="form-row">
+                <label>Vorname <input [(ngModel)]="draftKandidat.vorname" /></label>
+                <label>Nachname <input [(ngModel)]="draftKandidat.nachname" /></label>
+              </div>
+              <div class="form-row">
+                <label>PLZ <input type="number" [(ngModel)]="draftKandidat.postleitzahl" /></label>
+                <label>Ort <input [(ngModel)]="draftKandidat.ort" /></label>
+              </div>
+              <div class="form-row">
+                <label>Geburtsjahr <input type="number" [(ngModel)]="draftKandidat.geburtsjahr" /></label>
+                <label>Staatsangehörigkeit <input [(ngModel)]="draftKandidat.staatsangehoerigkeit" /></label>
+              </div>
+              <div class="form-row">
+                <label>Familienstand <input [(ngModel)]="draftKandidat.familienstand" /></label>
+                <label>Kinder <input [(ngModel)]="draftKandidat.kinder" /></label>
+              </div>
+
+              <div class="k-section">Berufliche Anforderungen</div>
+              <div class="form-row">
+                <label>Wochenstunden <input [(ngModel)]="draftKandidat.wochenstunden" /></label>
+                <label>Gehaltsrange <input [(ngModel)]="draftKandidat.gehaltsrange" /></label>
+              </div>
+              <div class="form-row">
+                <label>Wochenendbereitschaft <input [(ngModel)]="draftKandidat.wochenendbereitschaft" /></label>
+                <label>Homeoffice <input [(ngModel)]="draftKandidat.homeoffice" /></label>
+              </div>
+              <div class="form-row">
+                <label>Firmenwagen <input [(ngModel)]="draftKandidat.firmenwagenregelung" /></label>
+                <label>Reisen m. Übernachtung <input [(ngModel)]="draftKandidat.reisetaetigkeitenMitUebernachtung" /></label>
+              </div>
+              <label>Tägliche Fahrzeit (Min.) <input type="number" [(ngModel)]="draftKandidat.taeglicheFahrzeit" /></label>
+
+              <div class="k-section">Sprachkenntnisse</div>
+              <div class="form-row">
+                <label>Deutsch
+                  <select [(ngModel)]="draftKandidat.deutsch">
+                    <option [ngValue]="undefined">–</option>
+                    <option *ngFor="let o of sprachniveauOptions" [value]="o">{{ o }}</option>
+                  </select>
+                </label>
+                <label>Englisch
+                  <select [(ngModel)]="draftKandidat.englisch">
+                    <option [ngValue]="undefined">–</option>
+                    <option *ngFor="let o of sprachniveauOptions" [value]="o">{{ o }}</option>
+                  </select>
+                </label>
+              </div>
+              <label>Sonstige Sprachen <input [(ngModel)]="draftKandidat.sonstigeSprachen" /></label>
+
+              <div class="k-section">Qualifikationen</div>
+              <div class="form-row">
+                <label>Hochschulabschluss <input [(ngModel)]="draftKandidat.hochschulabschluss" /></label>
+                <label>Berufsausbildung <input [(ngModel)]="draftKandidat.berufsausbildung" /></label>
+              </div>
+              <div class="form-row">
+                <label>Autoführerschein
+                  <select [(ngModel)]="draftKandidat.autofuehrerschein">
+                    <option [ngValue]="undefined">–</option>
+                    <option *ngFor="let o of fuehrerscheinOptions" [value]="o">{{ o }}</option>
+                  </select>
+                </label>
+                <label>Zertifikate <input [(ngModel)]="draftKandidat.fachspezifischeZertifikate" /></label>
+              </div>
+
+              <div class="k-section">Berufserfahrung</div>
+              <label>Allgemeiner Schwerpunkt
+                <select [(ngModel)]="draftKandidat.allgemeinerSchwerpunkt">
+                  <option [ngValue]="undefined">–</option>
+                  <option *ngFor="let o of schwerpunktOptions" [value]="o">{{ o }}</option>
+                </select>
+              </label>
+              <label>Branchenkenntnisse <input [(ngModel)]="draftKandidat.branchenkenntnisse" /></label>
+              <label>Aktuelle Tätigkeiten <input [(ngModel)]="draftKandidat.aktuelleTaetigkeiten" /></label>
+              <label>Aktuelle Position <input [(ngModel)]="draftKandidat.aktuellePosition" /></label>
+
+              <div class="k-section">Wechsel &amp; Zukunft</div>
+              <label>Wechselgründe <input [(ngModel)]="draftKandidat.wechselgruende" /></label>
+              <label>Zukünftige Position <input [(ngModel)]="draftKandidat.zukuenftigePositionTaetigkeiten" /></label>
+              <div class="form-row">
+                <label>Kündigungsfrist <input [(ngModel)]="draftKandidat.kuendigungsfrist" /></label>
+                <label>Erstes Online-Meeting <input [(ngModel)]="draftKandidat.erstesOnlineMeeting" /></label>
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button class="btn-save" (click)="saveKandidatDetail()">Speichern</button>
+              <button class="btn-cancel" (click)="kandidatDetailOpen = false">Abbrechen</button>
             </div>
           </div>
         </div>
@@ -375,12 +490,18 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .btn-cancel { background: transparent; border: 1px solid #dfe3ee; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
 
     .modal-duo { display: flex; gap: 20px; align-items: stretch; }
+    .modal-suchauftrag { display: flex; flex-direction: column; overflow: hidden; }
+    .modal-form-content { overflow-y: auto; flex: 1; }
     .modal-match { width: 400px; flex-shrink: 0; display: flex; flex-direction: column; }
     .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .match-header h2 { margin: 0; color: #1f2a44; font-size: 18px; }
     .match-list { display: flex; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto; }
-    .match-card { background: #f8f9ff; border: 1px solid #e5e9f3; border-radius: 8px; padding: 12px; }
+    .match-card { background: #f8f9ff; border: 1px solid #e5e9f3; border-radius: 8px; padding: 12px; cursor: pointer; }
     .match-card:hover { border-color: #3b5bdb; }
+    .match-card-selected { border-color: #3b5bdb; background: #eef2fb; }
+    .modal-kandidat-detail { width: 540px; flex-shrink: 0; display: flex; flex-direction: column; }
+    .k-section { font-size: 12px; font-weight: 700; color: #3b5bdb; text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0 8px; border-bottom: 1px solid #e5e9f3; padding-bottom: 4px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   `]
 })
 export class FirmenComponent implements OnInit {
@@ -407,6 +528,10 @@ export class FirmenComponent implements OnInit {
   readonly schwerpunktOptions = SCHWERPUNKT_OPTIONS;
   readonly aktivitaetOptions = AKTIVITAET_OPTIONS;
   readonly statusOptions = STATUS_OPTIONS;
+  readonly geschlechtOptions = GESCHLECHT_OPTIONS;
+  readonly titelOptions = TITEL_OPTIONS;
+  readonly sprachniveauOptions = SPRACHNIVEAU_OPTIONS;
+  readonly fuehrerscheinOptions = FUEHRERSCHEIN_OPTIONS;
 
   // Add / Edit Firma
   addFirmaOpen = false;
@@ -425,6 +550,9 @@ export class FirmenComponent implements OnInit {
   anlageDatumInput = '';
   matchedKandidatenOpen = false;
   matchedKandidaten: Kandidat[] = [];
+  kandidatDetailOpen = false;
+  selectedKandidat: Kandidat | null = null;
+  draftKandidat: Partial<Kandidat> = {};
 
   // Add / Edit Vertrag
   addVertragOpen = false;
@@ -522,11 +650,29 @@ export class FirmenComponent implements OnInit {
     this.addSuchauftragOpen = false;
     this.matchedKandidatenOpen = false;
     this.matchedKandidaten = [];
+    this.kandidatDetailOpen = false;
+    this.selectedKandidat = null;
+    this.draftKandidat = {};
   }
 
   openMatchedKandidaten(): void {
     this.matchedKandidatenOpen = true;
     this.kandidatService.getAll().subscribe(list => (this.matchedKandidaten = list));
+  }
+
+  openKandidatDetail(k: Kandidat): void {
+    this.selectedKandidat = k;
+    this.draftKandidat = { ...k };
+    this.kandidatDetailOpen = true;
+  }
+
+  saveKandidatDetail(): void {
+    if (!this.selectedKandidat?.id) return;
+    this.kandidatService.update(this.selectedKandidat.id, this.draftKandidat as Kandidat).subscribe(updated => {
+      this.matchedKandidaten = this.matchedKandidaten.map(k => k.id === updated.id ? updated : k);
+      this.kandidatDetailOpen = false;
+      this.selectedKandidat = null;
+    });
   }
 
   saveSuchauftrag(): void {
