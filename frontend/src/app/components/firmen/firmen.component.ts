@@ -5,10 +5,12 @@ import { FirmaService } from '../../services/firma.service';
 import { AnsprechpartnerService } from '../../services/ansprechpartner.service';
 import { SuchauftragService } from '../../services/suchauftrag.service';
 import { VertragService } from '../../services/vertrag.service';
+import { KandidatService } from '../../services/kandidat.service';
 import { Firma, SCHWERPUNKT_OPTIONS } from '../../models/firma.model';
 import { Ansprechpartner } from '../../models/ansprechpartner.model';
 import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
 import { Vertrag } from '../../models/vertrag.model';
+import { Kandidat } from '../../models/kandidat.model';
 
 type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
 
@@ -198,52 +200,75 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
       </div>
 
       <!-- Add Suchauftrag Modal -->
-      <div class="modal-backdrop" *ngIf="addSuchauftragOpen" (click)="addSuchauftragOpen = false">
-        <div class="modal" (click)="$event.stopPropagation()">
-          <h2>{{ editingSuchauftragId ? 'Suchauftrag der ' + expandedFirma?.name + ' bearbeiten' : 'Neuer Suchauftrag für ' + expandedFirma?.name }}</h2>
-          <label>Ansprechpartner *
-            <select [(ngModel)]="draftSuchauftrag.ansprechpartnerId">
-              <option value="" disabled>— auswählen —</option>
-              <option *ngFor="let a of ansprechpartnerList" [value]="a.id">{{ a.vorname }} {{ a.nachname }}</option>
-            </select>
-          </label>
-          <label>Aktivität *
-            <select [(ngModel)]="draftSuchauftrag.aktivitaet">
-              <option *ngFor="let k of aktivitaetOptions" [value]="k">{{ k }}</option>
-            </select>
-          </label>
-          <label>Auftrag
-            <input [(ngModel)]="draftSuchauftrag.auftragPlaceholder" placeholder="Beschreibung" />
-          </label>
-          <label>Ort
-            <input [(ngModel)]="draftSuchauftrag.ort" placeholder="Ort" />
-          </label>
-          <label>Fachlicher Skill
-            <input [(ngModel)]="draftSuchauftrag.fachlicherSkill" placeholder="z.B. Java, SAP, CAD" />
-          </label>
-          <label>Gehalt
-            <input [(ngModel)]="draftSuchauftrag.gehalt" placeholder="z.B. 60000-80000" />
-          </label>
-          <label>Berufserfahrung
-            <input [(ngModel)]="draftSuchauftrag.berufserfahrung" placeholder="z.B. 5+ Jahre" />
-          </label>
-          <label>Branchenkenntnisse
-            <input [(ngModel)]="draftSuchauftrag.branchenkenntnisse" placeholder="z.B. Automotive, IT" />
-          </label>
-          <label>Zertifikate
-            <input [(ngModel)]="draftSuchauftrag.zertifikate" placeholder="z.B. PMP, ISO 9001" />
-          </label>
-          <label>Status *
-            <select [(ngModel)]="draftSuchauftrag.status">
-              <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
-            </select>
-          </label>
-          <label>Anlage Datum
-            <input type="date" [(ngModel)]="anlageDatumInput" />
-          </label>
-          <div class="modal-actions">
-            <button class="btn-save" (click)="saveSuchauftrag()">Speichern</button>
-            <button class="btn-cancel" (click)="addSuchauftragOpen = false">Abbrechen</button>
+      <div class="modal-backdrop" *ngIf="addSuchauftragOpen" (click)="closeSuchauftragModal()">
+        <div [class]="matchedKandidatenOpen ? 'modal-duo' : ''" (click)="$event.stopPropagation()">
+          <div class="modal">
+            <h2>{{ editingSuchauftragId ? 'Suchauftrag der ' + expandedFirma?.name + ' bearbeiten' : 'Neuer Suchauftrag für ' + expandedFirma?.name }}</h2>
+            <label>Ansprechpartner *
+              <select [(ngModel)]="draftSuchauftrag.ansprechpartnerId">
+                <option value="" disabled>— auswählen —</option>
+                <option *ngFor="let a of ansprechpartnerList" [value]="a.id">{{ a.vorname }} {{ a.nachname }}</option>
+              </select>
+            </label>
+            <label>Aktivität *
+              <select [(ngModel)]="draftSuchauftrag.aktivitaet">
+                <option *ngFor="let k of aktivitaetOptions" [value]="k">{{ k }}</option>
+              </select>
+            </label>
+            <label>Auftrag
+              <input [(ngModel)]="draftSuchauftrag.auftragPlaceholder" placeholder="Beschreibung" />
+            </label>
+            <label>Ort
+              <input [(ngModel)]="draftSuchauftrag.ort" placeholder="Ort" />
+            </label>
+            <label>Fachlicher Skill
+              <input [(ngModel)]="draftSuchauftrag.fachlicherSkill" placeholder="z.B. Java, SAP, CAD" />
+            </label>
+            <label>Gehalt
+              <input [(ngModel)]="draftSuchauftrag.gehalt" placeholder="z.B. 60000-80000" />
+            </label>
+            <label>Berufserfahrung
+              <input [(ngModel)]="draftSuchauftrag.berufserfahrung" placeholder="z.B. 5+ Jahre" />
+            </label>
+            <label>Branchenkenntnisse
+              <input [(ngModel)]="draftSuchauftrag.branchenkenntnisse" placeholder="z.B. Automotive, IT" />
+            </label>
+            <label>Zertifikate
+              <input [(ngModel)]="draftSuchauftrag.zertifikate" placeholder="z.B. PMP, ISO 9001" />
+            </label>
+            <label>Status *
+              <select [(ngModel)]="draftSuchauftrag.status">
+                <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+              </select>
+            </label>
+            <label>Anlage Datum
+              <input type="date" [(ngModel)]="anlageDatumInput" />
+            </label>
+            <div class="modal-actions">
+              <button class="btn-save" (click)="saveSuchauftrag()">Speichern</button>
+              <button class="btn-match" (click)="openMatchedKandidaten()">Match option</button>
+              <button class="btn-cancel" (click)="closeSuchauftragModal()">Abbrechen</button>
+            </div>
+          </div>
+
+          <!-- Matched Kandidaten panel -->
+          <div class="modal modal-match" *ngIf="matchedKandidatenOpen">
+            <div class="match-header">
+              <h2>Matched Kandidaten</h2>
+              <button class="close" (click)="matchedKandidatenOpen = false">✕</button>
+            </div>
+            <div *ngIf="!matchedKandidaten.length" class="empty">Keine Treffer gefunden.</div>
+            <div class="match-list">
+              <div class="match-card" *ngFor="let k of matchedKandidaten">
+                <div class="card-title">{{ k.vorname }} {{ k.nachname }}</div>
+                <div class="card-row" *ngIf="k.aktuellePosition"><span>Position:</span> {{ k.aktuellePosition }}</div>
+                <div class="card-row" *ngIf="k.ort"><span>Ort:</span> {{ k.ort }}</div>
+                <div class="card-row" *ngIf="k.gehaltsrange"><span>Gehalt:</span> {{ k.gehaltsrange }}</div>
+                <div class="card-row" *ngIf="k.branchenkenntnisse"><span>Branche:</span> {{ k.branchenkenntnisse }}</div>
+                <div class="card-row" *ngIf="k.fachspezifischeZertifikate"><span>Zertifikate:</span> {{ k.fachspezifischeZertifikate }}</div>
+                <div class="card-row" *ngIf="k.allgemeinerSchwerpunkt"><span>Schwerpunkt:</span> {{ k.allgemeinerSchwerpunkt }}</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -345,7 +370,17 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
     .btn-save { background: #3b5bdb; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
     .btn-save:hover { background: #2f4ac7; }
+    .btn-match { background: #2f9e44; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
+    .btn-match:hover { background: #258836; }
     .btn-cancel { background: transparent; border: 1px solid #dfe3ee; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
+
+    .modal-duo { display: flex; gap: 20px; align-items: stretch; }
+    .modal-match { width: 400px; flex-shrink: 0; display: flex; flex-direction: column; }
+    .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .match-header h2 { margin: 0; color: #1f2a44; font-size: 18px; }
+    .match-list { display: flex; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto; }
+    .match-card { background: #f8f9ff; border: 1px solid #e5e9f3; border-radius: 8px; padding: 12px; }
+    .match-card:hover { border-color: #3b5bdb; }
   `]
 })
 export class FirmenComponent implements OnInit {
@@ -353,6 +388,7 @@ export class FirmenComponent implements OnInit {
   private ansprechpartnerService = inject(AnsprechpartnerService);
   private suchauftragService = inject(SuchauftragService);
   private vertragService = inject(VertragService);
+  private kandidatService = inject(KandidatService);
 
   firmen: Firma[] = [];
   selectedFirma: Firma | null = null;
@@ -387,6 +423,8 @@ export class FirmenComponent implements OnInit {
   editingSuchauftragId: string | null = null;
   draftSuchauftrag: Partial<Suchauftrag> = {};
   anlageDatumInput = '';
+  matchedKandidatenOpen = false;
+  matchedKandidaten: Kandidat[] = [];
 
   // Add / Edit Vertrag
   addVertragOpen = false;
@@ -480,6 +518,17 @@ export class FirmenComponent implements OnInit {
     });
   }
 
+  closeSuchauftragModal(): void {
+    this.addSuchauftragOpen = false;
+    this.matchedKandidatenOpen = false;
+    this.matchedKandidaten = [];
+  }
+
+  openMatchedKandidaten(): void {
+    this.matchedKandidatenOpen = true;
+    this.kandidatService.getAll().subscribe(list => (this.matchedKandidaten = list));
+  }
+
   saveSuchauftrag(): void {
     if (!this.draftSuchauftrag.ansprechpartnerId) return;
     if (this.anlageDatumInput) {
@@ -492,11 +541,11 @@ export class FirmenComponent implements OnInit {
       this.firmaService.getSuchauftragForFirma(this.expandedFirma!.id!).subscribe(list => (this.suchauftragList = list));
     if (this.editingSuchauftragId) {
       this.suchauftragService.update(this.editingSuchauftragId, this.draftSuchauftrag as Suchauftrag).subscribe(() => {
-        refresh(); this.addSuchauftragOpen = false; this.editingSuchauftragId = null;
+        refresh(); this.closeSuchauftragModal(); this.editingSuchauftragId = null;
       });
     } else {
       this.suchauftragService.create(this.draftSuchauftrag as Suchauftrag).subscribe(() => {
-        refresh(); this.addSuchauftragOpen = false;
+        refresh(); this.closeSuchauftragModal();
       });
     }
   }
