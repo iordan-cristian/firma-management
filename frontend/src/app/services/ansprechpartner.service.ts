@@ -3,11 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Ansprechpartner } from '../models/ansprechpartner.model';
 import { Vertrag } from '../models/vertrag.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AnsprechpartnerService {
   private http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/ansprechpartner';
+  private readonly baseUrl = `${environment.apiUrl}/api/ansprechpartner`;
 
   getAll(): Observable<Ansprechpartner[]> { return this.http.get<Ansprechpartner[]>(this.baseUrl); }
   getById(id: string): Observable<Ansprechpartner> { return this.http.get<Ansprechpartner>(`${this.baseUrl}/${id}`); }

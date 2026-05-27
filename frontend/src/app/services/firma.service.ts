@@ -5,11 +5,12 @@ import { Firma } from '../models/firma.model';
 import { Ansprechpartner } from '../models/ansprechpartner.model';
 import { Suchauftrag } from '../models/suchauftrag.model';
 import { Vertrag } from '../models/vertrag.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class FirmaService {
   private http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/firma';
+  private readonly baseUrl = `${environment.apiUrl}/api/firma`;
 
   getAll(): Observable<Firma[]> { return this.http.get<Firma[]>(this.baseUrl); }
   getById(id: string): Observable<Firma> { return this.http.get<Firma>(`${this.baseUrl}/${id}`); }

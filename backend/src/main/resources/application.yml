@@ -7,7 +7,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/firma_management?options=-c%20client_encoding%3DUTF8
     username: postgres
-    password: postgres
+    password: admin
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

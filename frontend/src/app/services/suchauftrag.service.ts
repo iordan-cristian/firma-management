@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Suchauftrag, SuchauftragStatus } from '../models/suchauftrag.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class SuchauftragService {
   private http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/suchauftrag';
+  private readonly baseUrl = `${environment.apiUrl}/api/suchauftrag`;
 
   getAll(status?: SuchauftragStatus): Observable<Suchauftrag[]> {
     let params = new HttpParams();
