@@ -5,7 +5,7 @@ import { Firma } from '../models/firma.model';
 import { Ansprechpartner } from '../models/ansprechpartner.model';
 import { Suchauftrag } from '../models/suchauftrag.model';
 import { Vertrag } from '../models/vertrag.model';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class FirmaService {
