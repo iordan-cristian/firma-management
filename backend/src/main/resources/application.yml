@@ -5,9 +5,9 @@ spring:
   application:
     name: firma-management
   datasource:
-    url: jdbc:postgresql://localhost:5432/firma_management?options=-c%20client_encoding%3DUTF8
-    username: postgres
-    password: admin
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/firma_management?options=-c%20client_encoding%3DUTF8}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -21,12 +21,11 @@ spring:
 
 app:
   jwt:
-    # Replace with a strong, base64-encoded 256-bit key in production.
-    secret: ZmlybWFNYW5hZ2VtZW50RGV2U2VjcmV0S2V5MTIzNDU2Nzg5MDEyMzQ1Ng==
+    secret: ${JWT_SECRET:ZmlybWFNYW5hZ2VtZW50RGV2U2VjcmV0S2V5MTIzNDU2Nzg5MDEyMzQ1Ng==}
     expiration-ms: 86400000   # 24h
   admin:
-    username: admin
-    password: admin
+    username: ${ADMIN_USERNAME:admin}
+    password: ${ADMIN_PASSWORD:admin}
 
 logging:
   level:
