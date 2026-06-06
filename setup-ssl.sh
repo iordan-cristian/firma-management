@@ -33,7 +33,7 @@ rm -rf ./certbot/conf/live/$DOMAIN
 
 # Get the real certificate from Let's Encrypt
 echo "==> Requesting Let's Encrypt certificate..."
-docker compose run --rm certbot certonly \
+docker compose run --rm --entrypoint "" certbot certbot certonly \
     --webroot \
     --webroot-path /var/www/certbot \
     --email "$LETSENCRYPT_EMAIL" \
