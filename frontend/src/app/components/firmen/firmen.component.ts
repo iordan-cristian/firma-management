@@ -238,7 +238,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <input [(ngModel)]="draftSuchauftrag.ort" placeholder="Ort" />
               </label>
               <label>Fachlicher Skill
-                <input [(ngModel)]="draftSuchauftrag.fachlicherSkill" placeholder="z.B. Java, SAP, CAD" />
+                <textarea rows="4" [(ngModel)]="draftSuchauftrag.fachlicherSkill" placeholder="z.B. Java, SAP, CAD"></textarea>
               </label>
               <label>Gehalt
                 <input [(ngModel)]="draftSuchauftrag.gehalt" placeholder="z.B. 60000-80000" />
@@ -247,7 +247,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <input [(ngModel)]="draftSuchauftrag.berufserfahrung" placeholder="z.B. 5+ Jahre" />
               </label>
               <label>Branchenkenntnisse
-                <input [(ngModel)]="draftSuchauftrag.branchenkenntnisse" placeholder="z.B. Automotive, IT" />
+                <textarea rows="4" [(ngModel)]="draftSuchauftrag.branchenkenntnisse" placeholder="z.B. Automotive, IT"></textarea>
               </label>
               <label>Zertifikate
                 <input [(ngModel)]="draftSuchauftrag.zertifikate" placeholder="z.B. PMP, ISO 9001" />
@@ -384,8 +384,8 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   <option *ngFor="let o of schwerpunktOptions" [value]="o">{{ o }}</option>
                 </select>
               </label>
-              <label>Fachlicher Skill <input [(ngModel)]="draftKandidat.fachlicherSkill" placeholder="Fachlicher Skill" /></label>
-              <label>Branchenkenntnisse <input [(ngModel)]="draftKandidat.branchenkenntnisse" /></label>
+              <label>Fachlicher Skill <textarea rows="4" [(ngModel)]="draftKandidat.fachlicherSkill" placeholder="Fachlicher Skill"></textarea></label>
+              <label>Branchenkenntnisse <textarea rows="4" [(ngModel)]="draftKandidat.branchenkenntnisse"></textarea></label>
               <label>Aktuelle Tätigkeiten <input [(ngModel)]="draftKandidat.aktuelleTaetigkeiten" /></label>
               <label>Aktuelle Position <input [(ngModel)]="draftKandidat.aktuellePosition" /></label>
 

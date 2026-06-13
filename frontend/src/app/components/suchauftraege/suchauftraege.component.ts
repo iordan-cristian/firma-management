@@ -63,7 +63,7 @@ import { Ansprechpartner } from '../../models/ansprechpartner.model';
             <input [(ngModel)]="draft.ort" placeholder="Ort" />
           </label>
           <label>Fachlicher Skill
-            <input [(ngModel)]="draft.fachlicherSkill" placeholder="z.B. Java, SAP, CAD" />
+            <textarea rows="4" [(ngModel)]="draft.fachlicherSkill" placeholder="z.B. Java, SAP, CAD"></textarea>
           </label>
           <label>Gehalt
             <input [(ngModel)]="draft.gehalt" placeholder="z.B. 60000-80000" />
@@ -72,7 +72,7 @@ import { Ansprechpartner } from '../../models/ansprechpartner.model';
             <input [(ngModel)]="draft.berufserfahrung" placeholder="z.B. 5+ Jahre" />
           </label>
           <label>Branchenkenntnisse
-            <input [(ngModel)]="draft.branchenkenntnisse" placeholder="z.B. Automotive, IT" />
+            <textarea rows="4" [(ngModel)]="draft.branchenkenntnisse" placeholder="z.B. Automotive, IT"></textarea>
           </label>
           <label>Zertifikate
             <input [(ngModel)]="draft.zertifikate" placeholder="z.B. PMP, ISO 9001" />
@@ -118,8 +118,9 @@ import { Ansprechpartner } from '../../models/ansprechpartner.model';
     }
     .modal h2 { margin: 0 0 20px; color: #1f2a44; font-size: 18px; }
     .modal label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #555; margin-bottom: 14px; }
-    .modal input, .modal select { padding: 8px 10px; border: 1px solid #dfe3ee; border-radius: 6px; font-size: 14px; }
-    .modal input:focus, .modal select:focus { outline: none; border-color: #3b5bdb; }
+    .modal input, .modal select, .modal textarea { padding: 8px 10px; border: 1px solid #dfe3ee; border-radius: 6px; font-size: 14px; font-family: inherit; }
+    .modal input:focus, .modal select:focus, .modal textarea:focus { outline: none; border-color: #3b5bdb; }
+    .modal textarea { resize: vertical; }
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
     .btn-save { background: #3b5bdb; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
     .btn-save:hover { background: #2f4ac7; }

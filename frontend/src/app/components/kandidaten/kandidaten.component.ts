@@ -201,10 +201,10 @@ import {
               </select>
             </label>
             <label>Fachlicher Skill
-              <input [(ngModel)]="draft.fachlicherSkill" placeholder="Fachlicher Skill" />
+              <textarea rows="4" [(ngModel)]="draft.fachlicherSkill" placeholder="Fachlicher Skill"></textarea>
             </label>
             <label>Branchenkenntnisse
-              <input [(ngModel)]="draft.branchenkenntnisse" placeholder="z.B. IT, Automotive" />
+              <textarea rows="4" [(ngModel)]="draft.branchenkenntnisse" placeholder="z.B. IT, Automotive"></textarea>
             </label>
             <label>Aktuelle Tätigkeiten
               <input [(ngModel)]="draft.aktuelleTaetigkeiten" placeholder="Aktuelle Tätigkeiten" />
@@ -311,11 +311,12 @@ import {
     .section-title:first-child { margin-top: 0; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #555; margin-bottom: 12px; }
-    input, select {
+    input, select, textarea {
       padding: 7px 10px; border: 1px solid #dfe3ee; border-radius: 6px;
       font-size: 13px; background: white;
     }
-    input:focus, select:focus { outline: none; border-color: #3b5bdb; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #3b5bdb; }
+    textarea { resize: vertical; font-family: inherit; }
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; flex-shrink: 0; }
     .btn-save { background: #3b5bdb; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; }
     .btn-save:hover { background: #2f4ac7; }
