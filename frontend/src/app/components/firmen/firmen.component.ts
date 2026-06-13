@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FirmaService } from '../../services/firma.service';
@@ -129,8 +129,8 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
       </div>
 
       <!-- Add Firma Modal -->
-      <div class="modal-backdrop" *ngIf="addFirmaOpen" (click)="closeAddModal()">
-        <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-backdrop" *ngIf="addFirmaOpen">
+        <div class="modal">
           <h2>{{ editingFirmaId ? 'Firma bearbeiten' : 'Neue Firma' }}</h2>
           <label>Name
             <input [(ngModel)]="draftFirma.name" placeholder="Firmenname" />
@@ -161,8 +161,8 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
       </div>
 
       <!-- Add Ansprechpartner Modal -->
-      <div class="modal-backdrop" *ngIf="addAnsprechpartnerOpen" (click)="addAnsprechpartnerOpen = false">
-        <div class="modal modal-wide" (click)="$event.stopPropagation()">
+      <div class="modal-backdrop" *ngIf="addAnsprechpartnerOpen">
+        <div class="modal modal-wide">
           <h2>{{ editingAnsprechpartnerId ? 'Ansprechpartner bearbeiten' : 'Neuer Ansprechpartner' }}</h2>
           <label>Vorname
             <input [(ngModel)]="draftAnsprechpartner.vorname" placeholder="Vorname" />
@@ -199,8 +199,8 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
       </div>
 
       <!-- Add Suchauftrag Modal -->
-      <div class="modal-backdrop" *ngIf="addSuchauftragOpen" (click)="closeSuchauftragModal()">
-        <div [class]="matchedKandidatenOpen ? 'modal-duo' : ''" (click)="$event.stopPropagation()">
+      <div class="modal-backdrop" *ngIf="addSuchauftragOpen">
+        <div [class]="matchedKandidatenOpen ? 'modal-duo' : ''">
           <div class="modal modal-suchauftrag">
             <h2>{{ editingSuchauftragId ? 'Suchauftrag der ' + expandedFirma?.name + ' bearbeiten' : 'Neuer Suchauftrag für ' + expandedFirma?.name }}</h2>
             <div class="modal-form-content">
@@ -387,8 +387,8 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
       </div>
 
       <!-- Add Vertrag Modal -->
-      <div class="modal-backdrop" *ngIf="addVertragOpen" (click)="addVertragOpen = false">
-        <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-backdrop" *ngIf="addVertragOpen">
+        <div class="modal">
           <h2>{{ editingVertragId ? 'Vertrag bearbeiten' : 'Neuer Vertrag' }}</h2>
           <label>Ansprechpartner ID *
             <input [(ngModel)]="draftVertrag.ansprechpartnerId" placeholder="UUID" />
@@ -564,6 +564,14 @@ export class FirmenComponent implements OnInit {
 
   // ── Firma ────────────────────────────────────────────────
   openAddModal(): void { this.editingFirmaId = null; this.draftFirma = {}; this.addFirmaOpen = true; }
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.addFirmaOpen) this.closeAddModal();
+    else if (this.addAnsprechpartnerOpen) this.addAnsprechpartnerOpen = false;
+    else if (this.addSuchauftragOpen) this.closeSuchauftragModal();
+    else if (this.addVertragOpen) this.addVertragOpen = false;
+  }
+
   closeAddModal(): void { this.addFirmaOpen = false; }
 
   openEditFirma(f: Firma): void {

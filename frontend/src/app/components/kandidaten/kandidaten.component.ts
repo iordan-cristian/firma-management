@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { KandidatService } from '../../services/kandidat.service';
@@ -65,8 +65,8 @@ import {
       </div>
 
       <!-- Add / Edit Kandidat Modal -->
-      <div class="modal-backdrop" *ngIf="addModalOpen" (click)="closeAddModal()">
-        <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-backdrop" *ngIf="addModalOpen">
+        <div class="modal">
           <h2>{{ editingId ? 'Kandidat bearbeiten' : 'Neuer Kandidat' }}</h2>
           <div class="modal-body">
 
@@ -338,6 +338,9 @@ export class KandidatenComponent implements OnInit {
     this.draft = { ...k };
     this.addModalOpen = true;
   }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void { if (this.addModalOpen) this.closeAddModal(); }
 
   closeAddModal(): void {
     this.addModalOpen = false;

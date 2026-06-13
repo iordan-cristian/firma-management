@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -162,6 +162,9 @@ export class VertraegeComponent implements OnInit {
     }
     this.addModalOpen = true;
   }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void { if (this.addModalOpen) this.closeAddModal(); }
 
   closeAddModal(): void { this.addModalOpen = false; }
 

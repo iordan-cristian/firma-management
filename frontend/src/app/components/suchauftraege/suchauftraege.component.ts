@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SuchauftragService } from '../../services/suchauftrag.service';
@@ -45,8 +45,8 @@ import { Ansprechpartner } from '../../models/ansprechpartner.model';
       </div>
 
       <!-- Add Suchauftrag Modal -->
-      <div class="modal-backdrop" *ngIf="addModalOpen" (click)="closeAddModal()">
-        <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-backdrop" *ngIf="addModalOpen">
+        <div class="modal">
           <h2>{{ editingId ? 'Suchauftrag bearbeiten' : 'Neuer Suchauftrag' }}</h2>
           <label>Ansprechpartner *
             <select [(ngModel)]="draft.ansprechpartnerId">
@@ -176,6 +176,9 @@ export class SuchauftraegeComponent implements OnInit {
     this.draft = { ...s };
     this.addModalOpen = true;
   }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void { if (this.addModalOpen) this.closeAddModal(); }
 
   closeAddModal(): void { this.addModalOpen = false; }
 
