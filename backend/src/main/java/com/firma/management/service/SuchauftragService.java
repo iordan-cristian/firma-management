@@ -50,7 +50,6 @@ public class SuchauftragService {
         return repo.findById(id).map(existing -> {
             existing.setAnsprechpartnerId(input.getAnsprechpartnerId());
             existing.setAktivitaet(input.getAktivitaet());
-            existing.setAuftragPlaceholder(input.getAuftragPlaceholder());
             existing.setOrt(input.getOrt());
             existing.setFachlicherSkill(input.getFachlicherSkill());
             existing.setGehalt(input.getGehalt());
