@@ -187,10 +187,16 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
             <input [(ngModel)]="draftAnsprechpartner.kontaktinterval" placeholder="z.B. wöchentlich" />
           </label>
           <label>LinkedIn Profil
-            <input [(ngModel)]="draftAnsprechpartner.linkedinProfil" placeholder="LinkedIn-URL" />
+            <div class="input-with-btn">
+              <input [(ngModel)]="draftAnsprechpartner.linkedinProfil" placeholder="LinkedIn-URL" />
+              <button class="btn-link" (click)="openLink(draftAnsprechpartner.linkedinProfil)" [disabled]="!draftAnsprechpartner.linkedinProfil">↗</button>
+            </div>
           </label>
           <label>Xing Profil
-            <input [(ngModel)]="draftAnsprechpartner.xingProfil" placeholder="Xing-URL" />
+            <div class="input-with-btn">
+              <input [(ngModel)]="draftAnsprechpartner.xingProfil" placeholder="Xing-URL" />
+              <button class="btn-link" (click)="openLink(draftAnsprechpartner.xingProfil)" [disabled]="!draftAnsprechpartner.xingProfil">↗</button>
+            </div>
           </label>
           <label>Informationen
             <textarea [(ngModel)]="draftAnsprechpartner.informationen" placeholder="Notizen..." rows="8" style="min-height:160px"></textarea>
@@ -490,6 +496,11 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .btn-match { background: #2f9e44; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
     .btn-match:hover { background: #258836; }
     .btn-cancel { background: transparent; border: 1px solid #dfe3ee; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
+    .input-with-btn { display: flex; gap: 6px; }
+    .input-with-btn input { flex: 1; }
+    .btn-link { padding: 8px 10px; border: 1px solid #dfe3ee; border-radius: 6px; background: #f1f3f8; cursor: pointer; font-size: 14px; line-height: 1; }
+    .btn-link:hover:not(:disabled) { background: #e2e6f0; }
+    .btn-link:disabled { opacity: 0.4; cursor: default; }
 
     .modal-duo { display: flex; gap: 20px; align-items: stretch; }
     .modal-suchauftrag { display: flex; flex-direction: column; overflow: hidden; }
@@ -564,6 +575,10 @@ export class FirmenComponent implements OnInit {
 
   ngOnInit(): void {
     this.firmaService.getAll().subscribe(list => (this.firmen = list));
+  }
+
+  openLink(url?: string): void {
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   // ── Firma ────────────────────────────────────────────────

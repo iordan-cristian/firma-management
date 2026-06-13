@@ -243,10 +243,16 @@ import {
               <input [(ngModel)]="draft.telefon" placeholder="z.B. +49 30 1234567" />
             </label>
             <label>LinkedIn Profil
-              <input [(ngModel)]="draft.linkedinProfil" placeholder="LinkedIn-URL" />
+              <div class="input-with-btn">
+                <input [(ngModel)]="draft.linkedinProfil" placeholder="LinkedIn-URL" />
+                <button class="btn-link" (click)="openLink(draft.linkedinProfil)" [disabled]="!draft.linkedinProfil">↗</button>
+              </div>
             </label>
             <label>Xing Profil
-              <input [(ngModel)]="draft.xingProfil" placeholder="Xing-URL" />
+              <div class="input-with-btn">
+                <input [(ngModel)]="draft.xingProfil" placeholder="Xing-URL" />
+                <button class="btn-link" (click)="openLink(draft.xingProfil)" [disabled]="!draft.xingProfil">↗</button>
+              </div>
             </label>
           </div>
 
@@ -308,6 +314,11 @@ import {
     .btn-save { background: #3b5bdb; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; }
     .btn-save:hover { background: #2f4ac7; }
     .btn-cancel { background: transparent; border: 1px solid #dfe3ee; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .input-with-btn { display: flex; gap: 6px; }
+    .input-with-btn input { flex: 1; }
+    .btn-link { padding: 8px 10px; border: 1px solid #dfe3ee; border-radius: 6px; background: #f1f3f8; cursor: pointer; font-size: 14px; line-height: 1; }
+    .btn-link:hover:not(:disabled) { background: #e2e6f0; }
+    .btn-link:disabled { opacity: 0.4; cursor: default; }
   `]
 })
 export class KandidatenComponent implements OnInit {
@@ -339,6 +350,10 @@ export class KandidatenComponent implements OnInit {
       k.vorname?.toLowerCase().includes(q) ||
       k.nachname?.toLowerCase().includes(q)
     );
+  }
+
+  openLink(url?: string): void {
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   openAddModal(): void {
