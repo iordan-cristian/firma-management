@@ -41,7 +41,6 @@ public class AnsprechpartnerService {
             existing.setEmail(input.getEmail());
             existing.setKontaktinterval(input.getKontaktinterval());
             existing.setInformationen(input.getInformationen());
-            existing.setSocialMediaProfil(input.getSocialMediaProfil());
             return repo.save(existing);
         });
     }
