@@ -263,7 +263,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <div class="card-title">{{ k.vorname }} {{ k.nachname }}</div>
                 <div class="card-row" *ngIf="k.aktuellePosition"><span>Position:</span> {{ k.aktuellePosition }}</div>
                 <div class="card-row" *ngIf="k.ort"><span>Ort:</span> {{ k.ort }}</div>
-                <div class="card-row" *ngIf="k.gehaltsrange"><span>Gehalt:</span> {{ k.gehaltsrange }}</div>
+                <div class="card-row" *ngIf="k.gehalt"><span>Gehalt:</span> {{ k.gehalt }}</div>
                 <div class="card-row" *ngIf="k.branchenkenntnisse"><span>Branche:</span> {{ k.branchenkenntnisse }}</div>
                 <div class="card-row" *ngIf="k.zertifikate"><span>Zertifikate:</span> {{ k.zertifikate }}</div>
                 <div class="card-row" *ngIf="k.allgemeinerSchwerpunkt"><span>Schwerpunkt:</span> {{ k.allgemeinerSchwerpunkt }}</div>
@@ -314,7 +314,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <div class="k-section">Berufliche Anforderungen</div>
               <div class="form-row">
                 <label>Wochenstunden <input [(ngModel)]="draftKandidat.wochenstunden" /></label>
-                <label>Gehaltsrange <input [(ngModel)]="draftKandidat.gehaltsrange" /></label>
+                <label>Gehalt <input [(ngModel)]="draftKandidat.gehalt" /></label>
               </div>
               <div class="form-row">
                 <label>Wochenendbereitschaft <input [(ngModel)]="draftKandidat.wochenendbereitschaft" /></label>

@@ -39,7 +39,7 @@ public class KandidatService {
             existing.setFamilienstand(input.getFamilienstand());
             existing.setKinder(input.getKinder());
             existing.setWochenstunden(input.getWochenstunden());
-            existing.setGehaltsrange(input.getGehaltsrange());
+            existing.setGehalt(input.getGehalt());
             existing.setWochenendbereitschaft(input.getWochenendbereitschaft());
             existing.setHomeoffice(input.getHomeoffice());
             existing.setFirmenwagenregelung(input.getFirmenwagenregelung());
@@ -50,7 +50,7 @@ public class KandidatService {
             existing.setHochschulabschluss(input.getHochschulabschluss());
             existing.setBerufsausbildung(input.getBerufsausbildung());
             existing.setAutofuehrerschein(input.getAutofuehrerschein());
-            existing.setFachspezifischeZertifikate(input.getFachspezifischeZertifikate());
+            existing.setZertifikate(input.getZertifikate());
             existing.setTaeglicheFahrzeit(input.getTaeglicheFahrzeit());
             existing.setBranchenkenntnisse(input.getBranchenkenntnisse());
             existing.setAktuelleTaetigkeiten(input.getAktuelleTaetigkeiten());

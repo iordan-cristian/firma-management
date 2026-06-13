@@ -173,7 +173,7 @@ CREATE TABLE kandidat (
 
     -- Berufliche Anforderungen
     wochenstunden                        TEXT,
-    gehaltsrange                         TEXT,
+    gehalt                               TEXT,
     wochenendbereitschaft                TEXT,
     homeoffice                           TEXT,
     firmenwagenregelung                  TEXT,
@@ -219,7 +219,7 @@ COMMENT ON TABLE  kandidat                               IS 'Job candidates mana
 COMMENT ON COLUMN kandidat.geschlecht                    IS 'Enum: MAENNLICH | WEIBLICH | DIVERS | BEVORZUGE_NICHT_ZU_SAGEN';
 COMMENT ON COLUMN kandidat.titel                         IS 'Enum: DR | ING';
 COMMENT ON COLUMN kandidat.wochenstunden                 IS 'Text; single value or range, e.g. 40 or 30-40';
-COMMENT ON COLUMN kandidat.gehaltsrange                  IS 'Text; single value or range, e.g. 60000 or 55000-70000';
+COMMENT ON COLUMN kandidat.gehalt                        IS 'Text; single value or range, e.g. 60000 or 55000-70000';
 COMMENT ON COLUMN kandidat.deutsch                       IS 'Enum: A1 | A2 | B1 | B2 | C1 | C2 | MUTTERSPRACHE';
 COMMENT ON COLUMN kandidat.englisch                      IS 'Enum: A1 | A2 | B1 | B2 | C1 | C2 | MUTTERSPRACHE';
 COMMENT ON COLUMN kandidat.autofuehrerschein             IS 'Enum: VORHANDEN | NICHT_VORHANDEN';

@@ -127,8 +127,8 @@ import {
               <label>Wochenstunden
                 <input [(ngModel)]="draft.wochenstunden" placeholder="z.B. 40 oder 30-40" />
               </label>
-              <label>Gehaltsrange
-                <input [(ngModel)]="draft.gehaltsrange" placeholder="z.B. 60000 oder 55000-70000" />
+              <label>Gehalt
+                <input [(ngModel)]="draft.gehalt" placeholder="z.B. 60000 oder 55000-70000" />
               </label>
             </div>
             <div class="form-row">

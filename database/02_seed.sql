@@ -124,7 +124,7 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO kandidat (
     id, dsgvo_bestaetigungs_datum, geschlecht, titel, vorname, nachname, postleitzahl, ort, geburtsjahr,
     staatsangehoerigkeit, familienstand, kinder,
-    wochenstunden, gehaltsrange, wochenendbereitschaft, homeoffice,
+    wochenstunden, gehalt, wochenendbereitschaft, homeoffice,
     firmenwagenregelung, reisetaetigkeiten_mit_uebernachtung, taegliche_fahrzeit,
     deutsch, englisch, sonstige_sprachen,
     hochschulabschluss, berufsausbildung, autofuehrerschein, zertifikate,

@@ -25,7 +25,7 @@ export interface Kandidat {
   familienstand?: string;
   kinder?: string;
   wochenstunden?: string;
-  gehaltsrange?: string;
+  gehalt?: string;
   wochenendbereitschaft?: string;
   homeoffice?: string;
   firmenwagenregelung?: string;
