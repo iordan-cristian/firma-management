@@ -196,6 +196,9 @@ import {
                 <option *ngFor="let o of schwerpunktOptions" [value]="o">{{ o }}</option>
               </select>
             </label>
+            <label>Fachlicher Skill
+              <input [(ngModel)]="draft.fachlicherSkill" placeholder="Fachlicher Skill" />
+            </label>
             <label>Branchenkenntnisse
               <input [(ngModel)]="draft.branchenkenntnisse" placeholder="z.B. IT, Automotive" />
             </label>

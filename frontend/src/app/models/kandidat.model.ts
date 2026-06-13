@@ -45,4 +45,5 @@ export interface Kandidat {
   kuendigungsfrist?: string;
   erstesOnlineMeeting?: string;
   allgemeinerSchwerpunkt?: AllgemeinerSchwerpunkt;
+  fachlicherSkill?: string;
 }

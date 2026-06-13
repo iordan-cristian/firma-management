@@ -203,7 +203,9 @@ CREATE TABLE kandidat (
     erstes_online_meeting                TEXT,
 
     allgemeiner_schwerpunkt              VARCHAR(32)
-        CHECK (allgemeiner_schwerpunkt IN ('GEBAEUDETECHNIK', 'ENERGIETECHNIK', 'MASCHINENBAU', 'INFORMATIK', 'KAUFMAENNISCH'))
+        CHECK (allgemeiner_schwerpunkt IN ('GEBAEUDETECHNIK', 'ENERGIETECHNIK', 'MASCHINENBAU', 'INFORMATIK', 'KAUFMAENNISCH')),
+
+    fachlicher_skill                     TEXT
 );
 
 CREATE INDEX idx_kandidat_nachname ON kandidat(nachname);

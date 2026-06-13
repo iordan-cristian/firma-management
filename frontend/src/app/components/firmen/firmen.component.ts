@@ -267,6 +267,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <div class="card-row" *ngIf="k.branchenkenntnisse"><span>Branche:</span> {{ k.branchenkenntnisse }}</div>
                 <div class="card-row" *ngIf="k.fachspezifischeZertifikate"><span>Zertifikate:</span> {{ k.fachspezifischeZertifikate }}</div>
                 <div class="card-row" *ngIf="k.allgemeinerSchwerpunkt"><span>Schwerpunkt:</span> {{ k.allgemeinerSchwerpunkt }}</div>
+                <div class="card-row" *ngIf="k.fachlicherSkill"><span>Fachlicher Skill:</span> {{ k.fachlicherSkill }}</div>
               </div>
             </div>
           </div>
@@ -364,6 +365,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   <option *ngFor="let o of schwerpunktOptions" [value]="o">{{ o }}</option>
                 </select>
               </label>
+              <label>Fachlicher Skill <input [(ngModel)]="draftKandidat.fachlicherSkill" placeholder="Fachlicher Skill" /></label>
               <label>Branchenkenntnisse <input [(ngModel)]="draftKandidat.branchenkenntnisse" /></label>
               <label>Aktuelle Tätigkeiten <input [(ngModel)]="draftKandidat.aktuelleTaetigkeiten" /></label>
               <label>Aktuelle Position <input [(ngModel)]="draftKandidat.aktuellePosition" /></label>
