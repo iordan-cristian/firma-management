@@ -70,6 +70,11 @@ import {
           <h2>{{ editingId ? 'Kandidat bearbeiten' : 'Neuer Kandidat' }}</h2>
           <div class="modal-body">
 
+            <div class="section-title">DSGVO</div>
+            <label>DSGVO Bestätigungs Datum
+              <input [(ngModel)]="draft.dsgvoBestaetigungsDatum" placeholder="TT/MM/JJJJ" />
+            </label>
+
             <div class="section-title">Persönliche Daten</div>
             <div class="form-row">
               <label>Geschlecht
@@ -110,8 +115,7 @@ import {
               </label>
             </div>
             <div class="form-row">
-              <label>Familienstand
-                <input [(ngModel)]="draft.familienstand" placeholder="z.B. ledig, verheiratet" />
+              <label>Familienstand              <input [(ngModel)]="draft.familienstand" placeholder="z.B. ledig, verheiratet" />
               </label>
               <label>Kinder
                 <input [(ngModel)]="draft.kinder" placeholder="z.B. keine, 2" />

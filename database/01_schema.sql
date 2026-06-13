@@ -154,6 +154,9 @@ COMMENT ON COLUMN app_user.role     IS 'Role name without the ROLE_ prefix (e.g.
 CREATE TABLE kandidat (
     id                                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
+    -- DSGVO
+    dsgvo_bestaetigungs_datum            DATE,
+
     -- Persönliche Daten
     geschlecht                           VARCHAR(32)
         CHECK (geschlecht IN ('MAENNLICH', 'WEIBLICH', 'DIVERS', 'BEVORZUGE_NICHT_ZU_SAGEN')),

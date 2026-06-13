@@ -122,7 +122,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- -- KANDIDAT ----------------------------------------------------------------
 INSERT INTO kandidat (
-    id, geschlecht, titel, vorname, nachname, postleitzahl, ort, geburtsjahr,
+    id, dsgvo_bestaetigungs_datum, geschlecht, titel, vorname, nachname, postleitzahl, ort, geburtsjahr,
     staatsangehoerigkeit, familienstand, kinder,
     wochenstunden, gehaltsrange, wochenendbereitschaft, homeoffice,
     firmenwagenregelung, reisetaetigkeiten_mit_uebernachtung, taegliche_fahrzeit,
@@ -133,7 +133,7 @@ INSERT INTO kandidat (
     fachlicher_skill
 ) VALUES
     ('dddddddd-dddd-dddd-dddd-dddddddddd01',
-     'MAENNLICH', 'DR', 'Thomas', 'Müller', 80331, 'München', 1982,
+     DATE '2024-03-15', 'MAENNLICH', 'DR', 'Thomas', 'Müller', 80331, 'München', 1982,
      'Deutsch', 'verheiratet', '2',
      '40', '90000-110000', 'nein', '2 Tage/Woche',
      'gewünscht', 'bis 5 Tage/Monat', 30,
@@ -146,7 +146,7 @@ INSERT INTO kandidat (
      'Projektmanagement, Lean Management'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd02',
-     'WEIBLICH', NULL, 'Sarah', 'Fischer', 10115, 'Berlin', 1990,
+     DATE '2024-06-01', 'WEIBLICH', NULL, 'Sarah', 'Fischer', 10115, 'Berlin', 1990,
      'Deutsch', 'ledig', 'keine',
      '38-40', '70000-85000', 'gelegentlich', '3 Tage/Woche',
      'nicht gewünscht', 'nein', 45,
@@ -159,7 +159,7 @@ INSERT INTO kandidat (
      'Produktstrategie, Datenanalyse, UX'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd03',
-     'MAENNLICH', 'ING', 'Klaus', 'Weber', 40213, 'Düsseldorf', 1975,
+     DATE '2023-11-20', 'MAENNLICH', 'ING', 'Klaus', 'Weber', 40213, 'Düsseldorf', 1975,
      'Deutsch', 'verheiratet', '3',
      '40-45', '95000-120000', 'ja', '1 Tag/Woche',
      'vorhanden', 'bis 10 Tage/Monat', 60,
@@ -172,7 +172,7 @@ INSERT INTO kandidat (
      'Fertigungssteuerung, Prozessoptimierung'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd04',
-     'WEIBLICH', NULL, 'Maria', 'Schmidt', 20095, 'Hamburg', 1988,
+     DATE '2025-01-10', 'WEIBLICH', NULL, 'Maria', 'Schmidt', 20095, 'Hamburg', 1988,
      'Deutsch', 'ledig', 'keine',
      '30-35', '55000-65000', 'nein', 'vollständig möglich',
      'nicht gewünscht', 'nein', 20,
@@ -186,7 +186,7 @@ INSERT INTO kandidat (
      'Digitales Marketing, Markenführung'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd05',
-     'MAENNLICH', NULL, 'Michael', 'Braun', 70173, 'Stuttgart', 1985,
+     DATE '2024-09-05', 'MAENNLICH', NULL, 'Michael', 'Braun', 70173, 'Stuttgart', 1985,
      'Deutsch', 'verheiratet', '1',
      '40', '75000-90000', 'gelegentlich', '2 Tage/Woche',
      'vorhanden', 'bis 8 Tage/Monat', 40,

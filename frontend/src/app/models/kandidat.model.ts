@@ -13,6 +13,7 @@ export const FUEHRERSCHEIN_OPTIONS: Fuehrerschein[] = ['vorhanden', 'nicht vorha
 
 export interface Kandidat {
   id?: string;
+  dsgvoBestaetigungsDatum?: string;
   geschlecht?: Geschlecht;
   titel?: Titel;
   vorname?: string;

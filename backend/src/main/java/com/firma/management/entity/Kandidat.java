@@ -1,8 +1,10 @@
 package com.firma.management.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -18,6 +20,10 @@ public class Kandidat {
     @GeneratedValue
     @Column(columnDefinition = "uuid")
     private UUID id;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @Column(name = "dsgvo_bestaetigungs_datum")
+    private LocalDate dsgvoBestaetigungsDatum;
 
     @Enumerated(EnumType.STRING)
     private Geschlecht geschlecht;
