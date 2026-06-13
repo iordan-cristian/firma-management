@@ -36,7 +36,7 @@ export interface Kandidat {
   hochschulabschluss?: string;
   berufsausbildung?: string;
   autofuehrerschein?: Fuehrerschein;
-  fachspezifischeZertifikate?: string;
+  zertifikate?: string;
   taeglicheFahrzeit?: number;
   branchenkenntnisse?: string;
   aktuelleTaetigkeiten?: string;

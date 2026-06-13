@@ -192,7 +192,7 @@ CREATE TABLE kandidat (
     berufsausbildung                     TEXT,
     autofuehrerschein                    VARCHAR(16)
         CHECK (autofuehrerschein IN ('VORHANDEN', 'NICHT_VORHANDEN')),
-    fachspezifische_zertifikate          TEXT,
+    zertifikate                          TEXT,
 
     -- Berufserfahrung
     branchenkenntnisse                   TEXT,

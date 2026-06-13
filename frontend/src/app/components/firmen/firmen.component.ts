@@ -265,7 +265,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <div class="card-row" *ngIf="k.ort"><span>Ort:</span> {{ k.ort }}</div>
                 <div class="card-row" *ngIf="k.gehaltsrange"><span>Gehalt:</span> {{ k.gehaltsrange }}</div>
                 <div class="card-row" *ngIf="k.branchenkenntnisse"><span>Branche:</span> {{ k.branchenkenntnisse }}</div>
-                <div class="card-row" *ngIf="k.fachspezifischeZertifikate"><span>Zertifikate:</span> {{ k.fachspezifischeZertifikate }}</div>
+                <div class="card-row" *ngIf="k.zertifikate"><span>Zertifikate:</span> {{ k.zertifikate }}</div>
                 <div class="card-row" *ngIf="k.allgemeinerSchwerpunkt"><span>Schwerpunkt:</span> {{ k.allgemeinerSchwerpunkt }}</div>
                 <div class="card-row" *ngIf="k.fachlicherSkill"><span>Fachlicher Skill:</span> {{ k.fachlicherSkill }}</div>
               </div>
@@ -355,7 +355,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                     <option *ngFor="let o of fuehrerscheinOptions" [value]="o">{{ o }}</option>
                   </select>
                 </label>
-                <label>Zertifikate <input [(ngModel)]="draftKandidat.fachspezifischeZertifikate" /></label>
+                <label>Zertifikate <input [(ngModel)]="draftKandidat.zertifikate" /></label>
               </div>
 
               <div class="k-section">Berufserfahrung</div>

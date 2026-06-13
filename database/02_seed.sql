@@ -127,7 +127,7 @@ INSERT INTO kandidat (
     wochenstunden, gehaltsrange, wochenendbereitschaft, homeoffice,
     firmenwagenregelung, reisetaetigkeiten_mit_uebernachtung, taegliche_fahrzeit,
     deutsch, englisch, sonstige_sprachen,
-    hochschulabschluss, berufsausbildung, autofuehrerschein, fachspezifische_zertifikate,
+    hochschulabschluss, berufsausbildung, autofuehrerschein, zertifikate,
     branchenkenntnisse, aktuelle_taetigkeiten, aktuelle_position,
     wechselgruende, zukuenftige_position_taetigkeiten, kuendigungsfrist, erstes_online_meeting,
     firmen_selbevorben, firmen_nogo,

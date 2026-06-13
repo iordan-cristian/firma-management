@@ -89,8 +89,8 @@ public class Kandidat {
     @Enumerated(EnumType.STRING)
     private Fuehrerschein autofuehrerschein;
 
-    @Column(name = "fachspezifische_zertifikate", columnDefinition = "TEXT")
-    private String fachspezifischeZertifikate;
+    @Column(name = "zertifikate", columnDefinition = "TEXT")
+    private String zertifikate;
 
     @Column(name = "taegliche_fahrzeit")
     private Integer taeglicheFahrzeit;

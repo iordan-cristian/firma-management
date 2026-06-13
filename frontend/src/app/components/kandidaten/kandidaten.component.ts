@@ -189,7 +189,7 @@ import {
                 </select>
               </label>
               <label>Fachspezifische Zertifikate
-                <input [(ngModel)]="draft.fachspezifischeZertifikate" placeholder="z.B. AWS, PMP" />
+                <input [(ngModel)]="draft.zertifikate" placeholder="z.B. AWS, PMP" />
               </label>
             </div>
 
