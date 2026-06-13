@@ -146,7 +146,10 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
             </select>
           </label>
           <label>E-Mail
-            <input type="email" [(ngModel)]="draftFirma.email" placeholder="info@beispiel.de" />
+            <div class="input-with-btn">
+              <input type="email" [(ngModel)]="draftFirma.email" placeholder="info@beispiel.de" />
+              <button class="btn-link" (click)="copyToClipboard(draftFirma.email)" [disabled]="!draftFirma.email">📋</button>
+            </div>
           </label>
           <label>Telefon
             <input [(ngModel)]="draftFirma.telefon" placeholder="+49 30 1234567" />
@@ -178,10 +181,16 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
             <input [(ngModel)]="draftAnsprechpartner.schwerpunkt" placeholder="Schwerpunkt" />
           </label>
           <label>E-Mail
-            <input [(ngModel)]="draftAnsprechpartner.email" placeholder="E-Mail" />
+            <div class="input-with-btn">
+              <input [(ngModel)]="draftAnsprechpartner.email" placeholder="E-Mail" />
+              <button class="btn-link" (click)="copyToClipboard(draftAnsprechpartner.email)" [disabled]="!draftAnsprechpartner.email">📋</button>
+            </div>
           </label>
           <label>Telefon
-            <input [(ngModel)]="draftAnsprechpartner.telefonnummer" placeholder="Telefonnummer" />
+            <div class="input-with-btn">
+              <input [(ngModel)]="draftAnsprechpartner.telefonnummer" placeholder="Telefonnummer" />
+              <button class="btn-link" (click)="copyToClipboard(draftAnsprechpartner.telefonnummer)" [disabled]="!draftAnsprechpartner.telefonnummer">📋</button>
+            </div>
           </label>
           <label>Kontaktinterval
             <input [(ngModel)]="draftAnsprechpartner.kontaktinterval" placeholder="z.B. wöchentlich" />
@@ -579,6 +588,10 @@ export class FirmenComponent implements OnInit {
 
   openLink(url?: string): void {
     if (url) window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  copyToClipboard(value?: string): void {
+    if (value) navigator.clipboard.writeText(value);
   }
 
   // ── Firma ────────────────────────────────────────────────

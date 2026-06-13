@@ -237,10 +237,16 @@ import {
 
             <div class="section-title">Kontakt Informationen</div>
             <label>E-Mail
-              <input [(ngModel)]="draft.email" placeholder="E-Mail Adresse" />
+              <div class="input-with-btn">
+                <input [(ngModel)]="draft.email" placeholder="E-Mail Adresse" />
+                <button class="btn-link" (click)="copyToClipboard(draft.email)" [disabled]="!draft.email">📋</button>
+              </div>
             </label>
             <label>Telefon
-              <input [(ngModel)]="draft.telefon" placeholder="z.B. +49 30 1234567" />
+              <div class="input-with-btn">
+                <input [(ngModel)]="draft.telefon" placeholder="z.B. +49 30 1234567" />
+                <button class="btn-link" (click)="copyToClipboard(draft.telefon)" [disabled]="!draft.telefon">📋</button>
+              </div>
             </label>
             <label>LinkedIn Profil
               <div class="input-with-btn">
@@ -354,6 +360,10 @@ export class KandidatenComponent implements OnInit {
 
   openLink(url?: string): void {
     if (url) window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  copyToClipboard(value?: string): void {
+    if (value) navigator.clipboard.writeText(value);
   }
 
   openAddModal(): void {
