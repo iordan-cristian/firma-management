@@ -204,6 +204,8 @@ CREATE TABLE kandidat (
     zukuenftige_position_taetigkeiten    TEXT,
     kuendigungsfrist                     TEXT,
     erstes_online_meeting                TEXT,
+    firmen_selbevorben                   TEXT,
+    firmen_nogo                          TEXT,
 
     allgemeiner_schwerpunkt              VARCHAR(32)
         CHECK (allgemeiner_schwerpunkt IN ('GEBAEUDETECHNIK', 'ENERGIETECHNIK', 'MASCHINENBAU', 'INFORMATIK', 'KAUFMAENNISCH')),

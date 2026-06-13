@@ -47,4 +47,6 @@ export interface Kandidat {
   erstesOnlineMeeting?: string;
   allgemeinerSchwerpunkt?: AllgemeinerSchwerpunkt;
   fachlicherSkill?: string;
+  firmenSelbevorben?: string;
+  firmenNogo?: string;
 }

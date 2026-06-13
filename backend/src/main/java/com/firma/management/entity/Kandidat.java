@@ -122,4 +122,10 @@ public class Kandidat {
 
     @Column(name = "fachlicher_skill", columnDefinition = "TEXT")
     private String fachlicherSkill;
+
+    @Column(name = "firmen_selbevorben", columnDefinition = "TEXT")
+    private String firmenSelbevorben;
+
+    @Column(name = "firmen_nogo", columnDefinition = "TEXT")
+    private String firmenNogo;
 }

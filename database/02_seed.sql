@@ -130,6 +130,7 @@ INSERT INTO kandidat (
     hochschulabschluss, berufsausbildung, autofuehrerschein, fachspezifische_zertifikate,
     branchenkenntnisse, aktuelle_taetigkeiten, aktuelle_position,
     wechselgruende, zukuenftige_position_taetigkeiten, kuendigungsfrist, erstes_online_meeting,
+    firmen_selbevorben, firmen_nogo,
     fachlicher_skill
 ) VALUES
     ('dddddddd-dddd-dddd-dddd-dddddddddd01',
@@ -143,6 +144,7 @@ INSERT INTO kandidat (
      'Senior Project Manager',
      'Fehlende Aufstiegsmöglichkeiten', 'Head of Engineering / VP Engineering',
      '3 Monate', 'KW 22, flexibel',
+     NULL, NULL,
      'Projektmanagement, Lean Management'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd02',
@@ -156,6 +158,7 @@ INSERT INTO kandidat (
      'Product Manager',
      'Startup-Umgebung zu unstrukturiert', 'Senior Product Manager / Head of Product',
      '1 Monat', 'Ab sofort, bevorzugt morgens',
+     NULL, NULL,
      'Produktstrategie, Datenanalyse, UX'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd03',
@@ -169,6 +172,7 @@ INSERT INTO kandidat (
      'Werksleiter Produktion',
      'Werksschließung geplant', 'Plant Manager / Operations Director',
      '6 Monate', 'KW 23 oder 24, nachmittags',
+     NULL, NULL,
      'Fertigungssteuerung, Prozessoptimierung'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd04',
@@ -183,6 +187,7 @@ INSERT INTO kandidat (
      'Wunsch nach mehr Remote-Flexibilität und internationalem Umfeld',
      'Head of Marketing / Senior Marketing Manager',
      '2 Monate', 'Flexibel, bevorzugt Donnerstag',
+     NULL, NULL,
      'Digitales Marketing, Markenführung'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd05',
@@ -197,6 +202,7 @@ INSERT INTO kandidat (
      'Unternehmensfusion, neue Ausrichtung gewünscht',
      'Head of Operations / Supply Chain Manager',
      '3 Monate', 'KW 21, flexibel',
+     NULL, NULL,
      'Supply Chain Management, ERP-Systeme')
 ON CONFLICT (id) DO NOTHING;
 

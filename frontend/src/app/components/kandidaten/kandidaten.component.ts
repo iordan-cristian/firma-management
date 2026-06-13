@@ -228,6 +228,12 @@ import {
                 <input [(ngModel)]="draft.erstesOnlineMeeting" placeholder="z.B. KW 22, 10:00 Uhr" />
               </label>
             </div>
+            <label>Firmen selbst beworben
+              <input [(ngModel)]="draft.firmenSelbevorben" placeholder="z.B. Siemens, BMW" />
+            </label>
+            <label>Firmen No-Go
+              <input [(ngModel)]="draft.firmenNogo" placeholder="z.B. XYZ GmbH" />
+            </label>
           </div>
 
           <div class="modal-actions">
