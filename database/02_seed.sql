@@ -28,37 +28,42 @@ ON CONFLICT (id) DO NOTHING;
 
 -- -- ANSPRECHPARTNER ---------------------------------------------------------
 INSERT INTO ansprechpartner
-    (id, firma_id, vorname, nachname, schwerpunkt, position, telefonnummer, email, kontaktinterval, informationen) VALUES
+    (id, firma_id, vorname, nachname, schwerpunkt, position, telefonnummer, email, kontaktinterval, informationen, linkedin_profil, xing_profil) VALUES
     ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01',
      '11111111-1111-1111-1111-111111111111',
      'Anna', 'Müller', 'Projektsteuerung', 'Geschäftsführerin',
      '+49 30 1111111', 'a.mueller@alphabau.de',
      'Monatlich',
-     'Hauptansprechpartnerin für alle Großprojekte. Bevorzugt Kontakt per E-Mail.'),
+     'Hauptansprechpartnerin für alle Großprojekte. Bevorzugt Kontakt per E-Mail.',
+     'https://www.linkedin.com/in/anna-mueller', NULL),
     ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa02',
      '11111111-1111-1111-1111-111111111111',
      'Bernd', 'Schulz', 'Akquise', 'Vertriebsleiter',
      '+49 30 1111112', 'b.schulz@alphabau.de',
      'Quartalsweise',
-     'Zuständig für die Akquise von Neukunden im Großraum Berlin.'),
+     'Zuständig für die Akquise von Neukunden im Großraum Berlin.',
+     NULL, 'https://www.xing.com/profile/Bernd_Schulz'),
     ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa03',
      '22222222-2222-2222-2222-222222222222',
      'Clara', 'Hoffmann', 'Investorenbetreuung', 'Partnerin',
      '+49 89 2222223', 'c.hoffmann@bayernkapital.de',
      'Wöchentlich',
-     'Sehr gut vernetzt im DACH-Raum, fokussiert auf institutionelle Investoren.'),
+     'Sehr gut vernetzt im DACH-Raum, fokussiert auf institutionelle Investoren.',
+     'https://www.linkedin.com/in/clara-hoffmann', 'https://www.xing.com/profile/Clara_Hoffmann'),
     ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa04',
      '33333333-3333-3333-3333-333333333333',
      'David', 'Weber', 'Recruiting Tech', 'Senior Recruiter',
      '+49 40 3333334', 'd.weber@hansagrupp.de',
      'Monatlich',
-     'Spezialisiert auf IT- und Engineering-Profile.'),
+     'Spezialisiert auf IT- und Engineering-Profile.',
+     'https://www.linkedin.com/in/david-weber', NULL),
     ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa05',
      '44444444-4444-4444-4444-444444444444',
      'Eva', 'Becker', 'Key Account', 'Head of Sales',
      '+49 221 4444445', 'e.becker@rheinvertrieb.de',
      'Monatlich',
-     'Verantwortlich für Großkunden, sehr reaktionsschnell per Telefon.')
+     'Verantwortlich für Großkunden, sehr reaktionsschnell per Telefon.',
+     NULL, 'https://www.xing.com/profile/Eva_Becker')
 ON CONFLICT (id) DO NOTHING;
 
 

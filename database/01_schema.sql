@@ -64,7 +64,8 @@ CREATE TABLE ansprechpartner (
     email            TEXT,
     kontaktinterval      TEXT,
     informationen        TEXT,
-    social_media_profil  TEXT
+    linkedin_profil      TEXT,
+    xing_profil          TEXT
 );
 
 CREATE INDEX idx_ansprechpartner_firma_id ON ansprechpartner(firma_id);

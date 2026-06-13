@@ -57,6 +57,9 @@ public class Ansprechpartner {
     @Column(columnDefinition = "TEXT")
     private String informationen;
 
-    @Column(name = "social_media_profil", columnDefinition = "TEXT")
-    private String socialMediaProfil;
+    @Column(name = "linkedin_profil", columnDefinition = "TEXT")
+    private String linkedinProfil;
+
+    @Column(name = "xing_profil", columnDefinition = "TEXT")
+    private String xingProfil;
 }

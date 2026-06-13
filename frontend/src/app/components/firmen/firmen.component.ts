@@ -74,7 +74,8 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                         <div class="card-row"><span>E-Mail:</span> {{ a.email }}</div>
                         <div class="card-row"><span>Telefon:</span> {{ a.telefonnummer }}</div>
                         <div class="card-row"><span>Kontaktinterval:</span> {{ a.kontaktinterval }}</div>
-                        <div class="card-row" *ngIf="a.socialMediaProfil"><span>Social Media:</span> <a [href]="a.socialMediaProfil" target="_blank" rel="noopener noreferrer" class="profile-link">{{ a.socialMediaProfil }}</a></div>
+                        <div class="card-row" *ngIf="a.linkedinProfil"><span>LinkedIn:</span> <a [href]="a.linkedinProfil" target="_blank" rel="noopener noreferrer" class="profile-link">{{ a.linkedinProfil }}</a></div>
+                        <div class="card-row" *ngIf="a.xingProfil"><span>Xing:</span> <a [href]="a.xingProfil" target="_blank" rel="noopener noreferrer" class="profile-link">{{ a.xingProfil }}</a></div>
                         <div class="card-info" *ngIf="a.informationen">{{ a.informationen }}</div>
                       </div>
                       <div *ngIf="!ansprechpartnerList.length" class="empty">No Ansprechpartner.</div>
@@ -185,8 +186,11 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
           <label>Kontaktinterval
             <input [(ngModel)]="draftAnsprechpartner.kontaktinterval" placeholder="z.B. wöchentlich" />
           </label>
-          <label>Social Media Profil
-            <input [(ngModel)]="draftAnsprechpartner.socialMediaProfil" placeholder="z.B. LinkedIn-URL" />
+          <label>LinkedIn Profil
+            <input [(ngModel)]="draftAnsprechpartner.linkedinProfil" placeholder="LinkedIn-URL" />
+          </label>
+          <label>Xing Profil
+            <input [(ngModel)]="draftAnsprechpartner.xingProfil" placeholder="Xing-URL" />
           </label>
           <label>Informationen
             <textarea [(ngModel)]="draftAnsprechpartner.informationen" placeholder="Notizen..." rows="8" style="min-height:160px"></textarea>

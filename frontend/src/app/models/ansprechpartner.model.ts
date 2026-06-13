@@ -9,5 +9,6 @@ export interface Ansprechpartner {
   email?: string;
   kontaktinterval?: string;
   informationen?: string;
-  socialMediaProfil?: string;
+  linkedinProfil?: string;
+  xingProfil?: string;
 }
