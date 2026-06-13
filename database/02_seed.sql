@@ -129,7 +129,8 @@ INSERT INTO kandidat (
     deutsch, englisch, sonstige_sprachen,
     hochschulabschluss, berufsausbildung, autofuehrerschein, fachspezifische_zertifikate,
     branchenkenntnisse, aktuelle_taetigkeiten, aktuelle_position,
-    wechselgruende, zukuenftige_position_taetigkeiten, kuendigungsfrist, erstes_online_meeting
+    wechselgruende, zukuenftige_position_taetigkeiten, kuendigungsfrist, erstes_online_meeting,
+    fachlicher_skill
 ) VALUES
     ('dddddddd-dddd-dddd-dddd-dddddddddd01',
      'MAENNLICH', 'DR', 'Thomas', 'Müller', 80331, 'München', 1982,
@@ -141,7 +142,8 @@ INSERT INTO kandidat (
      'Automotive, Maschinenbau', 'Leitung von Entwicklungsprojekten, Teamführung',
      'Senior Project Manager',
      'Fehlende Aufstiegsmöglichkeiten', 'Head of Engineering / VP Engineering',
-     '3 Monate', 'KW 22, flexibel'),
+     '3 Monate', 'KW 22, flexibel',
+     'Projektmanagement, Lean Management'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd02',
      'WEIBLICH', NULL, 'Sarah', 'Fischer', 10115, 'Berlin', 1990,
@@ -153,7 +155,8 @@ INSERT INTO kandidat (
      'IT, E-Commerce, FinTech', 'Produktentwicklung, Stakeholder Management, Agile Coaching',
      'Product Manager',
      'Startup-Umgebung zu unstrukturiert', 'Senior Product Manager / Head of Product',
-     '1 Monat', 'Ab sofort, bevorzugt morgens'),
+     '1 Monat', 'Ab sofort, bevorzugt morgens',
+     'Produktstrategie, Datenanalyse, UX'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd03',
      'MAENNLICH', 'ING', 'Klaus', 'Weber', 40213, 'Düsseldorf', 1975,
@@ -165,7 +168,8 @@ INSERT INTO kandidat (
      'Industrie, Produktion, Anlagenbau', 'Produktionsplanung, Qualitätssicherung, Lieferantenmanagement',
      'Werksleiter Produktion',
      'Werksschließung geplant', 'Plant Manager / Operations Director',
-     '6 Monate', 'KW 23 oder 24, nachmittags'),
+     '6 Monate', 'KW 23 oder 24, nachmittags',
+     'Fertigungssteuerung, Prozessoptimierung'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd04',
      'WEIBLICH', NULL, 'Maria', 'Schmidt', 20095, 'Hamburg', 1988,
@@ -178,7 +182,8 @@ INSERT INTO kandidat (
      'Marketing Managerin',
      'Wunsch nach mehr Remote-Flexibilität und internationalem Umfeld',
      'Head of Marketing / Senior Marketing Manager',
-     '2 Monate', 'Flexibel, bevorzugt Donnerstag'),
+     '2 Monate', 'Flexibel, bevorzugt Donnerstag',
+     'Digitales Marketing, Markenführung'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd05',
      'MAENNLICH', NULL, 'Michael', 'Braun', 70173, 'Stuttgart', 1985,
@@ -191,7 +196,8 @@ INSERT INTO kandidat (
      'Operations Manager',
      'Unternehmensfusion, neue Ausrichtung gewünscht',
      'Head of Operations / Supply Chain Manager',
-     '3 Monate', 'KW 21, flexibel')
+     '3 Monate', 'KW 21, flexibel',
+     'Supply Chain Management, ERP-Systeme')
 ON CONFLICT (id) DO NOTHING;
 
 COMMIT;
