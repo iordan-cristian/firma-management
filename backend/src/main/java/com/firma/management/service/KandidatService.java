@@ -28,6 +28,7 @@ public class KandidatService {
 
     public Optional<Kandidat> update(UUID id, Kandidat input) {
         return repo.findById(id).map(existing -> {
+            existing.setDsgvoBestaetigungsDatum(input.getDsgvoBestaetigungsDatum());
             existing.setGeschlecht(input.getGeschlecht());
             existing.setTitel(input.getTitel());
             existing.setVorname(input.getVorname());
@@ -59,6 +60,10 @@ public class KandidatService {
             existing.setZukuenftigePositionTaetigkeiten(input.getZukuenftigePositionTaetigkeiten());
             existing.setKuendigungsfrist(input.getKuendigungsfrist());
             existing.setErstesOnlineMeeting(input.getErstesOnlineMeeting());
+            existing.setAllgemeinerSchwerpunkt(input.getAllgemeinerSchwerpunkt());
+            existing.setFachlicherSkill(input.getFachlicherSkill());
+            existing.setFirmenSelbevorben(input.getFirmenSelbevorben());
+            existing.setFirmenNogo(input.getFirmenNogo());
             existing.setEmail(input.getEmail());
             existing.setTelefon(input.getTelefon());
             existing.setLinkedinProfil(input.getLinkedinProfil());
