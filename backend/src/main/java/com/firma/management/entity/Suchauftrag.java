@@ -28,9 +28,6 @@ public class Suchauftrag {
     @Column(name = "aktivitaet", nullable = false)
     private Aktivitaet aktivitaet;
 
-    @Column(name = "auftrag_placeholder", columnDefinition = "TEXT")
-    private String auftragPlaceholder;
-
     @Column(columnDefinition = "TEXT")
     private String ort;
 

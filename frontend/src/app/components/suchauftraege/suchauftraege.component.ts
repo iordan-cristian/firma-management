@@ -33,7 +33,6 @@ import { Ansprechpartner } from '../../models/ansprechpartner.model';
           <div class="card-row"><span>Status:</span>
             <span class="badge" [class.done]="s.status === 'Fertig'">{{ s.status }}</span>
           </div>
-          <div class="card-row"><span>Auftrag:</span> {{ s.auftragPlaceholder }}</div>
           <div class="card-row" *ngIf="s.ort"><span>Ort:</span> {{ s.ort }}</div>
           <div class="card-row" *ngIf="s.fachlicherSkill"><span>Fachlicher Skill:</span> {{ s.fachlicherSkill }}</div>
           <div class="card-row" *ngIf="s.gehalt"><span>Gehalt:</span> {{ s.gehalt }}</div>
@@ -59,9 +58,6 @@ import { Ansprechpartner } from '../../models/ansprechpartner.model';
             <select [(ngModel)]="draft.aktivitaet">
               <option *ngFor="let k of aktivitaetOptions" [value]="k">{{ k }}</option>
             </select>
-          </label>
-          <label>Auftrag
-            <input [(ngModel)]="draft.auftragPlaceholder" placeholder="Beschreibung" />
           </label>
           <label>Ort
             <input [(ngModel)]="draft.ort" placeholder="Ort" />

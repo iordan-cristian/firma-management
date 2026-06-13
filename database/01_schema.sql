@@ -87,7 +87,6 @@ CREATE TABLE suchauftrag (
     ansprechpartner_id   UUID NOT NULL REFERENCES ansprechpartner(id) ON DELETE CASCADE,
     aktivitaet           VARCHAR(32) NOT NULL
         CHECK (aktivitaet IN ('INVESTOREN', 'VERTRIEB', 'IMOBILIEN', 'PERSONAL')),
-    auftrag_placeholder  TEXT,
     ort                  TEXT,
     fachlicher_skill     TEXT,
     gehalt               TEXT,

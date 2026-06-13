@@ -66,31 +66,26 @@ ON CONFLICT (id) DO NOTHING;
 -- Note: aktivitaet and status use the enum NAMES (uppercase),
 -- not the labels shown in the UI.
 INSERT INTO suchauftrag
-    (id, ansprechpartner_id, aktivitaet, auftrag_placeholder, status) VALUES
+    (id, ansprechpartner_id, aktivitaet, status) VALUES
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb01',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01',
      'IMOBILIEN',
-     'Suche Bürofläche 800-1200 qm in Berlin Mitte',
      'IN_ARBEIT'),
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb02',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa02',
      'VERTRIEB',
-     'Aufbau Vertriebskanal Region Brandenburg',
      'IN_ARBEIT'),
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb03',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa03',
      'INVESTOREN',
-     'Pre-Seed Investor für FinTech Startup',
      'FERTIG'),
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb04',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa04',
      'PERSONAL',
-     'Senior Backend Engineer Java/Spring Boot',
      'IN_ARBEIT'),
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb05',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa05',
      'VERTRIEB',
-     'Distribution Partner für DACH-Region',
      'FERTIG')
 ON CONFLICT (id) DO NOTHING;
 

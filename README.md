@@ -100,7 +100,7 @@ All endpoints (except `/api/auth/login`) require `Authorization: Bearer <token>`
 
 - **Firma**: `id (UUID)`, `kontaktdaten`, `standort`, `allgemeinerSchwerpunkt`
 - **Ansprechpartner**: `id (UUID)`, `firmaId (FK→Firma)`, `vorname`, `nachname`, `schwerpunkt`, `position`, `telefonnummer` (validated as phone), `email` (validated as e-mail), `kontaktinterval`, `informationen` (long text)
-- **Suchauftrag**: `id (UUID)`, `ansprechpartnerId (FK→Ansprechpartner)`, `kernbereich (enum: Investoren | Vertrieb | Imobilien | Personal)`, `auftragPlaceholder`, `status (enum: in Arbeit | Fertig)`
+- **Suchauftrag**: `id (UUID)`, `ansprechpartnerId (FK→Ansprechpartner)`, `kernbereich (enum: Investoren | Vertrieb | Imobilien | Personal)`, `status (enum: in Arbeit | Fertig)`
 - **Vertrag**: `id (UUID)`, `ansprechpartnerId (FK)`, `firmaId (FK)`, `vorname`, `suchauftragId (FK)`, `wert (decimal)`, `bezahlbarAm (date — dd/MM/yyyy on the wire)`, `bezahlt (boolean)`
 
 ## UI structure

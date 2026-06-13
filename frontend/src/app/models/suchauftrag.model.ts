@@ -8,7 +8,6 @@ export interface Suchauftrag {
   id?: string;
   ansprechpartnerId: string;
   aktivitaet: Aktivitaet;
-  auftragPlaceholder?: string;
   ort?: string;
   fachlicherSkill?: string;
   gehalt?: string;
