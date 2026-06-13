@@ -46,8 +46,8 @@ import { Vertrag } from '../../models/vertrag.model';
       </div>
 
       <!-- Add Vertrag Modal -->
-      <div class="modal-backdrop" *ngIf="addModalOpen" (click)="closeAddModal()">
-        <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-backdrop" *ngIf="addModalOpen">
+        <div class="modal">
           <h2>{{ editingId ? 'Vertrag bearbeiten' : 'Neuer Vertrag' }}</h2>
           <label>Ansprechpartner ID *
             <input [(ngModel)]="draft.ansprechpartnerId" placeholder="UUID" />
