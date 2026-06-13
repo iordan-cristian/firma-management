@@ -234,6 +234,20 @@ import {
             <label>Firmen No-Go
               <input [(ngModel)]="draft.firmenNogo" placeholder="z.B. XYZ GmbH" />
             </label>
+
+            <div class="section-title">Kontakt Informationen</div>
+            <label>E-Mail
+              <input [(ngModel)]="draft.email" placeholder="E-Mail Adresse" />
+            </label>
+            <label>Telefon
+              <input [(ngModel)]="draft.telefon" placeholder="z.B. +49 30 1234567" />
+            </label>
+            <label>LinkedIn Profil
+              <input [(ngModel)]="draft.linkedinProfil" placeholder="LinkedIn-URL" />
+            </label>
+            <label>Xing Profil
+              <input [(ngModel)]="draft.xingProfil" placeholder="Xing-URL" />
+            </label>
           </div>
 
           <div class="modal-actions">

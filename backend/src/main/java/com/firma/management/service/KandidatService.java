@@ -59,6 +59,10 @@ public class KandidatService {
             existing.setZukuenftigePositionTaetigkeiten(input.getZukuenftigePositionTaetigkeiten());
             existing.setKuendigungsfrist(input.getKuendigungsfrist());
             existing.setErstesOnlineMeeting(input.getErstesOnlineMeeting());
+            existing.setEmail(input.getEmail());
+            existing.setTelefon(input.getTelefon());
+            existing.setLinkedinProfil(input.getLinkedinProfil());
+            existing.setXingProfil(input.getXingProfil());
             return repo.save(existing);
         });
     }

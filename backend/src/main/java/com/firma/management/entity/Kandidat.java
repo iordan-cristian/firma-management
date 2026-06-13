@@ -2,6 +2,8 @@ package com.firma.management.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -128,4 +130,21 @@ public class Kandidat {
 
     @Column(name = "firmen_nogo", columnDefinition = "TEXT")
     private String firmenNogo;
+
+    @Email(message = "email must be a valid e-mail address")
+    @Column(columnDefinition = "TEXT")
+    private String email;
+
+    @Pattern(
+        regexp = "^$|^\\+?[0-9 ()/-]{5,}$",
+        message = "telefon must be a valid phone number"
+    )
+    @Column(columnDefinition = "TEXT")
+    private String telefon;
+
+    @Column(name = "linkedin_profil", columnDefinition = "TEXT")
+    private String linkedinProfil;
+
+    @Column(name = "xing_profil", columnDefinition = "TEXT")
+    private String xingProfil;
 }

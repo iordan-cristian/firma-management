@@ -49,4 +49,8 @@ export interface Kandidat {
   fachlicherSkill?: string;
   firmenSelbevorben?: string;
   firmenNogo?: string;
+  email?: string;
+  telefon?: string;
+  linkedinProfil?: string;
+  xingProfil?: string;
 }

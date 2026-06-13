@@ -136,6 +136,7 @@ INSERT INTO kandidat (
     branchenkenntnisse, aktuelle_taetigkeiten, aktuelle_position,
     wechselgruende, zukuenftige_position_taetigkeiten, kuendigungsfrist, erstes_online_meeting,
     firmen_selbevorben, firmen_nogo,
+    email, telefon, linkedin_profil, xing_profil,
     fachlicher_skill
 ) VALUES
     ('dddddddd-dddd-dddd-dddd-dddddddddd01',
@@ -150,6 +151,7 @@ INSERT INTO kandidat (
      'Fehlende Aufstiegsmöglichkeiten', 'Head of Engineering / VP Engineering',
      '3 Monate', 'KW 22, flexibel',
      NULL, NULL,
+     't.mueller@email.de', '+49 89 1234567', 'https://www.linkedin.com/in/thomas-mueller', NULL,
      'Projektmanagement, Lean Management'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd02',
@@ -164,6 +166,7 @@ INSERT INTO kandidat (
      'Startup-Umgebung zu unstrukturiert', 'Senior Product Manager / Head of Product',
      '1 Monat', 'Ab sofort, bevorzugt morgens',
      NULL, NULL,
+     's.fischer@email.de', '+49 30 2345678', 'https://www.linkedin.com/in/sarah-fischer', 'https://www.xing.com/profile/Sarah_Fischer',
      'Produktstrategie, Datenanalyse, UX'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd03',
@@ -178,6 +181,7 @@ INSERT INTO kandidat (
      'Werksschließung geplant', 'Plant Manager / Operations Director',
      '6 Monate', 'KW 23 oder 24, nachmittags',
      NULL, NULL,
+     'k.weber@email.de', '+49 211 3456789', NULL, 'https://www.xing.com/profile/Klaus_Weber',
      'Fertigungssteuerung, Prozessoptimierung'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd04',
@@ -193,6 +197,7 @@ INSERT INTO kandidat (
      'Head of Marketing / Senior Marketing Manager',
      '2 Monate', 'Flexibel, bevorzugt Donnerstag',
      NULL, NULL,
+     'm.schmidt@email.de', '+49 40 4567890', 'https://www.linkedin.com/in/maria-schmidt', NULL,
      'Digitales Marketing, Markenführung'),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd05',
@@ -208,6 +213,7 @@ INSERT INTO kandidat (
      'Head of Operations / Supply Chain Manager',
      '3 Monate', 'KW 21, flexibel',
      NULL, NULL,
+     'm.braun@email.de', '+49 711 5678901', 'https://www.linkedin.com/in/michael-braun', 'https://www.xing.com/profile/Michael_Braun',
      'Supply Chain Management, ERP-Systeme')
 ON CONFLICT (id) DO NOTHING;
 

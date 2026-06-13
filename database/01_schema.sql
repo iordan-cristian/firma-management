@@ -208,6 +208,12 @@ CREATE TABLE kandidat (
     firmen_selbevorben                   TEXT,
     firmen_nogo                          TEXT,
 
+    -- Kontakt Informationen
+    email                                TEXT,
+    telefon                              TEXT,
+    linkedin_profil                      TEXT,
+    xing_profil                          TEXT,
+
     allgemeiner_schwerpunkt              VARCHAR(32)
         CHECK (allgemeiner_schwerpunkt IN ('GEBAEUDETECHNIK', 'ENERGIETECHNIK', 'MASCHINENBAU', 'INFORMATIK', 'KAUFMAENNISCH')),
 
