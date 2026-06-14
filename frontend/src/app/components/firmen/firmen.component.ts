@@ -155,12 +155,15 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <input type="email" [(ngModel)]="draftFirma.email" placeholder="info@beispiel.de" />
               <button class="btn-link" (click)="copyToClipboard(draftFirma.email)" [disabled]="!draftFirma.email">📋</button>
             </div>
+            <span class="field-error" *ngIf="firmaErrors['email']">{{ firmaErrors['email'] }}</span>
           </label>
           <label>Telefon
             <input [(ngModel)]="draftFirma.telefon" placeholder="+49 30 1234567" />
+            <span class="field-error" *ngIf="firmaErrors['telefon']">{{ firmaErrors['telefon'] }}</span>
           </label>
           <label>Mobil
             <input [(ngModel)]="draftFirma.mobil" placeholder="+49 170 1234567" />
+            <span class="field-error" *ngIf="firmaErrors['mobil']">{{ firmaErrors['mobil'] }}</span>
           </label>
           <div class="modal-actions">
             <button class="btn-save" (click)="saveFirma()">Speichern</button>
@@ -190,12 +193,14 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <input [(ngModel)]="draftAnsprechpartner.email" placeholder="E-Mail" />
               <button class="btn-link" (click)="copyToClipboard(draftAnsprechpartner.email)" [disabled]="!draftAnsprechpartner.email">📋</button>
             </div>
+            <span class="field-error" *ngIf="ansprechpartnerErrors['email']">{{ ansprechpartnerErrors['email'] }}</span>
           </label>
           <label>Telefon
             <div class="input-with-btn">
               <input [(ngModel)]="draftAnsprechpartner.telefonnummer" placeholder="Telefonnummer" />
               <button class="btn-link" (click)="copyToClipboard(draftAnsprechpartner.telefonnummer)" [disabled]="!draftAnsprechpartner.telefonnummer">📋</button>
             </div>
+            <span class="field-error" *ngIf="ansprechpartnerErrors['telefonnummer']">{{ ansprechpartnerErrors['telefonnummer'] }}</span>
           </label>
           <label>Kontaktinterval
             <input [(ngModel)]="draftAnsprechpartner.kontaktinterval" placeholder="z.B. wöchentlich" />
@@ -530,6 +535,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .btn-link { padding: 8px 10px; border: 1px solid #dfe3ee; border-radius: 6px; background: #f1f3f8; cursor: pointer; font-size: 14px; line-height: 1; }
     .btn-link:hover:not(:disabled) { background: #e2e6f0; }
     .btn-link:disabled { opacity: 0.4; cursor: default; }
+    .field-error { color: #e03131; font-size: 11px; margin-top: 2px; }
 
     .modal-duo { display: flex; gap: 20px; align-items: stretch; }
     .modal-suchauftrag { display: flex; flex-direction: column; overflow: hidden; }
@@ -579,11 +585,13 @@ export class FirmenComponent implements OnInit {
   addFirmaOpen = false;
   editingFirmaId: string | null = null;
   draftFirma: Partial<Firma> = {};
+  firmaErrors: Record<string, string> = {};
 
   // Add / Edit Ansprechpartner
   addAnsprechpartnerOpen = false;
   editingAnsprechpartnerId: string | null = null;
   draftAnsprechpartner: Partial<Ansprechpartner> = {};
+  ansprechpartnerErrors: Record<string, string> = {};
 
   // Add / Edit Suchauftrag
   addSuchauftragOpen = false;
@@ -615,7 +623,7 @@ export class FirmenComponent implements OnInit {
   }
 
   // ── Firma ────────────────────────────────────────────────
-  openAddModal(): void { this.editingFirmaId = null; this.draftFirma = {}; this.addFirmaOpen = true; }
+  openAddModal(): void { this.editingFirmaId = null; this.draftFirma = {}; this.firmaErrors = {}; this.addFirmaOpen = true; }
   @HostListener('document:keydown.escape')
   onEscape(): void {
     if (this.addFirmaOpen) this.closeAddModal();
@@ -629,19 +637,23 @@ export class FirmenComponent implements OnInit {
   openEditFirma(f: Firma): void {
     this.editingFirmaId = f.id ?? null;
     this.draftFirma = { ...f };
+    this.firmaErrors = {};
     this.addFirmaOpen = true;
   }
 
   saveFirma(): void {
+    const onError = (err: any) => {
+      if (err.status === 400) this.firmaErrors = err.error ?? {};
+    };
     if (this.editingFirmaId) {
-      this.firmaService.update(this.editingFirmaId, this.draftFirma as Firma).subscribe(updated => {
-        this.firmen = this.firmen.map(f => f.id === updated.id ? updated : f);
-        this.closeAddModal();
+      this.firmaService.update(this.editingFirmaId, this.draftFirma as Firma).subscribe({
+        next: updated => { this.firmen = this.firmen.map(f => f.id === updated.id ? updated : f); this.closeAddModal(); },
+        error: onError,
       });
     } else {
-      this.firmaService.create(this.draftFirma as Firma).subscribe(created => {
-        this.firmen = [...this.firmen, created];
-        this.closeAddModal();
+      this.firmaService.create(this.draftFirma as Firma).subscribe({
+        next: created => { this.firmen = [...this.firmen, created]; this.closeAddModal(); },
+        error: onError,
       });
     }
   }
@@ -650,25 +662,32 @@ export class FirmenComponent implements OnInit {
   openAddAnsprechpartner(): void {
     this.editingAnsprechpartnerId = null;
     this.draftAnsprechpartner = { firmaId: this.expandedFirma!.id };
+    this.ansprechpartnerErrors = {};
     this.addAnsprechpartnerOpen = true;
   }
 
   openEditAnsprechpartner(a: Ansprechpartner): void {
     this.editingAnsprechpartnerId = a.id ?? null;
     this.draftAnsprechpartner = { ...a };
+    this.ansprechpartnerErrors = {};
     this.addAnsprechpartnerOpen = true;
   }
 
   saveAnsprechpartner(): void {
     const refresh = () =>
       this.firmaService.getAnsprechpartnerForFirma(this.expandedFirma!.id!).subscribe(list => (this.ansprechpartnerList = list));
+    const onError = (err: any) => {
+      if (err.status === 400) this.ansprechpartnerErrors = err.error ?? {};
+    };
     if (this.editingAnsprechpartnerId) {
-      this.ansprechpartnerService.update(this.editingAnsprechpartnerId, this.draftAnsprechpartner as Ansprechpartner).subscribe(() => {
-        refresh(); this.addAnsprechpartnerOpen = false; this.editingAnsprechpartnerId = null;
+      this.ansprechpartnerService.update(this.editingAnsprechpartnerId, this.draftAnsprechpartner as Ansprechpartner).subscribe({
+        next: () => { refresh(); this.addAnsprechpartnerOpen = false; this.editingAnsprechpartnerId = null; },
+        error: onError,
       });
     } else {
-      this.ansprechpartnerService.create(this.draftAnsprechpartner as Ansprechpartner).subscribe(() => {
-        refresh(); this.addAnsprechpartnerOpen = false;
+      this.ansprechpartnerService.create(this.draftAnsprechpartner as Ansprechpartner).subscribe({
+        next: () => { refresh(); this.addAnsprechpartnerOpen = false; },
+        error: onError,
       });
     }
   }

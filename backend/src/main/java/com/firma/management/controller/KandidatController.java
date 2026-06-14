@@ -2,6 +2,7 @@ package com.firma.management.controller;
 
 import com.firma.management.entity.Kandidat;
 import com.firma.management.service.KandidatService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,12 +32,12 @@ public class KandidatController {
     }
 
     @PostMapping
-    public Kandidat create(@RequestBody Kandidat k) {
+    public Kandidat create(@Valid @RequestBody Kandidat k) {
         return service.create(k);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Kandidat> update(@PathVariable UUID id, @RequestBody Kandidat k) {
+    public ResponseEntity<Kandidat> update(@PathVariable UUID id, @Valid @RequestBody Kandidat k) {
         return service.update(id, k)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

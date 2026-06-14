@@ -241,12 +241,14 @@ import {
                 <input [(ngModel)]="draft.email" placeholder="E-Mail Adresse" />
                 <button class="btn-link" (click)="copyToClipboard(draft.email)" [disabled]="!draft.email">📋</button>
               </div>
+              <span class="field-error" *ngIf="kandidatErrors['email']">{{ kandidatErrors['email'] }}</span>
             </label>
             <label>Telefon
               <div class="input-with-btn">
                 <input [(ngModel)]="draft.telefon" placeholder="z.B. +49 30 1234567" />
                 <button class="btn-link" (click)="copyToClipboard(draft.telefon)" [disabled]="!draft.telefon">📋</button>
               </div>
+              <span class="field-error" *ngIf="kandidatErrors['telefon']">{{ kandidatErrors['telefon'] }}</span>
             </label>
             <label>LinkedIn Profil
               <div class="input-with-btn">
@@ -326,6 +328,7 @@ import {
     .btn-link { padding: 8px 10px; border: 1px solid #dfe3ee; border-radius: 6px; background: #f1f3f8; cursor: pointer; font-size: 14px; line-height: 1; }
     .btn-link:hover:not(:disabled) { background: #e2e6f0; }
     .btn-link:disabled { opacity: 0.4; cursor: default; }
+    .field-error { color: #e03131; font-size: 11px; margin-top: 2px; }
   `]
 })
 export class KandidatenComponent implements OnInit {
@@ -343,6 +346,7 @@ export class KandidatenComponent implements OnInit {
   addModalOpen = false;
   editingId: string | null = null;
   draft: Partial<Kandidat> = {};
+  kandidatErrors: Record<string, string> = {};
 
   ngOnInit(): void { this.reload(); }
 
@@ -370,12 +374,14 @@ export class KandidatenComponent implements OnInit {
   openAddModal(): void {
     this.editingId = null;
     this.draft = {};
+    this.kandidatErrors = {};
     this.addModalOpen = true;
   }
 
   openEditModal(k: Kandidat): void {
     this.editingId = k.id ?? null;
     this.draft = { ...k };
+    this.kandidatErrors = {};
     this.addModalOpen = true;
   }
 
@@ -389,15 +395,18 @@ export class KandidatenComponent implements OnInit {
   }
 
   saveKandidat(): void {
+    const onError = (err: any) => {
+      if (err.status === 400) this.kandidatErrors = err.error ?? {};
+    };
     if (this.editingId) {
-      this.service.update(this.editingId, this.draft as Kandidat).subscribe(() => {
-        this.reload();
-        this.closeAddModal();
+      this.service.update(this.editingId, this.draft as Kandidat).subscribe({
+        next: () => { this.reload(); this.closeAddModal(); },
+        error: onError,
       });
     } else {
-      this.service.create(this.draft as Kandidat).subscribe(() => {
-        this.reload();
-        this.closeAddModal();
+      this.service.create(this.draft as Kandidat).subscribe({
+        next: () => { this.reload(); this.closeAddModal(); },
+        error: onError,
       });
     }
   }
