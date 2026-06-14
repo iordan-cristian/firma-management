@@ -9,6 +9,8 @@ export interface Suchauftrag {
   ansprechpartnerId: string;
   aktivitaet: Aktivitaet;
   ort?: string;
+  postleitzahl?: string;
+  adresse?: string;
   fachlicherSkill?: string;
   gehalt?: string;
   gehaltMehrInfo?: string;

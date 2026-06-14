@@ -89,6 +89,8 @@ CREATE TABLE suchauftrag (
     aktivitaet           VARCHAR(32) NOT NULL
         CHECK (aktivitaet IN ('INVESTOREN', 'VERTRIEB', 'IMOBILIEN', 'PERSONAL')),
     ort                  TEXT,
+    postleitzahl         TEXT,
+    adresse              TEXT,
     fachlicher_skill     TEXT,
     gehalt               TEXT,
     gehalt_mehr_info     TEXT,

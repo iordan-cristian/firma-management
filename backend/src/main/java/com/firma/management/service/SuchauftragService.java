@@ -51,6 +51,8 @@ public class SuchauftragService {
             existing.setAnsprechpartnerId(input.getAnsprechpartnerId());
             existing.setAktivitaet(input.getAktivitaet());
             existing.setOrt(input.getOrt());
+            existing.setPostleitzahl(input.getPostleitzahl());
+            existing.setAdresse(input.getAdresse());
             existing.setFachlicherSkill(input.getFachlicherSkill());
             existing.setGehalt(input.getGehalt());
             existing.setGehaltMehrInfo(input.getGehaltMehrInfo());

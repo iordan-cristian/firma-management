@@ -87,7 +87,8 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                         <div class="card-row"><span>Status:</span>
                           <span class="badge" [class.done]="s.status === 'Fertig'">{{ s.status }}</span>
                         </div>
-                        <div class="card-row" *ngIf="s.ort"><span>Ort:</span> {{ s.ort }}</div>
+                        <div class="card-row" *ngIf="s.postleitzahl || s.ort"><span>Ort:</span> {{ s.postleitzahl }} {{ s.ort }}</div>
+                        <div class="card-row" *ngIf="s.adresse"><span>Adresse:</span> {{ s.adresse }}</div>
                         <div class="card-row" *ngIf="s.fachlicherSkill"><span>Fachlicher Skill:</span> {{ s.fachlicherSkill }}</div>
                         <div class="card-row" *ngIf="s.gehalt"><span>Gehalt:</span> {{ s.gehalt }}</div>
                         <div class="card-row" *ngIf="s.gehaltMehrInfo"><span>Gehalt Info:</span> {{ s.gehaltMehrInfo }}</div>
@@ -176,6 +177,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
       <div class="modal-backdrop" *ngIf="addAnsprechpartnerOpen">
         <div class="modal modal-wide">
           <h2>{{ editingAnsprechpartnerId ? 'Ansprechpartner bearbeiten' : 'Neuer Ansprechpartner' }}</h2>
+          <div class="section-title">Persönliche Daten</div>
           <label>Vorname
             <input [(ngModel)]="draftAnsprechpartner.vorname" placeholder="Vorname" />
           </label>
@@ -188,6 +190,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
           <label>Schwerpunkt
             <input [(ngModel)]="draftAnsprechpartner.schwerpunkt" placeholder="Schwerpunkt" />
           </label>
+          <div class="section-title">Kontakt</div>
           <label>E-Mail
             <div class="input-with-btn">
               <input [(ngModel)]="draftAnsprechpartner.email" placeholder="E-Mail" />
@@ -205,6 +208,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
           <label>Kontaktinterval
             <input [(ngModel)]="draftAnsprechpartner.kontaktinterval" placeholder="z.B. wöchentlich" />
           </label>
+          <div class="section-title">Social Media</div>
           <label>LinkedIn Profil
             <div class="input-with-btn">
               <input [(ngModel)]="draftAnsprechpartner.linkedinProfil" placeholder="LinkedIn-URL" />
@@ -217,6 +221,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <button class="btn-link" (click)="openLink(draftAnsprechpartner.xingProfil)" [disabled]="!draftAnsprechpartner.xingProfil">↗</button>
             </div>
           </label>
+          <div class="section-title">Informationen</div>
           <label>Informationen
             <textarea [(ngModel)]="draftAnsprechpartner.informationen" placeholder="Notizen..." rows="8" style="min-height:160px"></textarea>
           </label>
@@ -239,14 +244,32 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   <option *ngFor="let a of ansprechpartnerList" [value]="a.id">{{ a.vorname }} {{ a.nachname }}</option>
                 </select>
               </label>
+              <label>Status *
+                <select [(ngModel)]="draftSuchauftrag.status">
+                  <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+                </select>
+              </label>
+              <label>Anlage Datum
+                <input type="date" [(ngModel)]="anlageDatumInput" />
+              </label>
               <label>Aktivität *
                 <select [(ngModel)]="draftSuchauftrag.aktivitaet">
                   <option *ngFor="let k of aktivitaetOptions" [value]="k">{{ k }}</option>
                 </select>
               </label>
+              
+              <div class="section-title">Arbeitsplatz</div>
               <label>Ort
                 <input [(ngModel)]="draftSuchauftrag.ort" placeholder="Ort" />
               </label>
+              <label>Postleitzahl
+                <input [(ngModel)]="draftSuchauftrag.postleitzahl" placeholder="PLZ" />
+              </label>
+              <label>Adresse
+                <input [(ngModel)]="draftSuchauftrag.adresse" placeholder="Straße und Hausnummer" />
+              </label>
+              
+               <div class="section-title">Kandidat</div>
               <label>Fachlicher Skill
                 <textarea rows="4" [(ngModel)]="draftSuchauftrag.fachlicherSkill" placeholder="z.B. Java, SAP, CAD"></textarea>
               </label>
@@ -276,14 +299,6 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               </label>
               <label>Informationen
                 <textarea [(ngModel)]="draftSuchauftrag.informationen" placeholder="Notizen..." rows="8" style="min-height:160px"></textarea>
-              </label>
-              <label>Status *
-                <select [(ngModel)]="draftSuchauftrag.status">
-                  <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
-                </select>
-              </label>
-              <label>Anlage Datum
-                <input type="date" [(ngModel)]="anlageDatumInput" />
               </label>
             </div>
             <div class="modal-actions">
@@ -514,6 +529,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
       box-shadow: 0 8px 32px rgba(0,0,0,0.18); max-height: 90vh; overflow-y: auto;
     }
     .modal h2 { margin: 0 0 20px; color: #1f2a44; font-size: 18px; }
+    .section-title { font-size: 12px; font-weight: 700; color: #3b5bdb; text-transform: uppercase; letter-spacing: 0.05em; margin: 18px 0 10px; border-bottom: 1px solid #e5e9f3; padding-bottom: 4px; }
     .modal label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #555; margin-bottom: 14px; }
     .modal label.checkbox-label { flex-direction: row; align-items: center; gap: 8px; }
     .modal input:not([type="checkbox"]), .modal select, .modal textarea {

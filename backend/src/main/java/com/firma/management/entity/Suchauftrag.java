@@ -31,6 +31,12 @@ public class Suchauftrag {
     @Column(columnDefinition = "TEXT")
     private String ort;
 
+    @Column(columnDefinition = "TEXT")
+    private String postleitzahl;
+
+    @Column(columnDefinition = "TEXT")
+    private String adresse;
+
     @Column(name = "fachlicher_skill", columnDefinition = "TEXT")
     private String fachlicherSkill;
 
