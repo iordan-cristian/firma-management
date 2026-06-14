@@ -36,9 +36,14 @@ import { Ansprechpartner } from '../../models/ansprechpartner.model';
           <div class="card-row" *ngIf="s.ort"><span>Ort:</span> {{ s.ort }}</div>
           <div class="card-row" *ngIf="s.fachlicherSkill"><span>Fachlicher Skill:</span> {{ s.fachlicherSkill }}</div>
           <div class="card-row" *ngIf="s.gehalt"><span>Gehalt:</span> {{ s.gehalt }}</div>
+          <div class="card-row" *ngIf="s.gehaltMehrInfo"><span>Gehalt Info:</span> {{ s.gehaltMehrInfo }}</div>
           <div class="card-row" *ngIf="s.berufserfahrung"><span>Berufserfahrung:</span> {{ s.berufserfahrung }}</div>
           <div class="card-row" *ngIf="s.branchenkenntnisse"><span>Branchenkenntnisse:</span> {{ s.branchenkenntnisse }}</div>
           <div class="card-row" *ngIf="s.zertifikate"><span>Zertifikate:</span> {{ s.zertifikate }}</div>
+          <div class="card-row" *ngIf="s.deutsch"><span>Deutsch:</span> {{ s.deutsch }}</div>
+          <div class="card-row" *ngIf="s.englisch"><span>Englisch:</span> {{ s.englisch }}</div>
+          <div class="card-row" *ngIf="s.sonstigeSprachen"><span>Sonstige Sprachen:</span> {{ s.sonstigeSprachen }}</div>
+          <div class="card-info" *ngIf="s.informationen">{{ s.informationen }}</div>
           <div class="card-row"><span>Ansprechpartner:</span> {{ apName(s.ansprechpartnerId) }}</div>
         </div>
         <div *ngIf="!items.length" class="empty">Nothing to show.</div>
@@ -68,6 +73,9 @@ import { Ansprechpartner } from '../../models/ansprechpartner.model';
           <label>Gehalt
             <input [(ngModel)]="draft.gehalt" placeholder="z.B. 60000-80000" />
           </label>
+          <label>Gehalt Mehr Info
+            <input [(ngModel)]="draft.gehaltMehrInfo" placeholder="z.B. Bonus, Nebenleistungen" />
+          </label>
           <label>Berufserfahrung
             <input [(ngModel)]="draft.berufserfahrung" placeholder="z.B. 5+ Jahre" />
           </label>
@@ -76,6 +84,18 @@ import { Ansprechpartner } from '../../models/ansprechpartner.model';
           </label>
           <label>Zertifikate
             <input [(ngModel)]="draft.zertifikate" placeholder="z.B. PMP, ISO 9001" />
+          </label>
+          <label>Deutsch
+            <input [(ngModel)]="draft.deutsch" placeholder="z.B. C1, Muttersprache" />
+          </label>
+          <label>Englisch
+            <input [(ngModel)]="draft.englisch" placeholder="z.B. B2, fließend" />
+          </label>
+          <label>Sonstige Sprachen
+            <input [(ngModel)]="draft.sonstigeSprachen" placeholder="z.B. Französisch B2, Spanisch A2" />
+          </label>
+          <label>Informationen
+            <textarea [(ngModel)]="draft.informationen" placeholder="Notizen..." rows="8" style="min-height:160px"></textarea>
           </label>
           <label>Status *
             <select [(ngModel)]="draft.status">
@@ -104,6 +124,7 @@ import { Ansprechpartner } from '../../models/ansprechpartner.model';
     .card-title { font-weight: 600; color: #1f2a44; margin-bottom: 8px; }
     .card-row { font-size: 13px; margin: 4px 0; color: #333; }
     .card-row span:first-child { color: #777; margin-right: 4px; }
+    .card-info { margin-top: 8px; font-size: 12px; color: #555; white-space: pre-wrap; }
     .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; background: #f5d97c; font-size: 12px; }
     .badge.done { background: #b6e3b6; }
     .empty { color: #999; padding: 24px; text-align: center; }

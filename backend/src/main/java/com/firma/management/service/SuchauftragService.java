@@ -53,9 +53,14 @@ public class SuchauftragService {
             existing.setOrt(input.getOrt());
             existing.setFachlicherSkill(input.getFachlicherSkill());
             existing.setGehalt(input.getGehalt());
+            existing.setGehaltMehrInfo(input.getGehaltMehrInfo());
             existing.setBerufserfahrung(input.getBerufserfahrung());
             existing.setBranchenkenntnisse(input.getBranchenkenntnisse());
             existing.setZertifikate(input.getZertifikate());
+            existing.setDeutsch(input.getDeutsch());
+            existing.setEnglisch(input.getEnglisch());
+            existing.setSonstigeSprachen(input.getSonstigeSprachen());
+            existing.setInformationen(input.getInformationen());
             existing.setStatus(input.getStatus());
             existing.setAnlageDatum(input.getAnlageDatum());
             return repo.save(existing);

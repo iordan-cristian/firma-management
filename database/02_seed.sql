@@ -71,27 +71,40 @@ ON CONFLICT (id) DO NOTHING;
 -- Note: aktivitaet and status use the enum NAMES (uppercase),
 -- not the labels shown in the UI.
 INSERT INTO suchauftrag
-    (id, ansprechpartner_id, aktivitaet, status) VALUES
+    (id, ansprechpartner_id, aktivitaet, ort, fachlicher_skill,
+     gehalt, gehalt_mehr_info, berufserfahrung, branchenkenntnisse, zertifikate,
+     deutsch, englisch, sonstige_sprachen, informationen,
+     status, anlage_datum) VALUES
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb01',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01',
-     'IMOBILIEN',
-     'IN_ARBEIT'),
+     'IMOBILIEN', 'Berlin', 'Projektsteuerung, CAD, AutoCAD',
+     '70000-90000', 'Firmenwagen, 30 Tage Urlaub', '5+ Jahre', 'Bau, Immobilien', NULL,
+     'C1', 'B2', NULL, 'Dringend gesucht, Stelle soll bis Q3 besetzt sein.',
+     'IN_ARBEIT', DATE '2026-01-15'),
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb02',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa02',
-     'VERTRIEB',
-     'IN_ARBEIT'),
+     'VERTRIEB', 'Berlin', 'B2B-Vertrieb, CRM, Kaltakquise',
+     '60000-80000', 'Provision bis 20 %, Dienstwagen', '3+ Jahre', 'Bau, Handwerk', NULL,
+     'Muttersprache', 'B1', NULL, NULL,
+     'IN_ARBEIT', DATE '2026-02-10'),
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb03',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa03',
-     'INVESTOREN',
-     'FERTIG'),
+     'INVESTOREN', 'München', 'Finanzanalyse, Excel, Bloomberg',
+     '95000-130000', 'Bonus bis 30 % des Jahresgehalts', '7+ Jahre', 'Finance, Private Equity', 'CFA',
+     'Muttersprache', 'C2', 'Französisch B2', 'Kandidat wurde erfolgreich platziert.',
+     'FERTIG', DATE '2025-11-01'),
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb04',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa04',
-     'PERSONAL',
-     'IN_ARBEIT'),
+     'PERSONAL', 'Hamburg', 'Java, Spring Boot, Microservices',
+     '80000-100000', 'Remote-Option, Weiterbildungsbudget', '4+ Jahre', 'IT, Software', 'AWS Certified',
+     'B2', 'C1', NULL, 'Senior-Profil gewünscht, Teamleitung wäre ein Plus.',
+     'IN_ARBEIT', DATE '2026-03-05'),
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb05',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa05',
-     'VERTRIEB',
-     'FERTIG')
+     'VERTRIEB', 'Köln', 'Key Account Management, SAP',
+     '75000-95000', NULL, '5+ Jahre', 'Logistik, Handel', NULL,
+     'Muttersprache', 'B2', NULL, NULL,
+     'FERTIG', DATE '2025-12-20')
 ON CONFLICT (id) DO NOTHING;
 
 

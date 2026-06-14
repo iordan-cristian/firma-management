@@ -90,9 +90,14 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                         <div class="card-row" *ngIf="s.ort"><span>Ort:</span> {{ s.ort }}</div>
                         <div class="card-row" *ngIf="s.fachlicherSkill"><span>Fachlicher Skill:</span> {{ s.fachlicherSkill }}</div>
                         <div class="card-row" *ngIf="s.gehalt"><span>Gehalt:</span> {{ s.gehalt }}</div>
+                        <div class="card-row" *ngIf="s.gehaltMehrInfo"><span>Gehalt Info:</span> {{ s.gehaltMehrInfo }}</div>
                         <div class="card-row" *ngIf="s.berufserfahrung"><span>Berufserfahrung:</span> {{ s.berufserfahrung }}</div>
                         <div class="card-row" *ngIf="s.branchenkenntnisse"><span>Branchenkenntnisse:</span> {{ s.branchenkenntnisse }}</div>
                         <div class="card-row" *ngIf="s.zertifikate"><span>Zertifikate:</span> {{ s.zertifikate }}</div>
+                        <div class="card-row" *ngIf="s.deutsch"><span>Deutsch:</span> {{ s.deutsch }}</div>
+                        <div class="card-row" *ngIf="s.englisch"><span>Englisch:</span> {{ s.englisch }}</div>
+                        <div class="card-row" *ngIf="s.sonstigeSprachen"><span>Sonstige Sprachen:</span> {{ s.sonstigeSprachen }}</div>
+                        <div class="card-info" *ngIf="s.informationen">{{ s.informationen }}</div>
                         <div class="card-row" *ngIf="s.anlageDatum"><span>Anlage Datum:</span> {{ s.anlageDatum }}</div>
                       </div>
                       <div *ngIf="!suchauftragList.length" class="empty">No Suchaufträge.</div>
@@ -243,6 +248,9 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <label>Gehalt
                 <input [(ngModel)]="draftSuchauftrag.gehalt" placeholder="z.B. 60000-80000" />
               </label>
+              <label>Gehalt Mehr Info
+                <input [(ngModel)]="draftSuchauftrag.gehaltMehrInfo" placeholder="z.B. Bonus, Nebenleistungen" />
+              </label>
               <label>Berufserfahrung
                 <input [(ngModel)]="draftSuchauftrag.berufserfahrung" placeholder="z.B. 5+ Jahre" />
               </label>
@@ -251,6 +259,18 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               </label>
               <label>Zertifikate
                 <input [(ngModel)]="draftSuchauftrag.zertifikate" placeholder="z.B. PMP, ISO 9001" />
+              </label>
+              <label>Deutsch
+                <input [(ngModel)]="draftSuchauftrag.deutsch" placeholder="z.B. C1, Muttersprache" />
+              </label>
+              <label>Englisch
+                <input [(ngModel)]="draftSuchauftrag.englisch" placeholder="z.B. B2, fließend" />
+              </label>
+              <label>Sonstige Sprachen
+                <input [(ngModel)]="draftSuchauftrag.sonstigeSprachen" placeholder="z.B. Französisch B2, Spanisch A2" />
+              </label>
+              <label>Informationen
+                <textarea [(ngModel)]="draftSuchauftrag.informationen" placeholder="Notizen..." rows="8" style="min-height:160px"></textarea>
               </label>
               <label>Status *
                 <select [(ngModel)]="draftSuchauftrag.status">

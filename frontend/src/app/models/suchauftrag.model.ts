@@ -11,9 +11,14 @@ export interface Suchauftrag {
   ort?: string;
   fachlicherSkill?: string;
   gehalt?: string;
+  gehaltMehrInfo?: string;
   berufserfahrung?: string;
   branchenkenntnisse?: string;
   zertifikate?: string;
+  deutsch?: string;
+  englisch?: string;
+  sonstigeSprachen?: string;
+  informationen?: string;
   status: SuchauftragStatus;
   anlageDatum?: string;
 }

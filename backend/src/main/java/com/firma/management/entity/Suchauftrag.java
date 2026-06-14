@@ -37,6 +37,9 @@ public class Suchauftrag {
     @Column(columnDefinition = "TEXT")
     private String gehalt;
 
+    @Column(name = "gehalt_mehr_info", columnDefinition = "TEXT")
+    private String gehaltMehrInfo;
+
     @Column(columnDefinition = "TEXT")
     private String berufserfahrung;
 
@@ -45,6 +48,18 @@ public class Suchauftrag {
 
     @Column(columnDefinition = "TEXT")
     private String zertifikate;
+
+    @Column(columnDefinition = "TEXT")
+    private String deutsch;
+
+    @Column(columnDefinition = "TEXT")
+    private String englisch;
+
+    @Column(name = "sonstige_sprachen", columnDefinition = "TEXT")
+    private String sonstigeSprachen;
+
+    @Column(columnDefinition = "TEXT")
+    private String informationen;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

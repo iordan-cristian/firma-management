@@ -91,9 +91,14 @@ CREATE TABLE suchauftrag (
     ort                  TEXT,
     fachlicher_skill     TEXT,
     gehalt               TEXT,
+    gehalt_mehr_info     TEXT,
     berufserfahrung      TEXT,
     branchenkenntnisse   TEXT,
     zertifikate          TEXT,
+    deutsch              TEXT,
+    englisch             TEXT,
+    sonstige_sprachen    TEXT,
+    informationen        TEXT,
     status               VARCHAR(32) NOT NULL
         CHECK (status IN ('IN_ARBEIT', 'FERTIG')),
     anlage_datum         DATE
@@ -105,6 +110,11 @@ CREATE INDEX idx_suchauftrag_status             ON suchauftrag(status);
 COMMENT ON TABLE  suchauftrag                    IS 'Search assignments tied to an Ansprechpartner';
 COMMENT ON COLUMN suchauftrag.ansprechpartner_id IS 'FK → ansprechpartner.id';
 COMMENT ON COLUMN suchauftrag.aktivitaet         IS 'Enum: INVESTOREN | VERTRIEB | IMOBILIEN | PERSONAL';
+COMMENT ON COLUMN suchauftrag.gehalt_mehr_info   IS 'Additional salary details, e.g. bonus or benefits';
+COMMENT ON COLUMN suchauftrag.deutsch            IS 'Required German language level (free text, e.g. C1)';
+COMMENT ON COLUMN suchauftrag.englisch           IS 'Required English language level (free text, e.g. B2)';
+COMMENT ON COLUMN suchauftrag.sonstige_sprachen  IS 'Other required languages (free text)';
+COMMENT ON COLUMN suchauftrag.informationen      IS 'Free-form notes';
 COMMENT ON COLUMN suchauftrag.status             IS 'Enum: IN_ARBEIT | FERTIG';
 
 
