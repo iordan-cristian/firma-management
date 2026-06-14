@@ -189,7 +189,7 @@ export class SuchauftraegeComponent implements OnInit {
 
   openAddModal(): void {
     this.editingId = null;
-    this.draft = { aktivitaet: 'Investoren', status: 'in Arbeit' };
+    this.draft = { aktivitaet: 'Personal', status: 'in Arbeit' };
     this.addModalOpen = true;
   }
 

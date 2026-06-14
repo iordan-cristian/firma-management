@@ -695,7 +695,7 @@ export class FirmenComponent implements OnInit {
   // ── Suchauftrag ──────────────────────────────────────────
   openAddSuchauftrag(): void {
     this.editingSuchauftragId = null;
-    this.draftSuchauftrag = { aktivitaet: 'Investoren', status: 'in Arbeit' };
+    this.draftSuchauftrag = { aktivitaet: 'Personal', status: 'in Arbeit' };
     const now = new Date();
     const m = String(now.getMonth() + 1).padStart(2, '0');
     const d = String(now.getDate()).padStart(2, '0');
