@@ -65,6 +65,8 @@ public class SuchauftragService {
             existing.setInformationen(input.getInformationen());
             existing.setStatus(input.getStatus());
             existing.setAnlageDatum(input.getAnlageDatum());
+            existing.setGehaltMinimum(input.getGehaltMinimum());
+            existing.setGehaltMaximum(input.getGehaltMaximum());
             return repo.save(existing);
         });
     }

@@ -10,19 +10,19 @@
 BEGIN;
 SET client_encoding = 'UTF8';
 -- -- FIRMA -------------------------------------------------------------------
-INSERT INTO firma (id, name, standort, allgemeiner_schwerpunkt, email, telefon, mobil) VALUES
+INSERT INTO firma (id, name, standort, allgemeiner_schwerpunkt, email, telefon, mobil, angebot_website) VALUES
     ('11111111-1111-1111-1111-111111111111',
      'Alpha Bau GmbH', 'Berlin', 'GEBAEUDETECHNIK',
-     'info@alphabau.de', '+49 30 1111111', '+49 170 1111111'),
+     'info@alphabau.de', '+49 30 1111111', '+49 170 1111111', 'https://www.alphabau.de'),
     ('22222222-2222-2222-2222-222222222222',
      'Bayern Kapital AG', 'München', 'KAUFMAENNISCH',
-     'kontakt@bayernkapital.de', '+49 89 2222222', '+49 171 2222222'),
+     'kontakt@bayernkapital.de', '+49 89 2222222', '+49 171 2222222', 'https://www.bayernkapital.de'),
     ('33333333-3333-3333-3333-333333333333',
      'Hansa Grupp GmbH', 'Hamburg', 'INFORMATIK',
-     'office@hansagrupp.de', '+49 40 3333333', '+49 172 3333333'),
+     'office@hansagrupp.de', '+49 40 3333333', '+49 172 3333333', 'https://www.hansagrupp.de'),
     ('44444444-4444-4444-4444-444444444444',
      'Rhein Vertrieb KG', 'Köln', 'MASCHINENBAU',
-     'hello@rheinvertrieb.de', '+49 221 4444444', '+49 173 4444444')
+     'hello@rheinvertrieb.de', '+49 221 4444444', '+49 173 4444444', NULL)
 ON CONFLICT (id) DO NOTHING;
 
 
@@ -72,38 +72,44 @@ ON CONFLICT (id) DO NOTHING;
 -- not the labels shown in the UI.
 INSERT INTO suchauftrag
     (id, ansprechpartner_id, aktivitaet, ort, postleitzahl, adresse, fachlicher_skill,
-     gehalt, gehalt_mehr_info, berufserfahrung, branchenkenntnisse, zertifikate,
+     gehalt_mehr_info, gehalt_minimum, gehalt_maximum,
+     berufserfahrung, branchenkenntnisse, zertifikate,
      deutsch, englisch, sonstige_sprachen, informationen,
      status, anlage_datum) VALUES
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb01',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01',
      'IMOBILIEN', 'Berlin', NULL, NULL, 'Projektsteuerung, CAD, AutoCAD',
-     '70000-90000', 'Firmenwagen, 30 Tage Urlaub', '5+ Jahre', 'Bau, Immobilien', NULL,
+     'Firmenwagen, 30 Tage Urlaub', NULL, 90.00,
+     '5+ Jahre', 'Bau, Immobilien', NULL,
      'C1', 'B2', NULL, 'Dringend gesucht, Stelle soll bis Q3 besetzt sein.',
      'IN_ARBEIT', DATE '2026-01-15'),
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb02',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa02',
      'VERTRIEB', 'Berlin', NULL, NULL, 'B2B-Vertrieb, CRM, Kaltakquise',
-     '60000-80000', 'Provision bis 20 %, Dienstwagen', '3+ Jahre', 'Bau, Handwerk', NULL,
-     'Muttersprache', 'B1', NULL, NULL,
+     'Provision bis 20 %, Dienstwagen', 60.00, 80.00,
+     '3+ Jahre', 'Bau, Handwerk', NULL,
+     'MUTTERSPRACHE', 'B1', NULL, NULL,
      'IN_ARBEIT', DATE '2026-02-10'),
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb03',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa03',
      'INVESTOREN', 'München', NULL, NULL, 'Finanzanalyse, Excel, Bloomberg',
-     '95000-130000', 'Bonus bis 30 % des Jahresgehalts', '7+ Jahre', 'Finance, Private Equity', 'CFA',
-     'Muttersprache', 'C2', 'Französisch B2', 'Kandidat wurde erfolgreich platziert.',
+     'Bonus bis 30 % des Jahresgehalts', 95.00, 130.00,
+     '7+ Jahre', 'Finance, Private Equity', 'CFA',
+     'MUTTERSPRACHE', 'C2', 'Französisch B2', 'Kandidat wurde erfolgreich platziert.',
      'FERTIG', DATE '2025-11-01'),
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb04',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa04',
      'PERSONAL', 'Hamburg', NULL, NULL, 'Java, Spring Boot, Microservices',
-     '80000-100000', 'Remote-Option, Weiterbildungsbudget', '4+ Jahre', 'IT, Software', 'AWS Certified',
+     'Remote-Option, Weiterbildungsbudget', 80.00, 100.00,
+     '4+ Jahre', 'IT, Software', 'AWS Certified',
      'B2', 'C1', NULL, 'Senior-Profil gewünscht, Teamleitung wäre ein Plus.',
      'IN_ARBEIT', DATE '2026-03-05'),
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb05',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa05',
      'VERTRIEB', 'Köln', NULL, NULL, 'Key Account Management, SAP',
-     '75000-95000', NULL, '5+ Jahre', 'Logistik, Handel', NULL,
-     'Muttersprache', 'B2', NULL, NULL,
+     NULL, 75.00, 95.00,
+     '5+ Jahre', 'Logistik, Handel', NULL,
+     'MUTTERSPRACHE', 'B2', NULL, NULL,
      'FERTIG', DATE '2025-12-20')
 ON CONFLICT (id) DO NOTHING;
 
@@ -125,7 +131,7 @@ INSERT INTO vertrag
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa03',
      '22222222-2222-2222-2222-222222222222',
      'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb03',
-     45000.00, DATE '2026-04-01', TRUE),
+     45.00, DATE '2026-04-01', TRUE),
     ('cccccccc-cccc-cccc-cccc-cccccccccc04',
      'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa04',
      '33333333-3333-3333-3333-333333333333',
@@ -142,7 +148,7 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO kandidat (
     id, dsgvo_bestaetigungs_datum, geschlecht, titel, vorname, nachname, postleitzahl, ort, geburtsjahr,
     staatsangehoerigkeit, familienstand, kinder,
-    wochenstunden, gehalt, wochenendbereitschaft, homeoffice,
+    wochenstunden, wochenendbereitschaft, homeoffice,
     firmenwagenregelung, reisetaetigkeiten_mit_uebernachtung, taegliche_fahrzeit,
     deutsch, englisch, sonstige_sprachen,
     hochschulabschluss, berufsausbildung, autofuehrerschein, zertifikate,
@@ -150,12 +156,12 @@ INSERT INTO kandidat (
     wechselgruende, zukuenftige_position_taetigkeiten, kuendigungsfrist, erstes_online_meeting,
     firmen_selbevorben, firmen_nogo,
     email, telefon, linkedin_profil, xing_profil,
-    fachlicher_skill
+    fachlicher_skill, gehalt_minimum, gehalt_maximum
 ) VALUES
     ('dddddddd-dddd-dddd-dddd-dddddddddd01',
      DATE '2024-03-15', 'MAENNLICH', 'DR', 'Thomas', 'Müller', 80331, 'München', 1982,
      'Deutsch', 'verheiratet', '2',
-     '40', '90000-110000', 'nein', '2 Tage/Woche',
+     '40', 'nein', '2 Tage/Woche',
      'gewünscht', 'bis 5 Tage/Monat', 30,
      'MUTTERSPRACHE', 'C1', 'Französisch B1',
      'M.Sc. Maschinenbau (TU München)', NULL, 'VORHANDEN', 'PMP, Six Sigma Green Belt',
@@ -165,12 +171,12 @@ INSERT INTO kandidat (
      '3 Monate', 'KW 22, flexibel',
      NULL, NULL,
      't.mueller@email.de', '+49 89 1234567', 'https://www.linkedin.com/in/thomas-mueller', NULL,
-     'Projektmanagement, Lean Management'),
+     'Projektmanagement, Lean Management', 90.00, 110.00),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd02',
      DATE '2024-06-01', 'WEIBLICH', NULL, 'Sarah', 'Fischer', 10115, 'Berlin', 1990,
      'Deutsch', 'ledig', 'keine',
-     '38-40', '70000-85000', 'gelegentlich', '3 Tage/Woche',
+     '38-40', 'gelegentlich', '3 Tage/Woche',
      'nicht gewünscht', 'nein', 45,
      'MUTTERSPRACHE', 'C2', 'Spanisch B2',
      'B.Sc. Wirtschaftsinformatik (HU Berlin)', NULL, 'VORHANDEN', 'Scrum Master, AWS Cloud Practitioner',
@@ -180,12 +186,12 @@ INSERT INTO kandidat (
      '1 Monat', 'Ab sofort, bevorzugt morgens',
      NULL, NULL,
      's.fischer@email.de', '+49 30 2345678', 'https://www.linkedin.com/in/sarah-fischer', 'https://www.xing.com/profile/Sarah_Fischer',
-     'Produktstrategie, Datenanalyse, UX'),
+     'Produktstrategie, Datenanalyse, UX', 70.00, 85.00),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd03',
      DATE '2023-11-20', 'MAENNLICH', 'ING', 'Klaus', 'Weber', 40213, 'Düsseldorf', 1975,
      'Deutsch', 'verheiratet', '3',
-     '40-45', '95000-120000', 'ja', '1 Tag/Woche',
+     '40-45', 'ja', '1 Tag/Woche',
      'vorhanden', 'bis 10 Tage/Monat', 60,
      'MUTTERSPRACHE', 'B2', NULL,
      NULL, 'Industriemechaniker', 'VORHANDEN', 'ISO 9001 Auditor',
@@ -195,12 +201,12 @@ INSERT INTO kandidat (
      '6 Monate', 'KW 23 oder 24, nachmittags',
      NULL, NULL,
      'k.weber@email.de', '+49 211 3456789', NULL, 'https://www.xing.com/profile/Klaus_Weber',
-     'Fertigungssteuerung, Prozessoptimierung'),
+     'Fertigungssteuerung, Prozessoptimierung', 95.00, 120.00),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd04',
      DATE '2025-01-10', 'WEIBLICH', NULL, 'Maria', 'Schmidt', 20095, 'Hamburg', 1988,
      'Deutsch', 'ledig', 'keine',
-     '30-35', '55000-65000', 'nein', 'vollständig möglich',
+     '30-35', 'nein', 'vollständig möglich',
      'nicht gewünscht', 'nein', 20,
      'MUTTERSPRACHE', 'C1', 'Niederländisch A2',
      'M.A. Marketing (Uni Hamburg)', NULL, 'VORHANDEN', 'Google Ads, HubSpot',
@@ -211,12 +217,12 @@ INSERT INTO kandidat (
      '2 Monate', 'Flexibel, bevorzugt Donnerstag',
      NULL, NULL,
      'm.schmidt@email.de', '+49 40 4567890', 'https://www.linkedin.com/in/maria-schmidt', NULL,
-     'Digitales Marketing, Markenführung'),
+     'Digitales Marketing, Markenführung', 55.00, 65.00),
 
     ('dddddddd-dddd-dddd-dddd-dddddddddd05',
      DATE '2024-09-05', 'MAENNLICH', NULL, 'Michael', 'Braun', 70173, 'Stuttgart', 1985,
      'Deutsch', 'verheiratet', '1',
-     '40', '75000-90000', 'gelegentlich', '2 Tage/Woche',
+     '40', 'gelegentlich', '2 Tage/Woche',
      'vorhanden', 'bis 8 Tage/Monat', 40,
      'MUTTERSPRACHE', 'B2', NULL,
      'B.A. Betriebswirtschaft (Uni Stuttgart)', NULL, 'VORHANDEN', NULL,
@@ -227,7 +233,7 @@ INSERT INTO kandidat (
      '3 Monate', 'KW 21, flexibel',
      NULL, NULL,
      'm.braun@email.de', '+49 711 5678901', 'https://www.linkedin.com/in/michael-braun', 'https://www.xing.com/profile/Michael_Braun',
-     'Supply Chain Management, ERP-Systeme')
+     'Supply Chain Management, ERP-Systeme', 75.00, 90.00)
 ON CONFLICT (id) DO NOTHING;
 
 COMMIT;

@@ -68,6 +68,8 @@ public class KandidatService {
             existing.setTelefon(input.getTelefon());
             existing.setLinkedinProfil(input.getLinkedinProfil());
             existing.setXingProfil(input.getXingProfil());
+            existing.setGehaltMinimum(input.getGehaltMinimum());
+            existing.setGehaltMaximum(input.getGehaltMaximum());
             return repo.save(existing);
         });
     }

@@ -53,4 +53,6 @@ export interface Kandidat {
   telefon?: string;
   linkedinProfil?: string;
   xingProfil?: string;
+  gehaltMinimum?: number;
+  gehaltMaximum?: number;
 }

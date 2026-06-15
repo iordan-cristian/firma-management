@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -147,4 +148,10 @@ public class Kandidat {
 
     @Column(name = "xing_profil", columnDefinition = "TEXT")
     private String xingProfil;
+
+    @Column(name = "gehalt_minimum", precision = 10, scale = 2)
+    private BigDecimal gehaltMinimum;
+
+    @Column(name = "gehalt_maximum", precision = 10, scale = 2)
+    private BigDecimal gehaltMaximum;
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -55,11 +56,11 @@ public class Suchauftrag {
     @Column(columnDefinition = "TEXT")
     private String zertifikate;
 
-    @Column(columnDefinition = "TEXT")
-    private String deutsch;
+    @Enumerated(EnumType.STRING)
+    private Sprachniveau deutsch;
 
-    @Column(columnDefinition = "TEXT")
-    private String englisch;
+    @Enumerated(EnumType.STRING)
+    private Sprachniveau englisch;
 
     @Column(name = "sonstige_sprachen", columnDefinition = "TEXT")
     private String sonstigeSprachen;
@@ -74,4 +75,10 @@ public class Suchauftrag {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     @Column(name = "anlage_datum")
     private LocalDate anlageDatum;
+
+    @Column(name = "gehalt_minimum", precision = 10, scale = 2)
+    private BigDecimal gehaltMinimum;
+
+    @Column(name = "gehalt_maximum", precision = 10, scale = 2)
+    private BigDecimal gehaltMaximum;
 }

@@ -388,6 +388,8 @@ export class KandidatenComponent implements OnInit {
   openEditModal(k: Kandidat): void {
     this.editingId = k.id ?? null;
     this.draft = { ...k };
+    const mn = k.gehaltMinimum, mx = k.gehaltMaximum;
+    this.draft.gehalt = mn != null && mx != null ? `${mn}-${mx}` : mn != null ? `${mn}` : mx != null ? `${mx}` : undefined;
     this.kandidatErrors = {};
     this.addModalOpen = true;
   }
@@ -407,7 +409,22 @@ export class KandidatenComponent implements OnInit {
     this.draft.gehalt = el.value;
   }
 
+  private parseGehalt(raw: string | undefined, type: 'kandidat' | 'suchauftrag'): [number | undefined, number | undefined] {
+    const s = raw?.replace(/,/g, '').trim() ?? '';
+    if (!s) return [undefined, undefined];
+    const dash = s.indexOf('-');
+    if (dash > 0) {
+      const min = parseFloat(s.slice(0, dash));
+      const max = parseFloat(s.slice(dash + 1));
+      return [isNaN(min) ? undefined : min, isNaN(max) ? undefined : max];
+    }
+    const val = parseFloat(s);
+    const v = isNaN(val) ? undefined : val;
+    return type === 'kandidat' ? [v, undefined] : [undefined, v];
+  }
+
   saveKandidat(): void {
+    [this.draft.gehaltMinimum, this.draft.gehaltMaximum] = this.parseGehalt(this.draft.gehalt, 'kandidat');
     const onError = (err: any) => {
       if (err.status === 400) this.kandidatErrors = err.error ?? {};
     };

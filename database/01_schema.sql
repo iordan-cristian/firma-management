@@ -39,7 +39,8 @@ CREATE TABLE firma (
         CHECK (allgemeiner_schwerpunkt IN ('GEBAEUDETECHNIK', 'ENERGIETECHNIK', 'MASCHINENBAU', 'INFORMATIK', 'KAUFMAENNISCH')),
     email                    TEXT,
     telefon                  TEXT,
-    mobil                    TEXT
+    mobil                    TEXT,
+    angebot_website          TEXT
 );
 
 COMMENT ON TABLE  firma                         IS 'Companies tracked in the system';
@@ -92,13 +93,16 @@ CREATE TABLE suchauftrag (
     postleitzahl         TEXT,
     adresse              TEXT,
     fachlicher_skill     TEXT,
-    gehalt               TEXT,
     gehalt_mehr_info     TEXT,
+    gehalt_minimum       NUMERIC(10, 2),
+    gehalt_maximum       NUMERIC(10, 2),
     berufserfahrung      TEXT,
     branchenkenntnisse   TEXT,
     zertifikate          TEXT,
-    deutsch              TEXT,
-    englisch             TEXT,
+    deutsch              VARCHAR(16)
+        CHECK (deutsch  IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'MUTTERSPRACHE')),
+    englisch             VARCHAR(16)
+        CHECK (englisch IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'MUTTERSPRACHE')),
     sonstige_sprachen    TEXT,
     informationen        TEXT,
     status               VARCHAR(32) NOT NULL
@@ -186,7 +190,6 @@ CREATE TABLE kandidat (
 
     -- Berufliche Anforderungen
     wochenstunden                        TEXT,
-    gehalt                               TEXT,
     wochenendbereitschaft                TEXT,
     homeoffice                           TEXT,
     firmenwagenregelung                  TEXT,
@@ -229,7 +232,9 @@ CREATE TABLE kandidat (
     allgemeiner_schwerpunkt              VARCHAR(32)
         CHECK (allgemeiner_schwerpunkt IN ('GEBAEUDETECHNIK', 'ENERGIETECHNIK', 'MASCHINENBAU', 'INFORMATIK', 'KAUFMAENNISCH')),
 
-    fachlicher_skill                     TEXT
+    fachlicher_skill                     TEXT,
+    gehalt_minimum                       NUMERIC(10, 2),
+    gehalt_maximum                       NUMERIC(10, 2)
 );
 
 CREATE INDEX idx_kandidat_nachname ON kandidat(nachname);
@@ -238,7 +243,6 @@ COMMENT ON TABLE  kandidat                               IS 'Job candidates mana
 COMMENT ON COLUMN kandidat.geschlecht                    IS 'Enum: MAENNLICH | WEIBLICH | DIVERS | BEVORZUGE_NICHT_ZU_SAGEN';
 COMMENT ON COLUMN kandidat.titel                         IS 'Enum: DR | ING';
 COMMENT ON COLUMN kandidat.wochenstunden                 IS 'Text; single value or range, e.g. 40 or 30-40';
-COMMENT ON COLUMN kandidat.gehalt                        IS 'Text; single value or range, e.g. 60000 or 55000-70000';
 COMMENT ON COLUMN kandidat.deutsch                       IS 'Enum: A1 | A2 | B1 | B2 | C1 | C2 | MUTTERSPRACHE';
 COMMENT ON COLUMN kandidat.englisch                      IS 'Enum: A1 | A2 | B1 | B2 | C1 | C2 | MUTTERSPRACHE';
 COMMENT ON COLUMN kandidat.autofuehrerschein             IS 'Enum: VORHANDEN | NICHT_VORHANDEN';

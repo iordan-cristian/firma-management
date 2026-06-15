@@ -1,3 +1,6 @@
+import { Sprachniveau } from './kandidat.model';
+export { Sprachniveau };
+
 export type Aktivitaet = 'Investoren' | 'Vertrieb' | 'Imobilien' | 'Personal';
 export type SuchauftragStatus = 'in Arbeit' | 'Fertig';
 
@@ -17,10 +20,12 @@ export interface Suchauftrag {
   berufserfahrung?: string;
   branchenkenntnisse?: string;
   zertifikate?: string;
-  deutsch?: string;
-  englisch?: string;
+  deutsch?: Sprachniveau;
+  englisch?: Sprachniveau;
   sonstigeSprachen?: string;
   informationen?: string;
   status: SuchauftragStatus;
   anlageDatum?: string;
+  gehaltMinimum?: number;
+  gehaltMaximum?: number;
 }

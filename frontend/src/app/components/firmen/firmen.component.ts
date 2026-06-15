@@ -36,6 +36,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <th>E-Mail</th>
               <th>Telefon</th>
               <th>Mobil</th>
+              <th>Website</th>
             </tr>
           </thead>
           <tbody>
@@ -49,9 +50,13 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <td>{{ f.email }}</td>
                 <td>{{ f.telefon }}</td>
                 <td>{{ f.mobil }}</td>
+                <td>
+                  <a *ngIf="f.angebotWebsite" [href]="f.angebotWebsite" target="_blank" rel="noopener noreferrer" class="profile-link">↗</a>
+                  <span *ngIf="!f.angebotWebsite">–</span>
+                </td>
               </tr>
               <tr *ngIf="expandedFirma?.id === f.id && detailMode" class="detail-row">
-                <td colspan="6">
+                <td colspan="7">
                   <div class="inline-detail">
                     <div class="inline-detail-header">
                       <strong>{{ detailTitle }}</strong>
@@ -90,7 +95,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                         <div class="card-row" *ngIf="s.postleitzahl || s.ort"><span>Ort:</span> {{ s.postleitzahl }} {{ s.ort }}</div>
                         <div class="card-row" *ngIf="s.adresse"><span>Adresse:</span> {{ s.adresse }}</div>
                         <div class="card-row" *ngIf="s.fachlicherSkill"><span>Fachlicher Skill:</span> {{ s.fachlicherSkill }}</div>
-                        <div class="card-row" *ngIf="s.gehalt"><span>Gehalt:</span> {{ s.gehalt }}</div>
+                        <div class="card-row" *ngIf="gehaltDisplay(s.gehaltMinimum, s.gehaltMaximum) as g"><span>Gehalt:</span> {{ g }}</div>
                         <div class="card-row" *ngIf="s.gehaltMehrInfo"><span>Gehalt Info:</span> {{ s.gehaltMehrInfo }}</div>
                         <div class="card-row" *ngIf="s.berufserfahrung"><span>Berufserfahrung:</span> {{ s.berufserfahrung }}</div>
                         <div class="card-row" *ngIf="s.branchenkenntnisse"><span>Branchenkenntnisse:</span> {{ s.branchenkenntnisse }}</div>
@@ -119,7 +124,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 </td>
               </tr>
             </ng-container>
-            <tr *ngIf="!firmen.length"><td colspan="6" class="empty">No Firmen yet.</td></tr>
+            <tr *ngIf="!firmen.length"><td colspan="7" class="empty">No Firmen yet.</td></tr>
           </tbody>
         </table>
       </div>
@@ -171,6 +176,12 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <button class="btn-link" (click)="copyToClipboard(draftFirma.mobil)" [disabled]="!draftFirma.mobil">📋</button>
             </div>
             <span class="field-error" *ngIf="firmaErrors['mobil']">{{ firmaErrors['mobil'] }}</span>
+          </label>
+          <label>Website
+            <div class="input-with-btn">
+              <input [(ngModel)]="draftFirma.angebotWebsite" placeholder="https://..." />
+              <button class="btn-link" (click)="openLink(draftFirma.angebotWebsite)" [disabled]="!draftFirma.angebotWebsite">↗</button>
+            </div>
           </label>
           <div class="modal-actions">
             <button class="btn-save" (click)="saveFirma()">Speichern</button>
@@ -298,10 +309,16 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <input [(ngModel)]="draftSuchauftrag.zertifikate" placeholder="z.B. PMP, ISO 9001" />
               </label>
               <label>Deutsch
-                <input [(ngModel)]="draftSuchauftrag.deutsch" placeholder="z.B. C1, Muttersprache" />
+                <select [(ngModel)]="draftSuchauftrag.deutsch">
+                  <option [ngValue]="undefined">–</option>
+                  <option *ngFor="let o of sprachniveauOptions" [value]="o">{{ o }}</option>
+                </select>
               </label>
               <label>Englisch
-                <input [(ngModel)]="draftSuchauftrag.englisch" placeholder="z.B. B2, fließend" />
+                <select [(ngModel)]="draftSuchauftrag.englisch">
+                  <option [ngValue]="undefined">–</option>
+                  <option *ngFor="let o of sprachniveauOptions" [value]="o">{{ o }}</option>
+                </select>
               </label>
               <label>Sonstige Sprachen
                 <input [(ngModel)]="draftSuchauftrag.sonstigeSprachen" placeholder="z.B. Französisch B2, Spanisch A2" />
@@ -331,7 +348,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <div class="card-title">{{ k.vorname }} {{ k.nachname }}</div>
                 <div class="card-row" *ngIf="k.aktuellePosition"><span>Position:</span> {{ k.aktuellePosition }}</div>
                 <div class="card-row" *ngIf="k.ort"><span>Ort:</span> {{ k.ort }}</div>
-                <div class="card-row" *ngIf="k.gehalt"><span>Gehalt:</span> {{ k.gehalt }}</div>
+                <div class="card-row" *ngIf="gehaltDisplay(k.gehaltMinimum, k.gehaltMaximum) as g"><span>Gehalt:</span> {{ g }}</div>
                 <div class="card-row" *ngIf="k.branchenkenntnisse"><span>Branche:</span> {{ k.branchenkenntnisse }}</div>
                 <div class="card-row" *ngIf="k.zertifikate"><span>Zertifikate:</span> {{ k.zertifikate }}</div>
                 <div class="card-row" *ngIf="k.allgemeinerSchwerpunkt"><span>Schwerpunkt:</span> {{ k.allgemeinerSchwerpunkt }}</div>
@@ -740,6 +757,7 @@ export class FirmenComponent implements OnInit {
   openEditSuchauftrag(s: Suchauftrag): void {
     this.editingSuchauftragId = s.id ?? null;
     this.draftSuchauftrag = { ...s };
+    this.draftSuchauftrag.gehalt = this.gehaltDisplay(s.gehaltMinimum, s.gehaltMaximum) ?? undefined;
     if (s.anlageDatum) {
       const [d, m, y] = s.anlageDatum.split('/');
       this.anlageDatumInput = `${y}-${m}-${d}`;
@@ -774,11 +792,13 @@ export class FirmenComponent implements OnInit {
   openKandidatDetail(k: Kandidat): void {
     this.selectedKandidat = k;
     this.draftKandidat = { ...k };
+    this.draftKandidat.gehalt = this.gehaltDisplay(k.gehaltMinimum, k.gehaltMaximum) ?? undefined;
     this.kandidatDetailOpen = true;
   }
 
   saveKandidatDetail(): void {
     if (!this.selectedKandidat?.id) return;
+    [this.draftKandidat.gehaltMinimum, this.draftKandidat.gehaltMaximum] = this.parseGehalt(this.draftKandidat.gehalt, 'kandidat');
     this.kandidatService.update(this.selectedKandidat.id, this.draftKandidat as Kandidat).subscribe(updated => {
       this.matchedKandidaten = this.matchedKandidaten.map(k => k.id === updated.id ? updated : k);
       this.kandidatDetailOpen = false;
@@ -788,6 +808,7 @@ export class FirmenComponent implements OnInit {
 
   saveSuchauftrag(): void {
     if (!this.draftSuchauftrag.ansprechpartnerId) return;
+    [this.draftSuchauftrag.gehaltMinimum, this.draftSuchauftrag.gehaltMaximum] = this.parseGehalt(this.draftSuchauftrag.gehalt, 'suchauftrag');
     if (this.anlageDatumInput) {
       const [y, m, d] = this.anlageDatumInput.split('-');
       this.draftSuchauftrag.anlageDatum = `${d}/${m}/${y}`;
@@ -851,6 +872,27 @@ export class FirmenComponent implements OnInit {
         refresh(); this.addVertragOpen = false;
       });
     }
+  }
+
+  private parseGehalt(raw: string | undefined, type: 'kandidat' | 'suchauftrag'): [number | undefined, number | undefined] {
+    const s = raw?.replace(/,/g, '').trim() ?? '';
+    if (!s) return [undefined, undefined];
+    const dash = s.indexOf('-');
+    if (dash > 0) {
+      const min = parseFloat(s.slice(0, dash));
+      const max = parseFloat(s.slice(dash + 1));
+      return [isNaN(min) ? undefined : min, isNaN(max) ? undefined : max];
+    }
+    const val = parseFloat(s);
+    const v = isNaN(val) ? undefined : val;
+    return type === 'kandidat' ? [v, undefined] : [undefined, v];
+  }
+
+  gehaltDisplay(min?: number, max?: number): string | null {
+    if (min != null && max != null) return `${min}-${max}`;
+    if (min != null) return `${min}`;
+    if (max != null) return `${max}`;
+    return null;
   }
 
   // ── Context menu & detail ────────────────────────────────
