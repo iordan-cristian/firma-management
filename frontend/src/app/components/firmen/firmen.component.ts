@@ -281,7 +281,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               </label>
               <label>Gehalt
                 <div class="input-suffix-wrapper">
-                  <input [(ngModel)]="draftSuchauftrag.gehalt" placeholder="z.B. 60000-80000" />
+                  <input [(ngModel)]="draftSuchauftrag.gehalt" (input)="filterGehalt($event, 'suchauftrag')" placeholder="z.B. 60000-80000" />
                   <span class="input-suffix">(Tausend €)</span>
                 </div>
               </label>
@@ -384,7 +384,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <label>Wochenstunden <input [(ngModel)]="draftKandidat.wochenstunden" /></label>
                 <label>Gehalt
                   <div class="input-suffix-wrapper">
-                    <input [(ngModel)]="draftKandidat.gehalt" />
+                    <input [(ngModel)]="draftKandidat.gehalt" (input)="filterGehalt($event, 'kandidat')" />
                     <span class="input-suffix">(Tausend €)</span>
                   </div>
                 </label>
@@ -805,6 +805,13 @@ export class FirmenComponent implements OnInit {
         refresh(); this.closeSuchauftragModal();
       });
     }
+  }
+
+  filterGehalt(e: Event, target: 'suchauftrag' | 'kandidat'): void {
+    const el = e.target as HTMLInputElement;
+    el.value = el.value.replace(/[^0-9,\-]/g, '');
+    if (target === 'suchauftrag') this.draftSuchauftrag.gehalt = el.value;
+    else this.draftKandidat.gehalt = el.value;
   }
 
   // ── Vertrag ──────────────────────────────────────────────

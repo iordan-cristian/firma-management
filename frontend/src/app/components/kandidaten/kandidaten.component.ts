@@ -129,7 +129,7 @@ import {
               </label>
               <label>Gehalt
                 <div class="input-suffix-wrapper">
-                  <input [(ngModel)]="draft.gehalt" placeholder="z.B. 60000 oder 55000-70000" />
+                  <input [(ngModel)]="draft.gehalt" (input)="filterGehalt($event)" placeholder="z.B. 60000 oder 55000-70000" />
                   <span class="input-suffix">(Tausend €)</span>
                 </div>
               </label>
@@ -399,6 +399,12 @@ export class KandidatenComponent implements OnInit {
     this.addModalOpen = false;
     this.editingId = null;
     this.draft = {};
+  }
+
+  filterGehalt(e: Event): void {
+    const el = e.target as HTMLInputElement;
+    el.value = el.value.replace(/[^0-9,\-]/g, '');
+    this.draft.gehalt = el.value;
   }
 
   saveKandidat(): void {
