@@ -159,11 +159,17 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
             <span class="field-error" *ngIf="firmaErrors['email']">{{ firmaErrors['email'] }}</span>
           </label>
           <label>Telefon
-            <input [(ngModel)]="draftFirma.telefon" placeholder="+49 30 1234567" />
+            <div class="input-with-btn">
+              <input [(ngModel)]="draftFirma.telefon" placeholder="+49 30 1234567" />
+              <button class="btn-link" (click)="copyToClipboard(draftFirma.telefon)" [disabled]="!draftFirma.telefon">📋</button>
+            </div>
             <span class="field-error" *ngIf="firmaErrors['telefon']">{{ firmaErrors['telefon'] }}</span>
           </label>
           <label>Mobil
-            <input [(ngModel)]="draftFirma.mobil" placeholder="+49 170 1234567" />
+            <div class="input-with-btn">
+              <input [(ngModel)]="draftFirma.mobil" placeholder="+49 170 1234567" />
+              <button class="btn-link" (click)="copyToClipboard(draftFirma.mobil)" [disabled]="!draftFirma.mobil">📋</button>
+            </div>
             <span class="field-error" *ngIf="firmaErrors['mobil']">{{ firmaErrors['mobil'] }}</span>
           </label>
           <div class="modal-actions">
