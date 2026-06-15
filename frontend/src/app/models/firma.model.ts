@@ -12,4 +12,5 @@ export interface Firma {
   email?: string;
   telefon?: string;
   mobil?: string;
+  angebotWebsite?: string;
 }

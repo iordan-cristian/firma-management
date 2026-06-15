@@ -42,4 +42,7 @@ public class Firma {
     @Pattern(regexp = "^$|^\\+?[0-9 ()/-]{5,}$", message = "mobil must be a valid phone number")
     @Column(columnDefinition = "TEXT")
     private String mobil;
+
+    @Column(name = "angebot_website", columnDefinition = "TEXT")
+    private String angebotWebsite;
 }

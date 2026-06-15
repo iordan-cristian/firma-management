@@ -34,6 +34,7 @@ public class FirmaService {
             existing.setEmail(input.getEmail());
             existing.setTelefon(input.getTelefon());
             existing.setMobil(input.getMobil());
+            existing.setAngebotWebsite(input.getAngebotWebsite());
             return repo.save(existing);
         });
     }
