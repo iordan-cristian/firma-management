@@ -128,7 +128,10 @@ import {
                 <input [(ngModel)]="draft.wochenstunden" placeholder="z.B. 40 oder 30-40" />
               </label>
               <label>Gehalt
-                <input [(ngModel)]="draft.gehalt" placeholder="z.B. 60000 oder 55000-70000" />
+                <div class="input-suffix-wrapper">
+                  <input [(ngModel)]="draft.gehalt" placeholder="z.B. 60000 oder 55000-70000" />
+                  <span class="input-suffix">(Tausend €)</span>
+                </div>
               </label>
             </div>
             <div class="form-row">
@@ -329,6 +332,10 @@ import {
     .btn-link:hover:not(:disabled) { background: #e2e6f0; }
     .btn-link:disabled { opacity: 0.4; cursor: default; }
     .field-error { color: #e03131; font-size: 11px; margin-top: 2px; }
+    .input-suffix-wrapper { display: flex; align-items: stretch; border: 1px solid #dfe3ee; border-radius: 6px; overflow: hidden; }
+    .input-suffix-wrapper:focus-within { border-color: #3b5bdb; }
+    .input-suffix-wrapper input { flex: 1; border: none; outline: none; background: transparent; min-width: 0; }
+    .input-suffix { display: flex; align-items: center; padding: 0 8px; background: #f1f3f8; color: #888; font-size: 12px; white-space: nowrap; border-left: 1px solid #dfe3ee; pointer-events: none; user-select: none; }
   `]
 })
 export class KandidatenComponent implements OnInit {

@@ -280,7 +280,10 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <textarea rows="4" [(ngModel)]="draftSuchauftrag.fachlicherSkill" placeholder="z.B. Java, SAP, CAD"></textarea>
               </label>
               <label>Gehalt
-                <input [(ngModel)]="draftSuchauftrag.gehalt" placeholder="z.B. 60000-80000" />
+                <div class="input-suffix-wrapper">
+                  <input [(ngModel)]="draftSuchauftrag.gehalt" placeholder="z.B. 60000-80000" />
+                  <span class="input-suffix">(Tausend €)</span>
+                </div>
               </label>
               <label>Gehalt Mehr Info
                 <input [(ngModel)]="draftSuchauftrag.gehaltMehrInfo" placeholder="z.B. Bonus, Nebenleistungen" />
@@ -379,7 +382,12 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <div class="k-section">Berufliche Anforderungen</div>
               <div class="form-row">
                 <label>Wochenstunden <input [(ngModel)]="draftKandidat.wochenstunden" /></label>
-                <label>Gehalt <input [(ngModel)]="draftKandidat.gehalt" /></label>
+                <label>Gehalt
+                  <div class="input-suffix-wrapper">
+                    <input [(ngModel)]="draftKandidat.gehalt" />
+                    <span class="input-suffix">(Tausend €)</span>
+                  </div>
+                </label>
               </div>
               <div class="form-row">
                 <label>Wochenendbereitschaft <input [(ngModel)]="draftKandidat.wochenendbereitschaft" /></label>
@@ -558,6 +566,10 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .btn-link:hover:not(:disabled) { background: #e2e6f0; }
     .btn-link:disabled { opacity: 0.4; cursor: default; }
     .field-error { color: #e03131; font-size: 11px; margin-top: 2px; }
+    .input-suffix-wrapper { display: flex; align-items: stretch; border: 1px solid #dfe3ee; border-radius: 6px; overflow: hidden; }
+    .input-suffix-wrapper:focus-within { border-color: #3b5bdb; }
+    .modal .input-suffix-wrapper input { flex: 1; border: none; outline: none; background: transparent; min-width: 0; }
+    .input-suffix { display: flex; align-items: center; padding: 0 8px; background: #f1f3f8; color: #888; font-size: 12px; white-space: nowrap; border-left: 1px solid #dfe3ee; pointer-events: none; user-select: none; }
 
     .modal-duo { display: flex; gap: 20px; align-items: stretch; }
     .modal-suchauftrag { display: flex; flex-direction: column; overflow: hidden; }
