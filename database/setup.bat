@@ -19,9 +19,9 @@ echo ==^> Applying schema
 psql -U %PGUSER% -h %PGHOST% -p %PGPORT% -d firma_management -f "%SCRIPT_DIR%01_schema.sql"
 if errorlevel 1 goto :error
 
-echo ==^> Seeding sample data
-psql -U %PGUSER% -h %PGHOST% -p %PGPORT% -d firma_management -f "%SCRIPT_DIR%02_seed.sql"
-if errorlevel 1 goto :error
+::echo ==^> Seeding sample data
+::psql -U %PGUSER% -h %PGHOST% -p %PGPORT% -d firma_management -f "%SCRIPT_DIR%02_seed.sql"
+::if errorlevel 1 goto :error
 
 echo ==^> Done.
 exit /b 0

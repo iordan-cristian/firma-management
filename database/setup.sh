@@ -18,7 +18,7 @@ psql -U "$PG_USER" -h "$PG_HOST" -p "$PG_PORT" -d postgres -f "$SCRIPT_DIR/00_cr
 echo "==> Applying schema"
 psql -U "$PG_USER" -h "$PG_HOST" -p "$PG_PORT" -d firma_management -f "$SCRIPT_DIR/01_schema.sql"
 
-echo "==> Seeding sample data"
-psql -U "$PG_USER" -h "$PG_HOST" -p "$PG_PORT" -d firma_management -f "$SCRIPT_DIR/02_seed.sql"
+#echo "==> Seeding sample data"
+#psql -U "$PG_USER" -h "$PG_HOST" -p "$PG_PORT" -d firma_management -f "$SCRIPT_DIR/02_seed.sql"
 
 echo "==> Done."
