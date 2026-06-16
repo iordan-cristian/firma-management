@@ -40,7 +40,6 @@ public class KandidatService {
             existing.setFamilienstand(input.getFamilienstand());
             existing.setKinder(input.getKinder());
             existing.setWochenstunden(input.getWochenstunden());
-            existing.setGehalt(input.getGehalt());
             existing.setWochenendbereitschaft(input.getWochenendbereitschaft());
             existing.setHomeoffice(input.getHomeoffice());
             existing.setFirmenwagenregelung(input.getFirmenwagenregelung());

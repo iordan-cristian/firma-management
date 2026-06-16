@@ -41,9 +41,6 @@ public class Suchauftrag {
     @Column(name = "fachlicher_skill", columnDefinition = "TEXT")
     private String fachlicherSkill;
 
-    @Column(columnDefinition = "TEXT")
-    private String gehalt;
-
     @Column(name = "gehalt_mehr_info", columnDefinition = "TEXT")
     private String gehaltMehrInfo;
 

@@ -60,9 +60,6 @@ public class Kandidat {
     private String wochenstunden;
 
     @Column(columnDefinition = "TEXT")
-    private String gehalt;
-
-    @Column(columnDefinition = "TEXT")
     private String wochenendbereitschaft;
 
     @Column(columnDefinition = "TEXT")
