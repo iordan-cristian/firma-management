@@ -56,3 +56,25 @@ export interface Kandidat {
   gehaltMinimum?: number;
   gehaltMaximum?: number;
 }
+
+export type DokumentTyp = 'CV' | 'DSGVO' | 'INTERVIEW';
+export const DOKUMENT_TYP_OPTIONS: { value: DokumentTyp; label: string }[] = [
+  { value: 'CV', label: 'CV' },
+  { value: 'DSGVO', label: 'DSGVO' },
+  { value: 'INTERVIEW', label: 'Interview' },
+];
+
+export interface KandidatDokument {
+  id: string;
+  kandidatId: string;
+  dokumentTyp: DokumentTyp;
+  dateiname: string;
+  mimeType: string;
+  dateigroesse: number;
+  hochgeladenAm: string;
+}
+
+export interface StagedDokument {
+  file: File;
+  dokumentTyp: DokumentTyp;
+}

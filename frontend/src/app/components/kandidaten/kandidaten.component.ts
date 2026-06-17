@@ -2,13 +2,18 @@ import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { KandidatService } from '../../services/kandidat.service';
+import { KandidatDokumentService } from '../../services/kandidat-dokument.service';
 import {
   Kandidat,
+  KandidatDokument,
+  StagedDokument,
+  DokumentTyp,
   GESCHLECHT_OPTIONS,
   TITEL_OPTIONS,
   SPRACHNIVEAU_OPTIONS,
   FUEHRERSCHEIN_OPTIONS,
   SCHWERPUNKT_OPTIONS,
+  DOKUMENT_TYP_OPTIONS,
 } from '../../models/kandidat.model';
 
 @Component({
@@ -265,6 +270,40 @@ import {
                 <button class="btn-link" (click)="openLink(draft.xingProfil)" [disabled]="!draft.xingProfil">↗</button>
               </div>
             </label>
+
+            <div class="section-title">Dokumente</div>
+
+            <div class="dokument-list" *ngIf="dokumente.length || stagedDokumente.length">
+              <div class="dokument-item" *ngFor="let d of dokumente">
+                <span class="dokument-typ-badge">{{ d.dokumentTyp }}</span>
+                <span class="dokument-name" [title]="d.dateiname">{{ d.dateiname }}</span>
+                <span class="dokument-size">{{ formatBytes(d.dateigroesse) }}</span>
+                <button class="btn-link" (click)="downloadDokument(d)" title="Herunterladen">↓</button>
+                <button class="btn-link btn-danger" (click)="deleteDokument(d.id)" title="Löschen">✕</button>
+              </div>
+              <div class="dokument-item dokument-item--pending" *ngFor="let s of stagedDokumente; let i = index">
+                <span class="dokument-typ-badge">{{ s.dokumentTyp }}</span>
+                <span class="dokument-name" [title]="s.file.name">{{ s.file.name }}</span>
+                <span class="dokument-size">{{ formatBytes(s.file.size) }}</span>
+                <span class="pending-label">ausstehend</span>
+                <button class="btn-link btn-danger" (click)="removeStagedDokument(i)" title="Entfernen">✕</button>
+              </div>
+            </div>
+            <p class="hint" *ngIf="!dokumente.length && !stagedDokumente.length">Keine Dokumente vorhanden.</p>
+
+            <div class="upload-row">
+              <select [(ngModel)]="newDokumentTyp" class="dokument-typ-select">
+                <option *ngFor="let o of dokumentTypOptions" [value]="o.value">{{ o.label }}</option>
+              </select>
+              <label class="btn-upload">
+                + Dokument hochladen
+                <input type="file" style="display:none"
+                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                       (change)="onFileSelected($event)" />
+              </label>
+            </div>
+            <span class="field-error" *ngIf="dokumentUploadError">{{ dokumentUploadError }}</span>
+
           </div>
 
           <div class="modal-actions">
@@ -336,10 +375,24 @@ import {
     .input-suffix-wrapper:focus-within { border-color: #3b5bdb; }
     .input-suffix-wrapper input { flex: 1; border: none; outline: none; background: transparent; min-width: 0; }
     .input-suffix { display: flex; align-items: center; padding: 0 8px; background: #f1f3f8; color: #888; font-size: 12px; white-space: nowrap; border-left: 1px solid #dfe3ee; pointer-events: none; user-select: none; }
+    .dokument-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+    .dokument-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: #f5f7fc; border-radius: 6px; border: 1px solid #e5e9f3; }
+    .dokument-item--pending { border-style: dashed; background: #fafbff; }
+    .dokument-typ-badge { font-size: 10px; font-weight: 700; color: #3b5bdb; background: #e8ecfa; border-radius: 4px; padding: 2px 6px; white-space: nowrap; flex-shrink: 0; }
+    .dokument-name { flex: 1; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .dokument-size { font-size: 11px; color: #888; white-space: nowrap; flex-shrink: 0; }
+    .pending-label { font-size: 11px; color: #aaa; font-style: italic; white-space: nowrap; flex-shrink: 0; }
+    .btn-danger { color: #e03131; }
+    .btn-danger:hover:not(:disabled) { background: #ffeaea; border-color: #e03131; }
+    .upload-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; margin-bottom: 6px; }
+    .dokument-typ-select { padding: 7px 10px; border: 1px solid #dfe3ee; border-radius: 6px; font-size: 13px; background: white; }
+    .btn-upload { display: inline-block; padding: 7px 14px; background: #f1f3f8; border: 1px dashed #3b5bdb; border-radius: 6px; font-size: 13px; color: #3b5bdb; cursor: pointer; white-space: nowrap; }
+    .btn-upload:hover { background: #e8ecfa; }
   `]
 })
 export class KandidatenComponent implements OnInit {
   private service = inject(KandidatService);
+  private dokumentService = inject(KandidatDokumentService);
 
   items: Kandidat[] = [];
   searchText = '';
@@ -349,11 +402,17 @@ export class KandidatenComponent implements OnInit {
   readonly sprachniveauOptions = SPRACHNIVEAU_OPTIONS;
   readonly fuehrerscheinOptions = FUEHRERSCHEIN_OPTIONS;
   readonly schwerpunktOptions = SCHWERPUNKT_OPTIONS;
+  readonly dokumentTypOptions = DOKUMENT_TYP_OPTIONS;
 
   addModalOpen = false;
   editingId: string | null = null;
   draft: Partial<Kandidat> = {};
   kandidatErrors: Record<string, string> = {};
+
+  dokumente: KandidatDokument[] = [];
+  stagedDokumente: StagedDokument[] = [];
+  newDokumentTyp: DokumentTyp = 'CV';
+  dokumentUploadError = '';
 
   ngOnInit(): void { this.reload(); }
 
@@ -382,6 +441,10 @@ export class KandidatenComponent implements OnInit {
     this.editingId = null;
     this.draft = {};
     this.kandidatErrors = {};
+    this.dokumente = [];
+    this.stagedDokumente = [];
+    this.dokumentUploadError = '';
+    this.newDokumentTyp = 'CV';
     this.addModalOpen = true;
   }
 
@@ -391,6 +454,11 @@ export class KandidatenComponent implements OnInit {
     const mn = k.gehaltMinimum, mx = k.gehaltMaximum;
     this.draft.gehalt = mn != null && mx != null ? `${mn}-${mx}` : mn != null ? `${mn}` : mx != null ? `${mx}` : undefined;
     this.kandidatErrors = {};
+    this.dokumente = [];
+    this.stagedDokumente = [];
+    this.dokumentUploadError = '';
+    this.newDokumentTyp = 'CV';
+    if (k.id) this.loadDokumente(k.id);
     this.addModalOpen = true;
   }
 
@@ -401,6 +469,9 @@ export class KandidatenComponent implements OnInit {
     this.addModalOpen = false;
     this.editingId = null;
     this.draft = {};
+    this.dokumente = [];
+    this.stagedDokumente = [];
+    this.dokumentUploadError = '';
   }
 
   filterGehalt(e: Event): void {
@@ -435,9 +506,79 @@ export class KandidatenComponent implements OnInit {
       });
     } else {
       this.service.create(this.draft as Kandidat).subscribe({
-        next: () => { this.reload(); this.closeAddModal(); },
+        next: (created) => {
+          this.uploadStagedDokumente(created.id!, () => {
+            this.reload();
+            this.closeAddModal();
+          });
+        },
         error: onError,
       });
     }
+  }
+
+  private uploadStagedDokumente(kandidatId: string, onDone: () => void): void {
+    if (!this.stagedDokumente.length) { onDone(); return; }
+    const staged = [...this.stagedDokumente];
+    let remaining = staged.length;
+    staged.forEach(s => {
+      this.dokumentService.upload(kandidatId, s.file, s.dokumentTyp).subscribe({
+        next: () => { if (--remaining === 0) onDone(); },
+        error: () => { if (--remaining === 0) onDone(); },
+      });
+    });
+  }
+
+  loadDokumente(kandidatId: string): void {
+    this.dokumentService.list(kandidatId).subscribe({
+      next: docs => this.dokumente = docs,
+      error: () => this.dokumente = [],
+    });
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.dokumentUploadError = '';
+    if (this.editingId) {
+      this.dokumentService.upload(this.editingId, file, this.newDokumentTyp).subscribe({
+        next: doc => {
+          this.dokumente = [...this.dokumente, doc];
+          input.value = '';
+        },
+        error: err => {
+          this.dokumentUploadError = err.error?.error ?? 'Upload fehlgeschlagen.';
+          input.value = '';
+        },
+      });
+    } else {
+      this.stagedDokumente = [...this.stagedDokumente, { file, dokumentTyp: this.newDokumentTyp }];
+      input.value = '';
+    }
+  }
+
+  removeStagedDokument(index: number): void {
+    this.stagedDokumente = this.stagedDokumente.filter((_, i) => i !== index);
+  }
+
+  deleteDokument(docId: string): void {
+    if (!this.editingId) return;
+    this.dokumentService.delete(this.editingId, docId).subscribe({
+      next: () => this.dokumente = this.dokumente.filter(d => d.id !== docId),
+    });
+  }
+
+  downloadDokument(doc: KandidatDokument): void {
+    if (!this.editingId) return;
+    this.dokumentService.downloadUrl(this.editingId, doc.id).subscribe({
+      next: ({ url }) => window.open(url, '_blank', 'noopener,noreferrer'),
+    });
+  }
+
+  formatBytes(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
   }
 }

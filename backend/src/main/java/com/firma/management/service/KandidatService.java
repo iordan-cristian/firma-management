@@ -2,6 +2,7 @@ package com.firma.management.service;
 
 import com.firma.management.entity.Kandidat;
 import com.firma.management.repository.KandidatRepository;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,9 +13,11 @@ import java.util.UUID;
 public class KandidatService {
 
     private final KandidatRepository repo;
+    private final KandidatDokumentService dokumentService;
 
-    public KandidatService(KandidatRepository repo) {
+    public KandidatService(KandidatRepository repo, @Lazy KandidatDokumentService dokumentService) {
         this.repo = repo;
+        this.dokumentService = dokumentService;
     }
 
     public List<Kandidat> getAll() { return repo.findAll(); }
@@ -75,6 +78,7 @@ public class KandidatService {
 
     public boolean delete(UUID id) {
         if (!repo.existsById(id)) return false;
+        dokumentService.deleteAllForKandidat(id);
         repo.deleteById(id);
         return true;
     }
