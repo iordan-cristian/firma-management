@@ -8,6 +8,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -151,4 +153,9 @@ public class Kandidat {
 
     @Column(name = "gehalt_maximum", precision = 10, scale = 2)
     private BigDecimal gehaltMaximum;
+
+    @Transient
+    @com.fasterxml.jackson.annotation.JsonProperty("dokumentTypen")
+    @lombok.Builder.Default
+    private Set<DokumentTyp> dokumentTypen = new HashSet<>();
 }

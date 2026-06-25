@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface KandidatDokumentRepository extends JpaRepository<KandidatDokument, UUID> {
     List<KandidatDokument> findByKandidatId(UUID kandidatId);
     void deleteByKandidatId(UUID kandidatId);
+
 }

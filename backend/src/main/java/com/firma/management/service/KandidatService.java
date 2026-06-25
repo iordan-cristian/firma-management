@@ -1,12 +1,19 @@
 package com.firma.management.service;
 
+import com.firma.management.entity.DokumentTyp;
 import com.firma.management.entity.Kandidat;
+import com.firma.management.entity.KandidatDokument;
+import com.firma.management.repository.KandidatDokumentRepository;
 import com.firma.management.repository.KandidatRepository;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -14,13 +21,24 @@ public class KandidatService {
 
     private final KandidatRepository repo;
     private final KandidatDokumentService dokumentService;
+    private final KandidatDokumentRepository dokumentRepo;
 
-    public KandidatService(KandidatRepository repo, @Lazy KandidatDokumentService dokumentService) {
+    public KandidatService(KandidatRepository repo, @Lazy KandidatDokumentService dokumentService,
+                           KandidatDokumentRepository dokumentRepo) {
         this.repo = repo;
         this.dokumentService = dokumentService;
+        this.dokumentRepo = dokumentRepo;
     }
 
-    public List<Kandidat> getAll() { return repo.findAll(); }
+    public List<Kandidat> getAll() {
+        List<Kandidat> kandidaten = repo.findAll();
+        Map<UUID, Set<DokumentTyp>> typMap = new HashMap<>();
+        for (KandidatDokument d : dokumentRepo.findAll()) {
+            typMap.computeIfAbsent(d.getKandidatId(), k -> new HashSet<>()).add(d.getDokumentTyp());
+        }
+        kandidaten.forEach(k -> k.setDokumentTypen(typMap.getOrDefault(k.getId(), Set.of())));
+        return kandidaten;
+    }
 
     public Optional<Kandidat> getById(UUID id) { return repo.findById(id); }
 

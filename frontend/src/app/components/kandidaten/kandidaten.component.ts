@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { KandidatService } from '../../services/kandidat.service';
 import { KandidatDokumentService } from '../../services/kandidat-dokument.service';
+import { XlsxImportService } from '../../services/xlsx-import.service';
 import {
   Kandidat,
   KandidatDokument,
@@ -49,6 +50,9 @@ import {
               <th>Branchenkenntnisse</th>
               <th>Deutsch</th>
               <th>Englisch</th>
+              <th class="doc-col">CV</th>
+              <th class="doc-col">DSGVO</th>
+              <th class="doc-col">Interview</th>
             </tr>
           </thead>
           <tbody>
@@ -61,6 +65,9 @@ import {
               <td>{{ k.branchenkenntnisse ?? '–' }}</td>
               <td>{{ k.deutsch ?? '–' }}</td>
               <td>{{ k.englisch ?? '–' }}</td>
+              <td class="doc-col"><input type="checkbox" [checked]="k.dokumentTypen?.includes('CV')" disabled /></td>
+              <td class="doc-col"><input type="checkbox" [checked]="k.dokumentTypen?.includes('DSGVO')" disabled /></td>
+              <td class="doc-col"><input type="checkbox" [checked]="k.dokumentTypen?.includes('INTERVIEW')" disabled /></td>
             </tr>
             <tr *ngIf="!filtered.length">
               <td colspan="8" class="empty">Keine Kandidaten gefunden.</td>
@@ -74,6 +81,14 @@ import {
         <div class="modal">
           <h2>{{ editingId ? 'Kandidat bearbeiten' : 'Neuer Kandidat' }}</h2>
           <div class="modal-body">
+
+            <div class="interview-import-row">
+              <button class="btn-interview-import" type="button" (click)="interviewFileInput.click()">
+                Interview (.xlsx) importieren
+              </button>
+              <input #interviewFileInput type="file" style="display:none" accept=".xlsx" (change)="onInterviewImport($event)" />
+              <span class="import-status" *ngIf="importStatus">{{ importStatus }}</span>
+            </div>
 
             <div class="section-title">DSGVO</div>
             <label>DSGVO Bestätigungs Datum
@@ -298,7 +313,7 @@ import {
               <label class="btn-upload">
                 + Dokument hochladen
                 <input type="file" style="display:none"
-                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xlsx"
                        (change)="onFileSelected($event)" />
               </label>
             </div>
@@ -335,6 +350,8 @@ import {
     tr:hover td { background: #f9fafd; }
     tr.clickable { cursor: pointer; }
     .empty { text-align: center; color: #999; padding: 24px; }
+    .doc-col { text-align: center; width: 60px; }
+    .doc-col input[type=checkbox] { cursor: default; accent-color: #3b5bdb; width: 15px; height: 15px; }
 
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.4);
@@ -388,11 +405,16 @@ import {
     .dokument-typ-select { padding: 7px 10px; border: 1px solid #dfe3ee; border-radius: 6px; font-size: 13px; background: white; }
     .btn-upload { display: inline-block; padding: 7px 14px; background: #f1f3f8; border: 1px dashed #3b5bdb; border-radius: 6px; font-size: 13px; color: #3b5bdb; cursor: pointer; white-space: nowrap; }
     .btn-upload:hover { background: #e8ecfa; }
+    .interview-import-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 10px 14px; background: #f0f4ff; border: 1px solid #c5d0f5; border-radius: 8px; }
+    .btn-interview-import { display: inline-block; padding: 7px 14px; background: #3b5bdb; color: white; border-radius: 6px; font-size: 13px; cursor: pointer; white-space: nowrap; margin: 0; }
+    .btn-interview-import:hover { background: #2f4ac7; }
+    .import-status { font-size: 12px; color: #3b5bdb; }
   `]
 })
 export class KandidatenComponent implements OnInit {
   private service = inject(KandidatService);
   private dokumentService = inject(KandidatDokumentService);
+  private xlsxImportService = inject(XlsxImportService);
 
   items: Kandidat[] = [];
   searchText = '';
@@ -413,6 +435,7 @@ export class KandidatenComponent implements OnInit {
   stagedDokumente: StagedDokument[] = [];
   newDokumentTyp: DokumentTyp = 'CV';
   dokumentUploadError = '';
+  importStatus = '';
 
   ngOnInit(): void { this.reload(); }
 
@@ -444,6 +467,7 @@ export class KandidatenComponent implements OnInit {
     this.dokumente = [];
     this.stagedDokumente = [];
     this.dokumentUploadError = '';
+    this.importStatus = '';
     this.newDokumentTyp = 'CV';
     this.addModalOpen = true;
   }
@@ -457,6 +481,7 @@ export class KandidatenComponent implements OnInit {
     this.dokumente = [];
     this.stagedDokumente = [];
     this.dokumentUploadError = '';
+    this.importStatus = '';
     this.newDokumentTyp = 'CV';
     if (k.id) this.loadDokumente(k.id);
     this.addModalOpen = true;
@@ -518,13 +543,18 @@ export class KandidatenComponent implements OnInit {
   }
 
   private uploadStagedDokumente(kandidatId: string, onDone: () => void): void {
+    console.log('[uploadStagedDokumente] kandidatId:', kandidatId, 'staged count:', this.stagedDokumente.length);
     if (!this.stagedDokumente.length) { onDone(); return; }
     const staged = [...this.stagedDokumente];
     let remaining = staged.length;
     staged.forEach(s => {
       this.dokumentService.upload(kandidatId, s.file, s.dokumentTyp).subscribe({
         next: () => { if (--remaining === 0) onDone(); },
-        error: () => { if (--remaining === 0) onDone(); },
+        error: (err) => {
+          const msg = err.error?.error ?? err.error?.message ?? err.statusText ?? 'Unbekannter Fehler';
+          this.dokumentUploadError = `Upload von "${s.file.name}" fehlgeschlagen: ${msg}`;
+          if (--remaining === 0) onDone();
+        },
       });
     });
   }
@@ -536,16 +566,59 @@ export class KandidatenComponent implements OnInit {
     });
   }
 
+  onInterviewImport(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    const editingId = this.editingId;
+    console.log('[Interview Import] editingId:', editingId, 'file:', file.name);
+    this.importStatus = 'Wird importiert…';
+    this.xlsxImportService.parseInterviewFile(file).then(parsed => {
+      const filteredParsed = Object.fromEntries(
+        Object.entries(parsed).filter(([, v]) => v !== undefined && v !== null && v !== '')
+      );
+      this.draft = { ...this.draft, ...filteredParsed };
+      console.log('[Interview Import] editingId after parse:', editingId, 'stagedDocs:', this.stagedDokumente.length);
+      if (editingId) {
+        console.log('[Interview Import] Uploading directly for existing Kandidat...');
+        this.dokumentService.upload(editingId, file, 'INTERVIEW').subscribe({
+          next: doc => {
+            this.dokumente = [...this.dokumente, doc];
+            this.importStatus = 'Import und Speichern erfolgreich.';
+            input.value = '';
+            this.reload();
+          },
+          error: err => {
+            const msg = err.error?.error ?? err.error?.message ?? err.statusText ?? 'Unbekannter Fehler';
+            this.importStatus = 'Formular importiert, aber Speichern fehlgeschlagen: ' + msg;
+            input.value = '';
+          },
+        });
+      } else {
+        this.stagedDokumente = [...this.stagedDokumente, { file, dokumentTyp: 'INTERVIEW' }];
+        console.log('[Interview Import] Staged. Total staged:', this.stagedDokumente.length);
+        this.importStatus = 'Import erfolgreich. Datei wird beim Speichern hochgeladen.';
+        input.value = '';
+      }
+    }).catch(err => {
+      console.error('Interview import error:', err);
+      this.importStatus = 'Import fehlgeschlagen: ' + (err?.message ?? 'Unbekannter Fehler');
+      input.value = '';
+    });
+  }
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
     this.dokumentUploadError = '';
+
     if (this.editingId) {
       this.dokumentService.upload(this.editingId, file, this.newDokumentTyp).subscribe({
         next: doc => {
           this.dokumente = [...this.dokumente, doc];
           input.value = '';
+          this.reload();
         },
         error: err => {
           this.dokumentUploadError = err.error?.error ?? 'Upload fehlgeschlagen.';
@@ -565,7 +638,7 @@ export class KandidatenComponent implements OnInit {
   deleteDokument(docId: string): void {
     if (!this.editingId) return;
     this.dokumentService.delete(this.editingId, docId).subscribe({
-      next: () => this.dokumente = this.dokumente.filter(d => d.id !== docId),
+      next: () => { this.dokumente = this.dokumente.filter(d => d.id !== docId); this.reload(); },
     });
   }
 

@@ -55,6 +55,7 @@ export interface Kandidat {
   xingProfil?: string;
   gehaltMinimum?: number;
   gehaltMaximum?: number;
+  dokumentTypen?: DokumentTyp[];
 }
 
 export type DokumentTyp = 'CV' | 'DSGVO' | 'INTERVIEW';
