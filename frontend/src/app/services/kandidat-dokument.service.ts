@@ -16,10 +16,10 @@ export class KandidatDokumentService {
     return this.http.get<KandidatDokument[]>(this.url(kandidatId));
   }
 
-  upload(kandidatId: string, file: File, dokumentTyp: DokumentTyp): Observable<KandidatDokument> {
+  upload(kandidatId: string, file: File, dokumentTyp: DokumentTyp | ''): Observable<KandidatDokument> {
     const fd = new FormData();
     fd.append('file', file);
-    fd.append('dokumentTyp', dokumentTyp);
+    if (dokumentTyp) fd.append('dokumentTyp', dokumentTyp);
     return this.http.post<KandidatDokument>(this.url(kandidatId), fd);
   }
 

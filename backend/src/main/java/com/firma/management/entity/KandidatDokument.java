@@ -24,7 +24,7 @@ public class KandidatDokument {
     private UUID kandidatId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "dokument_typ", nullable = false)
+    @Column(name = "dokument_typ")
     private DokumentTyp dokumentTyp;
 
     @Column(nullable = false)

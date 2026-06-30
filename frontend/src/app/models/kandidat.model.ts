@@ -59,10 +59,11 @@ export interface Kandidat {
 }
 
 export type DokumentTyp = 'CV' | 'DSGVO' | 'INTERVIEW';
-export const DOKUMENT_TYP_OPTIONS: { value: DokumentTyp; label: string }[] = [
+export const DOKUMENT_TYP_OPTIONS: { value: DokumentTyp | ''; label: string }[] = [
   { value: 'CV', label: 'CV' },
   { value: 'DSGVO', label: 'DSGVO' },
   { value: 'INTERVIEW', label: 'Interview' },
+  { value: '', label: 'Sonstiges' },
 ];
 
 export interface KandidatDokument {
@@ -77,5 +78,5 @@ export interface KandidatDokument {
 
 export interface StagedDokument {
   file: File;
-  dokumentTyp: DokumentTyp;
+  dokumentTyp: DokumentTyp | '';
 }

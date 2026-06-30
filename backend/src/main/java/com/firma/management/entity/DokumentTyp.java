@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum DokumentTyp {
     CV("CV"),
     DSGVO("DSGVO"),
-    INTERVIEW("Interview");
+    INTERVIEW("INTERVIEW");
 
     private final String label;
 

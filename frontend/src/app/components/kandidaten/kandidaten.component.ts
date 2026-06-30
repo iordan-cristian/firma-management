@@ -84,7 +84,7 @@ import {
 
             <div class="interview-import-row">
               <button class="btn-interview-import" type="button" (click)="interviewFileInput.click()">
-                Interview (.xlsx) importieren
+                Altes Interview (.xlsx) importieren
               </button>
               <input #interviewFileInput type="file" style="display:none" accept=".xlsx" (change)="onInterviewImport($event)" />
               <span class="import-status" *ngIf="importStatus">{{ importStatus }}</span>
@@ -403,7 +403,7 @@ import {
     .btn-danger:hover:not(:disabled) { background: #ffeaea; border-color: #e03131; }
     .upload-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; margin-bottom: 6px; }
     .dokument-typ-select { padding: 7px 10px; border: 1px solid #dfe3ee; border-radius: 6px; font-size: 13px; background: white; }
-    .btn-upload { display: inline-block; padding: 7px 14px; background: #f1f3f8; border: 1px dashed #3b5bdb; border-radius: 6px; font-size: 13px; color: #3b5bdb; cursor: pointer; white-space: nowrap; }
+    .btn-upload { display: inline-block; padding: 7px 14px; background: #f1f3f8; border: 1px dashed #3b5bdb; border-radius: 6px; font-size: 13px; color: #3b5bdb; cursor: pointer; white-space: nowrap; margin-bottom: 0; }
     .btn-upload:hover { background: #e8ecfa; }
     .interview-import-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 10px 14px; background: #f0f4ff; border: 1px solid #c5d0f5; border-radius: 8px; }
     .btn-interview-import { display: inline-block; padding: 7px 14px; background: #3b5bdb; color: white; border-radius: 6px; font-size: 13px; cursor: pointer; white-space: nowrap; margin: 0; }
@@ -433,7 +433,7 @@ export class KandidatenComponent implements OnInit {
 
   dokumente: KandidatDokument[] = [];
   stagedDokumente: StagedDokument[] = [];
-  newDokumentTyp: DokumentTyp = 'CV';
+  newDokumentTyp: DokumentTyp | '' = 'CV';
   dokumentUploadError = '';
   importStatus = '';
 

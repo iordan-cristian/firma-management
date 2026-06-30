@@ -32,7 +32,7 @@ public class KandidatDokumentController {
     public ResponseEntity<KandidatDokument> upload(
             @PathVariable UUID kandidatId,
             @RequestParam("file") MultipartFile file,
-            @RequestParam("dokumentTyp") String dokumentTyp) throws IOException {
+            @RequestParam(value = "dokumentTyp", required = false) String dokumentTyp) throws IOException {
         KandidatDokument saved = service.upload(kandidatId, DokumentTyp.fromLabel(dokumentTyp), file);
         return ResponseEntity.status(201).body(saved);
     }
