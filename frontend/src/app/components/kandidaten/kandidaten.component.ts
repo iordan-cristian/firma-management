@@ -293,7 +293,7 @@ import {
                 <span class="dokument-typ-badge">{{ d.dokumentTyp }}</span>
                 <span class="dokument-name" [title]="d.dateiname">{{ d.dateiname }}</span>
                 <span class="dokument-size">{{ formatBytes(d.dateigroesse) }}</span>
-                <button class="btn-link" (click)="downloadDokument(d)" title="Herunterladen">↓</button>
+                <button class="btn-link btn-download" (click)="downloadDokument(d)" title="Herunterladen">↓</button>
                 <button class="btn-link btn-danger" (click)="deleteDokument(d.id)" title="Löschen">✕</button>
               </div>
               <div class="dokument-item dokument-item--pending" *ngFor="let s of stagedDokumente; let i = index">
@@ -399,6 +399,7 @@ import {
     .dokument-name { flex: 1; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .dokument-size { font-size: 11px; color: #888; white-space: nowrap; flex-shrink: 0; }
     .pending-label { font-size: 11px; color: #aaa; font-style: italic; white-space: nowrap; flex-shrink: 0; }
+    .btn-download { padding: 8px 20px; }
     .btn-danger { color: #e03131; }
     .btn-danger:hover:not(:disabled) { background: #ffeaea; border-color: #e03131; }
     .upload-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; margin-bottom: 6px; }
