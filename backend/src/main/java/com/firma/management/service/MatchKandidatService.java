@@ -1,124 +1,89 @@
 package com.firma.management.service;
 
-import com.firma.management.entity.AllgemeinerSchwerpunkt;
-import com.firma.management.entity.Fuehrerschein;
-import com.firma.management.entity.Geschlecht;
-import com.firma.management.entity.Kandidat;
-import com.firma.management.entity.Sprachniveau;
-import com.firma.management.entity.Titel;
+import com.firma.management.controller.MatchKandidatController;
+import com.firma.management.entity.*;
+import jakarta.annotation.Nonnull;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 public class MatchKandidatService {
 
     private final DataSource dataSource;
+    private final SuchauftragService suchauftragService;
 
-    public MatchKandidatService(DataSource dataSource) {
+    public MatchKandidatService(DataSource dataSource, SuchauftragService suchauftragService) {
         this.dataSource = dataSource;
+        this.suchauftragService = suchauftragService;
     }
 
-    public List<Kandidat> findByFachlicherSkills(List<String> skills) {
-        List<String> terms = skills.stream()
-                .filter(s -> s != null && !s.isBlank())
-                .toList();
-        if (terms.isEmpty()) {
-            return List.of();
+
+    public List<Kandidat> matchKandidat(MatchKandidatController.MatchKandidatRequest matchKandidatRequest) {
+
+        Optional<Suchauftrag> suchauftrag = suchauftragService.getById(matchKandidatRequest.suchauftragId());
+
+
+        return getKandidatsExcludingKOKriterien(suchauftrag, matchKandidatRequest);
+    }
+
+
+    @Nonnull
+    private List<Kandidat> getKandidatsExcludingKOKriterien(Optional<Suchauftrag> suchauftrag, MatchKandidatController.MatchKandidatRequest matchKandidatRequest) {
+        StringBuilder whereClause = new StringBuilder();
+
+        if (suchauftrag.isPresent()) {
+            if (matchKandidatRequest.fachlicherSkillKOKriterium()) {
+                whereClause.append(whereClauseFachlicherSkill(Arrays.stream(suchauftrag.get().getFachlicherSkill().split(",")).toList()));
+            } else if (matchKandidatRequest.gehaltKOKriterium()) {
+                if (!whereClause.isEmpty()){
+                    whereClause.append(" AND ");
+                }
+                whereClause.append(whereClauseGehalt(suchauftrag.get().getGehaltMaximum()));
+            }
         }
 
-        String whereClause = terms.stream()
-                .map(t -> "LOWER(fachlicher_skill) LIKE ?")
-                .collect(Collectors.joining(" OR "));
         String sql = "SELECT * FROM kandidat WHERE " + whereClause;
 
         List<Kandidat> result = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            for (int i = 0; i < terms.size(); i++) {
-                stmt.setString(i + 1, "%" + terms.get(i).toLowerCase() + "%");
-            }
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     result.add(mapRow(rs));
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to query kandidat by fachlicher_skill", e);
+            throw new RuntimeException("Failed to query kandidat. Querry" + sql,  e);
         }
         return result;
     }
 
-    /**
-     * @param skills    the fachlicher_skill search terms
-     * @param operators operators joining consecutive skills, must contain exactly
-     *                  {@code skills.size() - 1} elements, each either "AND" or "OR"
-     */
-    public List<Kandidat> findByFachlicherSkills(List<String> skills, List<String> operators) {
+    private String whereClauseFachlicherSkill(List<String> skills) {
         List<String> terms = skills.stream()
                 .filter(s -> s != null && !s.isBlank())
                 .toList();
-        if (terms.isEmpty()) {
-            return List.of();
-        }
-        if (operators == null || operators.size() != terms.size() - 1) {
-            throw new IllegalArgumentException(
-                    "operators must contain exactly skills.size() - 1 elements (\"AND\" or \"OR\" between each pair of skills)");
-        }
-        for (String operator : operators) {
-            if (!"AND".equalsIgnoreCase(operator) && !"OR".equalsIgnoreCase(operator)) {
-                throw new IllegalArgumentException("Each operator must be \"AND\" or \"OR\", got: " + operator);
-            }
-        }
 
-        StringBuilder whereClause = new StringBuilder("LOWER(fachlicher_skill) LIKE ?");
-        for (String operator : operators) {
-            whereClause.append(' ').append(operator.toUpperCase()).append(" LOWER(fachlicher_skill) LIKE ?");
-        }
-        String sql = "SELECT * FROM kandidat WHERE " + whereClause;
-
-        List<Kandidat> result = new ArrayList<>();
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            for (int i = 0; i < terms.size(); i++) {
-                stmt.setString(i + 1, "%" + terms.get(i).toLowerCase() + "%");
+        StringBuilder whereClause = new StringBuilder("( ");
+        for (int i = 0; i < terms.size(); i++) {
+            if (i > 0) {
+                whereClause.append(" AND ");
             }
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    result.add(mapRow(rs));
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to query kandidat by fachlicher_skill", e);
+            whereClause.append("LOWER(fachlicher_skill) LIKE '%" + terms.get(i).toLowerCase() + "%'");
         }
-        return result;
+        whereClause.append(" )");
+        return whereClause.toString();
     }
 
-    public List<Kandidat> findByGehaltMinimumLessThanEqual(Integer maxGehaltMinimum) {
-        String sql = "SELECT * FROM kandidat WHERE gehalt_minimum <= ?";
-
-        List<Kandidat> result = new ArrayList<>();
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, maxGehaltMinimum);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    result.add(mapRow(rs));
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to query kandidat by gehalt_minimum", e);
-        }
-        return result;
+    private String whereClauseGehalt(BigDecimal gehaltAngebot) {
+        return "( gehalt_minimum <=" + gehaltAngebot + " )";
     }
 
     private Kandidat mapRow(ResultSet rs) throws SQLException {
