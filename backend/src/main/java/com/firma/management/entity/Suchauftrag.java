@@ -41,8 +41,14 @@ public class Suchauftrag {
     @Column(name = "fachlicher_skill", columnDefinition = "TEXT")
     private String fachlicherSkill;
 
+    @Column(name = "fachlicher_skill_ko_kriterium", nullable = false)
+    private boolean fachlicherSkillKOKriterium;
+
     @Column(name = "gehalt_mehr_info", columnDefinition = "TEXT")
     private String gehaltMehrInfo;
+
+    @Column(name = "gehalt_ko_kriterium", nullable = false)
+    private boolean gehaltKOKriterium;
 
     @Column(columnDefinition = "TEXT")
     private String berufserfahrung;
@@ -53,14 +59,26 @@ public class Suchauftrag {
     @Column(columnDefinition = "TEXT")
     private String zertifikate;
 
+    @Column(name = "zertifikate_ko_kriterium", nullable = false)
+    private boolean zertifikateKOKriterium;
+
     @Enumerated(EnumType.STRING)
     private Sprachniveau deutsch;
+
+    @Column(name = "deutsch_ko_kriterium", nullable = false)
+    private boolean deutschKOKriterium;
 
     @Enumerated(EnumType.STRING)
     private Sprachniveau englisch;
 
+    @Column(name = "englisch_ko_kriterium", nullable = false)
+    private boolean englischKOKriterium;
+
     @Column(name = "sonstige_sprachen", columnDefinition = "TEXT")
     private String sonstigeSprachen;
+
+    @Column(name = "sonstige_sprachen_ko_kriterium", nullable = false)
+    private boolean sonstigeSprachenKOKriterium;
 
     @Column(columnDefinition = "TEXT")
     private String informationen;

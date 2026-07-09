@@ -287,10 +287,18 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               </label>
               
                <div class="section-title">Kandidat</div>
-              <label>Fachlicher Skill
+              <label>
+                <span class="label-row">
+                  Fachlicher Skill
+                  <input type="checkbox" class="ko-checkbox" name="fachlicherSkillKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.fachlicherSkillKOKriterium" />
+                </span>
                 <textarea rows="4" [(ngModel)]="draftSuchauftrag.fachlicherSkill" placeholder="z.B. Java, SAP, CAD"></textarea>
               </label>
-              <label>Gehalt
+              <label>
+                <span class="label-row">
+                  Gehalt
+                  <input type="checkbox" class="ko-checkbox" name="gehaltKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.gehaltKOKriterium" />
+                </span>
                 <div class="input-suffix-wrapper">
                   <input [(ngModel)]="draftSuchauftrag.gehalt" (input)="filterGehalt($event, 'suchauftrag')" placeholder="z.B. 60000-80000" />
                   <span class="input-suffix">(Tausend €)</span>
@@ -305,22 +313,38 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <label>Branchenkenntnisse
                 <textarea rows="4" [(ngModel)]="draftSuchauftrag.branchenkenntnisse" placeholder="z.B. Automotive, IT"></textarea>
               </label>
-              <label>Zertifikate
+              <label>
+                <span class="label-row">
+                  Zertifikate
+                  <input type="checkbox" class="ko-checkbox" name="zertifikateKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.zertifikateKOKriterium" />
+                </span>
                 <input [(ngModel)]="draftSuchauftrag.zertifikate" placeholder="z.B. PMP, ISO 9001" />
               </label>
-              <label>Deutsch
+              <label>
+                <span class="label-row">
+                  Deutsch
+                  <input type="checkbox" class="ko-checkbox" name="deutschKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.deutschKOKriterium" />
+                </span>
                 <select [(ngModel)]="draftSuchauftrag.deutsch">
                   <option [ngValue]="undefined">–</option>
                   <option *ngFor="let o of sprachniveauOptions" [value]="o">{{ o }}</option>
                 </select>
               </label>
-              <label>Englisch
+              <label>
+                <span class="label-row">
+                  Englisch
+                  <input type="checkbox" class="ko-checkbox" name="englischKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.englischKOKriterium" />
+                </span>
                 <select [(ngModel)]="draftSuchauftrag.englisch">
                   <option [ngValue]="undefined">–</option>
                   <option *ngFor="let o of sprachniveauOptions" [value]="o">{{ o }}</option>
                 </select>
               </label>
-              <label>Sonstige Sprachen
+              <label>
+                <span class="label-row">
+                  Sonstige Sprachen
+                  <input type="checkbox" class="ko-checkbox" name="sonstigeSprachenKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.sonstigeSprachenKOKriterium" />
+                </span>
                 <input [(ngModel)]="draftSuchauftrag.sonstigeSprachen" placeholder="z.B. Französisch B2, Spanisch A2" />
               </label>
               <label>Informationen
@@ -563,6 +587,8 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .section-title { font-size: 12px; font-weight: 700; color: #3b5bdb; text-transform: uppercase; letter-spacing: 0.05em; margin: 18px 0 10px; border-bottom: 1px solid #e5e9f3; padding-bottom: 4px; }
     .modal label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #555; margin-bottom: 14px; }
     .modal label.checkbox-label { flex-direction: row; align-items: center; gap: 8px; }
+    .label-row { display: flex; align-items: center; justify-content: space-between; }
+    .label-row .ko-checkbox { margin: 0; }
     .modal input:not([type="checkbox"]), .modal select, .modal textarea {
       padding: 8px 10px; border: 1px solid #dfe3ee; border-radius: 6px; font-size: 14px; font-family: inherit;
     }
