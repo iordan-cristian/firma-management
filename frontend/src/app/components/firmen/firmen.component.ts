@@ -1,6 +1,7 @@
 import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { EMPTY, Observable } from 'rxjs';
 import { FirmaService } from '../../services/firma.service';
 import { AnsprechpartnerService } from '../../services/ansprechpartner.service';
 import { SuchauftragService } from '../../services/suchauftrag.service';
@@ -11,6 +12,7 @@ import { Ansprechpartner } from '../../models/ansprechpartner.model';
 import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
 import { Vertrag } from '../../models/vertrag.model';
 import { Kandidat, GESCHLECHT_OPTIONS, TITEL_OPTIONS, SPRACHNIVEAU_OPTIONS, FUEHRERSCHEIN_OPTIONS } from '../../models/kandidat.model';
+import {MatchKandidatService} from "../../services/match-kandidat.service";
 
 type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
 
@@ -290,14 +292,20 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <label>
                 <span class="label-row">
                   Fachlicher Skill
-                  <input type="checkbox" class="ko-checkbox" name="fachlicherSkillKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.fachlicherSkillKOKriterium" />
+                  <span class="ko-checkbox-label">
+                    <input type="checkbox" class="ko-checkbox" name="fachlicherSkillKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.fachlicherSkillKOKriterium" />
+                    KO Kriterium
+                  </span>
                 </span>
                 <textarea rows="4" [(ngModel)]="draftSuchauftrag.fachlicherSkill" placeholder="z.B. Java, SAP, CAD"></textarea>
               </label>
               <label>
                 <span class="label-row">
                   Gehalt
-                  <input type="checkbox" class="ko-checkbox" name="gehaltKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.gehaltKOKriterium" />
+                  <span class="ko-checkbox-label">
+                    <input type="checkbox" class="ko-checkbox" name="gehaltKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.gehaltKOKriterium" />
+                    KO Kriterium
+                  </span>
                 </span>
                 <div class="input-suffix-wrapper">
                   <input [(ngModel)]="draftSuchauftrag.gehalt" (input)="filterGehalt($event, 'suchauftrag')" placeholder="z.B. 60000-80000" />
@@ -316,14 +324,20 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <label>
                 <span class="label-row">
                   Zertifikate
-                  <input type="checkbox" class="ko-checkbox" name="zertifikateKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.zertifikateKOKriterium" />
+                  <span class="ko-checkbox-label">
+                    <input type="checkbox" class="ko-checkbox" name="zertifikateKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.zertifikateKOKriterium" />
+                    KO Kriterium
+                  </span>
                 </span>
                 <input [(ngModel)]="draftSuchauftrag.zertifikate" placeholder="z.B. PMP, ISO 9001" />
               </label>
               <label>
                 <span class="label-row">
                   Deutsch
-                  <input type="checkbox" class="ko-checkbox" name="deutschKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.deutschKOKriterium" />
+                  <span class="ko-checkbox-label">
+                    <input type="checkbox" class="ko-checkbox" name="deutschKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.deutschKOKriterium" />
+                    KO Kriterium
+                  </span>
                 </span>
                 <select [(ngModel)]="draftSuchauftrag.deutsch">
                   <option [ngValue]="undefined">–</option>
@@ -333,7 +347,10 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <label>
                 <span class="label-row">
                   Englisch
-                  <input type="checkbox" class="ko-checkbox" name="englischKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.englischKOKriterium" />
+                  <span class="ko-checkbox-label">
+                    <input type="checkbox" class="ko-checkbox" name="englischKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.englischKOKriterium" />
+                    KO Kriterium
+                  </span>
                 </span>
                 <select [(ngModel)]="draftSuchauftrag.englisch">
                   <option [ngValue]="undefined">–</option>
@@ -343,7 +360,10 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <label>
                 <span class="label-row">
                   Sonstige Sprachen
-                  <input type="checkbox" class="ko-checkbox" name="sonstigeSprachenKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.sonstigeSprachenKOKriterium" />
+                  <span class="ko-checkbox-label">
+                    <input type="checkbox" class="ko-checkbox" name="sonstigeSprachenKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.sonstigeSprachenKOKriterium" />
+                    KO Kriterium
+                  </span>
                 </span>
                 <input [(ngModel)]="draftSuchauftrag.sonstigeSprachen" placeholder="z.B. Französisch B2, Spanisch A2" />
               </label>
@@ -589,6 +609,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .modal label.checkbox-label { flex-direction: row; align-items: center; gap: 8px; }
     .label-row { display: flex; align-items: center; justify-content: space-between; }
     .label-row .ko-checkbox { margin: 0; }
+    .ko-checkbox-label { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 400; text-transform: none; letter-spacing: normal; color: #8a90a2; }
     .modal input:not([type="checkbox"]), .modal select, .modal textarea {
       padding: 8px 10px; border: 1px solid #dfe3ee; border-radius: 6px; font-size: 14px; font-family: inherit;
     }
@@ -635,6 +656,7 @@ export class FirmenComponent implements OnInit {
   private suchauftragService = inject(SuchauftragService);
   private vertragService = inject(VertragService);
   private kandidatService = inject(KandidatService);
+  private matchKandidatService = inject(MatchKandidatService);
 
   firmen: Firma[] = [];
   selectedFirma: Firma | null = null;
@@ -812,7 +834,16 @@ export class FirmenComponent implements OnInit {
 
   openMatchedKandidaten(): void {
     this.matchedKandidatenOpen = true;
-    this.kandidatService.getAll().subscribe(list => (this.matchedKandidaten = list));
+    this.kandidatDetailOpen = false;
+    this.selectedKandidat = null;
+    this.buildSuchauftragSaveRequest().subscribe(saved => {
+      this.draftSuchauftrag = { ...this.draftSuchauftrag, id: saved.id };
+      this.firmaService.getSuchauftragForFirma(this.expandedFirma!.id!).subscribe(list => (this.suchauftragList = list));
+      this.matchKandidatService.matchKandidat({ suchauftragId: saved.id! }).subscribe(list => {
+        this.matchedKandidaten = list;
+        if (list.length === 1) this.openKandidatDetail(list[0]);
+      });
+    });
   }
 
   openKandidatDetail(k: Kandidat): void {
@@ -832,8 +863,9 @@ export class FirmenComponent implements OnInit {
     });
   }
 
-  saveSuchauftrag(): void {
-    if (!this.draftSuchauftrag.ansprechpartnerId) return;
+  /** Builds (but does not subscribe to) the create/update request for the current draftSuchauftrag. */
+  private buildSuchauftragSaveRequest(): Observable<Suchauftrag> {
+    if (!this.draftSuchauftrag.ansprechpartnerId) return EMPTY;
     [this.draftSuchauftrag.gehaltMinimum, this.draftSuchauftrag.gehaltMaximum] = this.parseGehalt(this.draftSuchauftrag.gehalt, 'suchauftrag');
     if (this.anlageDatumInput) {
       const [y, m, d] = this.anlageDatumInput.split('-');
@@ -841,17 +873,21 @@ export class FirmenComponent implements OnInit {
     } else {
       this.draftSuchauftrag.anlageDatum = undefined;
     }
-    const refresh = () =>
+    return this.editingSuchauftragId
+      ? this.suchauftragService.update(this.editingSuchauftragId, this.draftSuchauftrag as Suchauftrag)
+      : this.suchauftragService.create(this.draftSuchauftrag as Suchauftrag);
+  }
+
+  saveSuchauftrag(closeModal: boolean = true): void {
+    const wasEditing = this.editingSuchauftragId;
+    this.buildSuchauftragSaveRequest().subscribe(saved => {
+      this.draftSuchauftrag = { ...this.draftSuchauftrag, id: saved.id };
       this.firmaService.getSuchauftragForFirma(this.expandedFirma!.id!).subscribe(list => (this.suchauftragList = list));
-    if (this.editingSuchauftragId) {
-      this.suchauftragService.update(this.editingSuchauftragId, this.draftSuchauftrag as Suchauftrag).subscribe(() => {
-        refresh(); this.closeSuchauftragModal(); this.editingSuchauftragId = null;
-      });
-    } else {
-      this.suchauftragService.create(this.draftSuchauftrag as Suchauftrag).subscribe(() => {
-        refresh(); this.closeSuchauftragModal();
-      });
-    }
+      if (closeModal) {
+        this.closeSuchauftragModal();
+        if (wasEditing) this.editingSuchauftragId = null;
+      }
+    });
   }
 
   filterGehalt(e: Event, target: 'suchauftrag' | 'kandidat'): void {

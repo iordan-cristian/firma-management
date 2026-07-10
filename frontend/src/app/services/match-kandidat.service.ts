@@ -6,8 +6,6 @@ import { environment } from '../../environments/environment';
 
 export interface MatchKandidatRequest {
   suchauftragId: string;
-  fachlicherSkillKOKriterium: boolean;
-  gehaltKOKriterium: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -16,10 +14,7 @@ export class MatchKandidatService {
   private readonly baseUrl = `${environment.apiUrl}/api/match-kandidat`;
 
   matchKandidat(request: MatchKandidatRequest): Observable<Kandidat[]> {
-    const params = new HttpParams()
-      .set('suchauftragId', request.suchauftragId)
-      .set('fachlicherSkillKOKriterium', request.fachlicherSkillKOKriterium)
-      .set('gehaltKOKriterium', request.gehaltKOKriterium);
+    const params = new HttpParams().set('suchauftragId', request.suchauftragId);
     return this.http.get<Kandidat[]>(this.baseUrl, { params });
   }
 }

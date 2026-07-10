@@ -41,10 +41,10 @@ public class MatchKandidatService {
         List<Object> params = new ArrayList<>(); // values bound to those placeholders, in matching order
 
         if (suchauftrag.isPresent()) {
-            if (matchKandidatRequest.fachlicherSkillKOKriterium()) {
+            if (suchauftrag.get().isFachlicherSkillKOKriterium()) {
                 appendFachlicherSkill(Arrays.stream(suchauftrag.get().getFachlicherSkill().split(",")).toList(), clauses, params);
             }
-            if (matchKandidatRequest.gehaltKOKriterium()) {
+            if (suchauftrag.get().isGehaltKOKriterium()) {
                 appendGehalt(suchauftrag, clauses, params);
             }
         }

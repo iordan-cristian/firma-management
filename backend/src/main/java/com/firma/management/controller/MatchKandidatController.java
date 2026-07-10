@@ -28,11 +28,7 @@ public class MatchKandidatController {
     public record MatchKandidatRequest(
 
         @NotNull
-        UUID suchauftragId,
-
-        boolean fachlicherSkillKOKriterium,
-
-        boolean gehaltKOKriterium
-
+        UUID suchauftragId
+        
     ) {}
 }
