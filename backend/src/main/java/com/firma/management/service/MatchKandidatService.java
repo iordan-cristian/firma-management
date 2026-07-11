@@ -65,6 +65,15 @@ public class MatchKandidatService {
             if (suchauftrag.get().isZertifikateKOKriterium()){
                 appendZertifikate(Arrays.stream(suchauftrag.get().getZertifikate().split(",")).toList(), clauses, params);
             }
+            if (suchauftrag.get().isDeutschKOKriterium()) {
+                appendDeutsch(suchauftrag, clauses, params);
+            }
+            if (suchauftrag.get().isEnglischKOKriterium()) {
+                appendEnglisch(suchauftrag, clauses, params);
+            }
+            if (suchauftrag.get().isSonstigeSprachenKOKriterium()) {
+                appendSonstigeSprachen(Arrays.stream(suchauftrag.get().getSonstigeSprachen().split(",")).toList(), clauses, params);
+            }
         }
 
         String whereClause = clauses.isEmpty() ? "1=1" : String.join(" AND ", clauses);
@@ -93,24 +102,27 @@ public class MatchKandidatService {
     }
 
     private void appendFachlicherSkill(List<String> skills, List<String> clauses, List<Object> params) {
-        List<String> terms = skills.stream()
-                .filter(s -> s != null && !s.isBlank())
-                .toList();
-
-        if (terms.isEmpty()) {
-            return;
-        }
-
-        List<String> skillClauses = new ArrayList<>();
-        for (String term : terms) {
-            skillClauses.add("LOWER(fachlicher_skill) LIKE ?");
-            params.add("%" + term.trim().toLowerCase() + "%");
-        }
-        clauses.add("( " + String.join(" AND ", skillClauses) + " )");
+        appendAllTermsMatch("fachlicher_skill", skills, clauses, params);
     }
 
     private void appendZertifikate(List<String> zeritifikate, List<String> clauses, List<Object> params) {
-        List<String> terms = zeritifikate.stream()
+        appendAllTermsMatch("zertifikate", zeritifikate, clauses, params);
+    }
+
+    private void appendSonstigeSprachen(List<String> sonstigeSprachen, List<String> clauses, List<Object> params){
+        appendAllTermsMatch("zertifikate", sonstigeSprachen, clauses, params);
+    }
+
+    private static void appendDeutsch(Optional<Suchauftrag> suchauftrag, List<String> clauses, List<Object> params) {
+        appendMindestSprachniveau("deutsch", suchauftrag.get().getDeutsch(), clauses, params);
+    }
+
+    private static void appendEnglisch(Optional<Suchauftrag> suchauftrag, List<String> clauses, List<Object> params) {
+        appendMindestSprachniveau("englisch", suchauftrag.get().getEnglisch(), clauses, params);
+    }
+
+    private static void appendAllTermsMatch(String column, List<String> values, List<String> clauses, List<Object> params) {
+        List<String> terms = values.stream()
                 .filter(s -> s != null && !s.isBlank())
                 .toList();
 
@@ -118,12 +130,23 @@ public class MatchKandidatService {
             return;
         }
 
-        List<String> skillClauses = new ArrayList<>();
+        List<String> termClauses = new ArrayList<>();
         for (String term : terms) {
-            skillClauses.add("LOWER(zertifikate) LIKE ?");
+            termClauses.add("LOWER(" + column + ") LIKE ?");
             params.add("%" + term.trim().toLowerCase() + "%");
         }
-        clauses.add("( " + String.join(" AND ", skillClauses) + " )");
+        clauses.add("( " + String.join(" AND ", termClauses) + " )");
+    }
+
+    private static void appendMindestSprachniveau(String column, Sprachniveau minimum, List<String> clauses, List<Object> params) {
+        List<String> acceptableLevel = new ArrayList<>();
+        for (Sprachniveau level : Sprachniveau.values()) {
+            if (level.ordinal() >= minimum.ordinal()) {
+                acceptableLevel.add("?");
+                params.add(level.name());
+            }
+        }
+        clauses.add(column + " IN (" + String.join(", ", acceptableLevel) + ")");
     }
 
     /** A single, applicable scoring criterion derived from a Suchauftrag. */
