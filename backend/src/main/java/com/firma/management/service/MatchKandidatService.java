@@ -8,7 +8,6 @@ import jakarta.annotation.Nonnull;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -63,6 +62,9 @@ public class MatchKandidatService {
             if (suchauftrag.get().isGehaltKOKriterium()) {
                 appendGehalt(suchauftrag, clauses, params);
             }
+            if (suchauftrag.get().isZertifikateKOKriterium()){
+                appendZertifikate(Arrays.stream(suchauftrag.get().getZertifikate().split(",")).toList(), clauses, params);
+            }
         }
 
         String whereClause = clauses.isEmpty() ? "1=1" : String.join(" AND ", clauses);
@@ -102,7 +104,24 @@ public class MatchKandidatService {
         List<String> skillClauses = new ArrayList<>();
         for (String term : terms) {
             skillClauses.add("LOWER(fachlicher_skill) LIKE ?");
-            params.add("%" + term.toLowerCase() + "%");
+            params.add("%" + term.trim().toLowerCase() + "%");
+        }
+        clauses.add("( " + String.join(" AND ", skillClauses) + " )");
+    }
+
+    private void appendZertifikate(List<String> zeritifikate, List<String> clauses, List<Object> params) {
+        List<String> terms = zeritifikate.stream()
+                .filter(s -> s != null && !s.isBlank())
+                .toList();
+
+        if (terms.isEmpty()) {
+            return;
+        }
+
+        List<String> skillClauses = new ArrayList<>();
+        for (String term : terms) {
+            skillClauses.add("LOWER(zertifikate) LIKE ?");
+            params.add("%" + term.trim().toLowerCase() + "%");
         }
         clauses.add("( " + String.join(" AND ", skillClauses) + " )");
     }
@@ -113,31 +132,39 @@ public class MatchKandidatService {
     private List<Kriterium> buildKriterien(Suchauftrag s) {
         List<Kriterium> kriterien = new ArrayList<>();
 
-        if (isNotBlank(s.getFachlicherSkill())) {
-            kriterien.add(new Kriterium("Fachlicher Skill",
-                    k -> matchesAllTerms(s.getFachlicherSkill(), k.getFachlicherSkill())));
+        if (!s.isFachlicherSkillKOKriterium() && isNotBlank(s.getFachlicherSkill())) {
+            addPerTermKriterien(kriterien, "Fachlicher Skill", s.getFachlicherSkill(), Kandidat::getFachlicherSkill);
         }
-        if (s.getGehaltMaximum() != null) {
+        if (!s.isGehaltKOKriterium() && s.getGehaltMaximum() != null) {
             kriterien.add(new Kriterium("Gehalt",
                     k -> k.getGehaltMinimum() != null && k.getGehaltMinimum().compareTo(s.getGehaltMaximum()) <= 0));
         }
-        if (isNotBlank(s.getZertifikate())) {
-            kriterien.add(new Kriterium("Zertifikate",
-                    k -> matchesAllTerms(s.getZertifikate(), k.getZertifikate())));
+        if (!s.isZertifikateKOKriterium() && isNotBlank(s.getZertifikate())) {
+            addPerTermKriterien(kriterien, "Zertifikate", s.getZertifikate(), Kandidat::getZertifikate);
         }
-        if (s.getDeutsch() != null) {
+        if (!s.isDeutschKOKriterium() && s.getDeutsch() != null) {
             kriterien.add(new Kriterium("Deutsch",
                     k -> k.getDeutsch() != null && k.getDeutsch().ordinal() >= s.getDeutsch().ordinal()));
         }
-        if (s.getEnglisch() != null) {
+        if (!s.isEnglischKOKriterium() && s.getEnglisch() != null) {
             kriterien.add(new Kriterium("Englisch",
                     k -> k.getEnglisch() != null && k.getEnglisch().ordinal() >= s.getEnglisch().ordinal()));
         }
-        if (isNotBlank(s.getSonstigeSprachen())) {
-            kriterien.add(new Kriterium("Sonstige Sprachen",
-                    k -> matchesAllTerms(s.getSonstigeSprachen(), k.getSonstigeSprachen())));
+        if (!s.isSonstigeSprachenKOKriterium() && isNotBlank(s.getSonstigeSprachen())) {
+            addPerTermKriterien(kriterien, "Sonstige Sprachen", s.getSonstigeSprachen(), Kandidat::getSonstigeSprachen);
         }
         return kriterien;
+    }
+
+    private static void addPerTermKriterien(List<Kriterium> kriterien, String label, String requiredTerms,
+                                             java.util.function.Function<Kandidat, String> actualValue) {
+        for (String rawTerm : requiredTerms.split(",")) {
+            String term = rawTerm.trim();
+            if (!term.isEmpty()) {
+                kriterien.add(new Kriterium(label + ": " + term,
+                        k -> matchesTerm(term, actualValue.apply(k))));
+            }
+        }
     }
 
     private MatchKandidatResult scoreKandidat(Kandidat kandidat, List<Kriterium> kriterien) {
@@ -153,13 +180,8 @@ public class MatchKandidatService {
         return new MatchKandidatResult(kandidat, satisfied.size(), String.join(", ", satisfied), String.join(", ", unsatisfied));
     }
 
-    private static boolean matchesAllTerms(String required, String actual) {
-        if (actual == null || actual.isBlank()) return false;
-        String actualLower = actual.toLowerCase();
-        return Arrays.stream(required.split(","))
-                .map(String::trim)
-                .filter(term -> !term.isEmpty())
-                .allMatch(term -> actualLower.contains(term.toLowerCase()));
+    private static boolean matchesTerm(String term, String actual) {
+        return actual != null && actual.toLowerCase().contains(term.toLowerCase());
     }
 
     private static boolean isNotBlank(String value) {
