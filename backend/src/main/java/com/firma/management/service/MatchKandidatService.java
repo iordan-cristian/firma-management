@@ -1,6 +1,8 @@
 package com.firma.management.service;
 
 import com.firma.management.controller.MatchKandidatController;
+import com.firma.management.dto.MatchKandidatResponse;
+import com.firma.management.dto.MatchKandidatResult;
 import com.firma.management.entity.*;
 import jakarta.annotation.Nonnull;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,12 @@ import java.util.*;
 @Service
 public class MatchKandidatService {
 
+    private static final String KRITERIEN_EXPLAINED =
+            "Bewertung basiert auf bis zu 6 Kriterien (Fachlicher Skill, Gehalt, Zertifikate, Deutsch, Englisch, " +
+            "Sonstige Sprachen). Als KO-Kriterium markierte Felder schließen nicht passende Kandidaten von der " +
+            "Trefferliste aus. Alle im Suchauftrag angegebenen Kriterien fließen in den Score ein (1 Punkt je " +
+            "erfülltes Kriterium).";
+
     private final DataSource dataSource;
     private final SuchauftragService suchauftragService;
 
@@ -26,12 +34,20 @@ public class MatchKandidatService {
     }
 
 
-    public List<Kandidat> matchKandidat(MatchKandidatController.MatchKandidatRequest matchKandidatRequest) {
+    public MatchKandidatResponse matchKandidat(MatchKandidatController.MatchKandidatRequest matchKandidatRequest) {
 
         Optional<Suchauftrag> suchauftrag = suchauftragService.getById(matchKandidatRequest.suchauftragId());
 
+        List<Kandidat> kandidaten = getKandidatsExcludingKOKriterien(suchauftrag, matchKandidatRequest);
 
-        return getKandidatsExcludingKOKriterien(suchauftrag, matchKandidatRequest);
+        List<Kriterium> kriterien = suchauftrag.map(this::buildKriterien).orElseGet(List::of);
+
+        List<MatchKandidatResult> results = kandidaten.stream()
+                .map(k -> scoreKandidat(k, kriterien))
+                .sorted(Comparator.comparing(MatchKandidatResult::getScore).reversed())
+                .toList();
+
+        return new MatchKandidatResponse(KRITERIEN_EXPLAINED, kriterien.size(), results);
     }
 
 
@@ -89,6 +105,65 @@ public class MatchKandidatService {
             params.add("%" + term.toLowerCase() + "%");
         }
         clauses.add("( " + String.join(" AND ", skillClauses) + " )");
+    }
+
+    /** A single, applicable scoring criterion derived from a Suchauftrag. */
+    private record Kriterium(String label, java.util.function.Predicate<Kandidat> isSatisfied) {}
+
+    private List<Kriterium> buildKriterien(Suchauftrag s) {
+        List<Kriterium> kriterien = new ArrayList<>();
+
+        if (isNotBlank(s.getFachlicherSkill())) {
+            kriterien.add(new Kriterium("Fachlicher Skill",
+                    k -> matchesAllTerms(s.getFachlicherSkill(), k.getFachlicherSkill())));
+        }
+        if (s.getGehaltMaximum() != null) {
+            kriterien.add(new Kriterium("Gehalt",
+                    k -> k.getGehaltMinimum() != null && k.getGehaltMinimum().compareTo(s.getGehaltMaximum()) <= 0));
+        }
+        if (isNotBlank(s.getZertifikate())) {
+            kriterien.add(new Kriterium("Zertifikate",
+                    k -> matchesAllTerms(s.getZertifikate(), k.getZertifikate())));
+        }
+        if (s.getDeutsch() != null) {
+            kriterien.add(new Kriterium("Deutsch",
+                    k -> k.getDeutsch() != null && k.getDeutsch().ordinal() >= s.getDeutsch().ordinal()));
+        }
+        if (s.getEnglisch() != null) {
+            kriterien.add(new Kriterium("Englisch",
+                    k -> k.getEnglisch() != null && k.getEnglisch().ordinal() >= s.getEnglisch().ordinal()));
+        }
+        if (isNotBlank(s.getSonstigeSprachen())) {
+            kriterien.add(new Kriterium("Sonstige Sprachen",
+                    k -> matchesAllTerms(s.getSonstigeSprachen(), k.getSonstigeSprachen())));
+        }
+        return kriterien;
+    }
+
+    private MatchKandidatResult scoreKandidat(Kandidat kandidat, List<Kriterium> kriterien) {
+        List<String> satisfied = new ArrayList<>();
+        List<String> unsatisfied = new ArrayList<>();
+        for (Kriterium kriterium : kriterien) {
+            if (kriterium.isSatisfied().test(kandidat)) {
+                satisfied.add(kriterium.label());
+            } else {
+                unsatisfied.add(kriterium.label());
+            }
+        }
+        return new MatchKandidatResult(kandidat, satisfied.size(), String.join(", ", satisfied), String.join(", ", unsatisfied));
+    }
+
+    private static boolean matchesAllTerms(String required, String actual) {
+        if (actual == null || actual.isBlank()) return false;
+        String actualLower = actual.toLowerCase();
+        return Arrays.stream(required.split(","))
+                .map(String::trim)
+                .filter(term -> !term.isEmpty())
+                .allMatch(term -> actualLower.contains(term.toLowerCase()));
+    }
+
+    private static boolean isNotBlank(String value) {
+        return value != null && !value.isBlank();
     }
 
     private Kandidat mapRow(ResultSet rs) throws SQLException {

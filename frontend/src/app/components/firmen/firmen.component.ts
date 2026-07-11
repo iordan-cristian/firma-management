@@ -12,7 +12,7 @@ import { Ansprechpartner } from '../../models/ansprechpartner.model';
 import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
 import { Vertrag } from '../../models/vertrag.model';
 import { Kandidat, GESCHLECHT_OPTIONS, TITEL_OPTIONS, SPRACHNIVEAU_OPTIONS, FUEHRERSCHEIN_OPTIONS } from '../../models/kandidat.model';
-import {MatchKandidatService} from "../../services/match-kandidat.service";
+import {MatchKandidatService, MatchKandidatResult} from "../../services/match-kandidat.service";
 
 type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
 
@@ -384,19 +384,25 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <h2>Matched Kandidaten</h2>
               <button class="close" (click)="matchedKandidatenOpen = false; kandidatDetailOpen = false">✕</button>
             </div>
+            <p class="hint" *ngIf="matchedKandidaten.length" [title]="matchKriterienExplained">{{ matchKriterienExplained }}</p>
             <div *ngIf="!matchedKandidaten.length" class="empty">Keine Treffer gefunden.</div>
             <div class="match-list">
-              <div class="match-card" *ngFor="let k of matchedKandidaten"
-                   (dblclick)="openKandidatDetail(k)"
-                   [class.match-card-selected]="selectedKandidat?.id === k.id">
-                <div class="card-title">{{ k.vorname }} {{ k.nachname }}</div>
-                <div class="card-row" *ngIf="k.aktuellePosition"><span>Position:</span> {{ k.aktuellePosition }}</div>
-                <div class="card-row" *ngIf="k.ort"><span>Ort:</span> {{ k.ort }}</div>
-                <div class="card-row" *ngIf="gehaltDisplay(k.gehaltMinimum, k.gehaltMaximum) as g"><span>Gehalt:</span> {{ g }}</div>
-                <div class="card-row" *ngIf="k.branchenkenntnisse"><span>Branche:</span> {{ k.branchenkenntnisse }}</div>
-                <div class="card-row" *ngIf="k.zertifikate"><span>Zertifikate:</span> {{ k.zertifikate }}</div>
-                <div class="card-row" *ngIf="k.allgemeinerSchwerpunkt"><span>Schwerpunkt:</span> {{ k.allgemeinerSchwerpunkt }}</div>
-                <div class="card-row" *ngIf="k.fachlicherSkill"><span>Fachlicher Skill:</span> {{ k.fachlicherSkill }}</div>
+              <div class="match-card" *ngFor="let r of matchedKandidaten"
+                   (dblclick)="openKandidatDetail(r.kandidat)"
+                   [class.match-card-selected]="selectedKandidat?.id === r.kandidat.id">
+                <div class="card-title">
+                  {{ r.kandidat.vorname }} {{ r.kandidat.nachname }}
+                  <span class="match-score">{{ r.score }} / {{ matchMaxScore }}</span>
+                </div>
+                <div class="card-row" *ngIf="r.kandidat.aktuellePosition"><span>Position:</span> {{ r.kandidat.aktuellePosition }}</div>
+                <div class="card-row" *ngIf="r.kandidat.ort"><span>Ort:</span> {{ r.kandidat.ort }}</div>
+                <div class="card-row" *ngIf="gehaltDisplay(r.kandidat.gehaltMinimum, r.kandidat.gehaltMaximum) as g"><span>Gehalt:</span> {{ g }}</div>
+                <div class="card-row" *ngIf="r.kandidat.branchenkenntnisse"><span>Branche:</span> {{ r.kandidat.branchenkenntnisse }}</div>
+                <div class="card-row" *ngIf="r.kandidat.zertifikate"><span>Zertifikate:</span> {{ r.kandidat.zertifikate }}</div>
+                <div class="card-row" *ngIf="r.kandidat.allgemeinerSchwerpunkt"><span>Schwerpunkt:</span> {{ r.kandidat.allgemeinerSchwerpunkt }}</div>
+                <div class="card-row" *ngIf="r.kandidat.fachlicherSkill"><span>Fachlicher Skill:</span> {{ r.kandidat.fachlicherSkill }}</div>
+                <div class="card-row" *ngIf="r.satisfiedKriterien"><span>Erfüllt:</span> {{ r.satisfiedKriterien }}</div>
+                <div class="card-row" *ngIf="r.unsatisfiedKriterien"><span>Nicht erfüllt:</span> {{ r.unsatisfiedKriterien }}</div>
               </div>
             </div>
           </div>
@@ -585,7 +591,8 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; max-height: 300px; overflow-y: auto; }
     .card { background: white; border: 1px solid #e5e9f3; border-radius: 8px; padding: 14px; cursor: pointer; }
     .card:hover { border-color: #3b5bdb; }
-    .card-title { font-weight: 600; margin-bottom: 8px; color: #1f2a44; }
+    .card-title { font-weight: 600; margin-bottom: 8px; color: #1f2a44; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .match-score { font-size: 12px; font-weight: 700; color: #3b5bdb; background: #eef1fb; border-radius: 10px; padding: 2px 8px; }
     .card-row { font-size: 13px; margin: 4px 0; color: #333; }
     .card-row span:first-child { color: #777; margin-right: 4px; }
     .card-info { margin-top: 8px; font-size: 12px; color: #555; white-space: pre-wrap; }
@@ -698,7 +705,9 @@ export class FirmenComponent implements OnInit {
   draftSuchauftrag: Partial<Suchauftrag> = {};
   anlageDatumInput = '';
   matchedKandidatenOpen = false;
-  matchedKandidaten: Kandidat[] = [];
+  matchedKandidaten: MatchKandidatResult[] = [];
+  matchKriterienExplained = '';
+  matchMaxScore = 0;
   kandidatDetailOpen = false;
   selectedKandidat: Kandidat | null = null;
   draftKandidat: Partial<Kandidat> = {};
@@ -827,6 +836,8 @@ export class FirmenComponent implements OnInit {
     this.addSuchauftragOpen = false;
     this.matchedKandidatenOpen = false;
     this.matchedKandidaten = [];
+    this.matchKriterienExplained = '';
+    this.matchMaxScore = 0;
     this.kandidatDetailOpen = false;
     this.selectedKandidat = null;
     this.draftKandidat = {};
@@ -839,9 +850,11 @@ export class FirmenComponent implements OnInit {
     this.buildSuchauftragSaveRequest().subscribe(saved => {
       this.draftSuchauftrag = { ...this.draftSuchauftrag, id: saved.id };
       this.firmaService.getSuchauftragForFirma(this.expandedFirma!.id!).subscribe(list => (this.suchauftragList = list));
-      this.matchKandidatService.matchKandidat({ suchauftragId: saved.id! }).subscribe(list => {
-        this.matchedKandidaten = list;
-        if (list.length === 1) this.openKandidatDetail(list[0]);
+      this.matchKandidatService.matchKandidat({ suchauftragId: saved.id! }).subscribe(response => {
+        this.matchKriterienExplained = response.kriterienExplained;
+        this.matchMaxScore = response.maxScore;
+        this.matchedKandidaten = response.results;
+        if (response.results.length === 1) this.openKandidatDetail(response.results[0].kandidat);
       });
     });
   }
@@ -857,7 +870,7 @@ export class FirmenComponent implements OnInit {
     if (!this.selectedKandidat?.id) return;
     [this.draftKandidat.gehaltMinimum, this.draftKandidat.gehaltMaximum] = this.parseGehalt(this.draftKandidat.gehalt, 'kandidat');
     this.kandidatService.update(this.selectedKandidat.id, this.draftKandidat as Kandidat).subscribe(updated => {
-      this.matchedKandidaten = this.matchedKandidaten.map(k => k.id === updated.id ? updated : k);
+      this.matchedKandidaten = this.matchedKandidaten.map(r => r.kandidat.id === updated.id ? { ...r, kandidat: updated } : r);
       this.kandidatDetailOpen = false;
       this.selectedKandidat = null;
     });
