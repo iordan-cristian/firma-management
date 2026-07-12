@@ -18,12 +18,6 @@ import java.util.*;
 @Service
 public class MatchKandidatService {
 
-    private static final String KRITERIEN_EXPLAINED =
-            "Bewertung basiert auf bis zu 6 Kriterien (Fachlicher Skill, Gehalt, Zertifikate, Deutsch, Englisch, " +
-            "Sonstige Sprachen). Als KO-Kriterium markierte Felder schließen nicht passende Kandidaten von der " +
-            "Trefferliste aus. Alle im Suchauftrag angegebenen Kriterien fließen in den Score ein (1 Punkt je " +
-            "erfülltes Kriterium).";
-
     private final DataSource dataSource;
     private final SuchauftragService suchauftragService;
 
@@ -46,7 +40,11 @@ public class MatchKandidatService {
                 .sorted(Comparator.comparing(MatchKandidatResult::getScore).reversed())
                 .toList();
 
-        return new MatchKandidatResponse(KRITERIEN_EXPLAINED, kriterien.size(), results);
+        String kriterienExplained = suchauftrag
+                .map(s -> buildKriterienExplained(s, kriterien))
+                .orElse("Kein Suchauftrag gefunden.");
+
+        return new MatchKandidatResponse(kriterienExplained, kriterien.size(), results);
     }
 
 
@@ -56,23 +54,24 @@ public class MatchKandidatService {
         List<Object> params = new ArrayList<>(); // values bound to those placeholders, in matching order
 
         if (suchauftrag.isPresent()) {
-            if (suchauftrag.get().isFachlicherSkillKOKriterium()) {
-                appendFachlicherSkill(Arrays.stream(suchauftrag.get().getFachlicherSkill().split(",")).toList(), clauses, params);
+            Suchauftrag s = suchauftrag.get();
+            if (s.isFachlicherSkillKOKriterium() && isNotBlank(s.getFachlicherSkill())) {
+                appendFachlicherSkill(Arrays.stream(s.getFachlicherSkill().split(",")).toList(), clauses, params);
             }
-            if (suchauftrag.get().isGehaltKOKriterium()) {
+            if (s.isGehaltKOKriterium() && s.getGehaltMaximum() != null) {
                 appendGehalt(suchauftrag, clauses, params);
             }
-            if (suchauftrag.get().isZertifikateKOKriterium()){
-                appendZertifikate(Arrays.stream(suchauftrag.get().getZertifikate().split(",")).toList(), clauses, params);
+            if (s.isZertifikateKOKriterium() && isNotBlank(s.getZertifikate())) {
+                appendZertifikate(Arrays.stream(s.getZertifikate().split(",")).toList(), clauses, params);
             }
-            if (suchauftrag.get().isDeutschKOKriterium()) {
+            if (s.isDeutschKOKriterium() && s.getDeutsch() != null) {
                 appendDeutsch(suchauftrag, clauses, params);
             }
-            if (suchauftrag.get().isEnglischKOKriterium()) {
+            if (s.isEnglischKOKriterium() && s.getEnglisch() != null) {
                 appendEnglisch(suchauftrag, clauses, params);
             }
-            if (suchauftrag.get().isSonstigeSprachenKOKriterium()) {
-                appendSonstigeSprachen(Arrays.stream(suchauftrag.get().getSonstigeSprachen().split(",")).toList(), clauses, params);
+            if (s.isSonstigeSprachenKOKriterium() && isNotBlank(s.getSonstigeSprachen())) {
+                appendSonstigeSprachen(Arrays.stream(s.getSonstigeSprachen().split(",")).toList(), clauses, params);
             }
         }
 
@@ -109,16 +108,16 @@ public class MatchKandidatService {
         appendAllTermsMatch("zertifikate", zeritifikate, clauses, params);
     }
 
-    private void appendSonstigeSprachen(List<String> sonstigeSprachen, List<String> clauses, List<Object> params){
-        appendAllTermsMatch("zertifikate", sonstigeSprachen, clauses, params);
-    }
-
     private static void appendDeutsch(Optional<Suchauftrag> suchauftrag, List<String> clauses, List<Object> params) {
         appendMindestSprachniveau("deutsch", suchauftrag.get().getDeutsch(), clauses, params);
     }
 
     private static void appendEnglisch(Optional<Suchauftrag> suchauftrag, List<String> clauses, List<Object> params) {
         appendMindestSprachniveau("englisch", suchauftrag.get().getEnglisch(), clauses, params);
+    }
+
+    private void appendSonstigeSprachen(List<String> sonstigeSprachen, List<String> clauses, List<Object> params) {
+        appendAllTermsMatch("sonstigeSprachen", sonstigeSprachen, clauses, params);
     }
 
     private static void appendAllTermsMatch(String column, List<String> values, List<String> clauses, List<Object> params) {
@@ -149,6 +148,19 @@ public class MatchKandidatService {
         clauses.add(column + " IN (" + String.join(", ", acceptableLevel) + ")");
     }
 
+    private MatchKandidatResult scoreKandidat(Kandidat kandidat, List<Kriterium> kriterien) {
+        List<String> satisfied = new ArrayList<>();
+        List<String> unsatisfied = new ArrayList<>();
+        for (Kriterium kriterium : kriterien) {
+            if (kriterium.isSatisfied().test(kandidat)) {
+                satisfied.add("\n" + kriterium.label());
+            } else {
+                unsatisfied.add("\n" + kriterium.label());
+            }
+        }
+        return new MatchKandidatResult(kandidat, satisfied.size(), String.join(", ", satisfied), String.join(", ", unsatisfied));
+    }
+
     /** A single, applicable scoring criterion derived from a Suchauftrag. */
     private record Kriterium(String label, java.util.function.Predicate<Kandidat> isSatisfied) {}
 
@@ -156,27 +168,46 @@ public class MatchKandidatService {
         List<Kriterium> kriterien = new ArrayList<>();
 
         if (!s.isFachlicherSkillKOKriterium() && isNotBlank(s.getFachlicherSkill())) {
-            addPerTermKriterien(kriterien, "Fachlicher Skill", s.getFachlicherSkill(), Kandidat::getFachlicherSkill);
+            addPerTermKriterien(kriterien, "- Fachlicher Skill", s.getFachlicherSkill(), Kandidat::getFachlicherSkill);
         }
         if (!s.isGehaltKOKriterium() && s.getGehaltMaximum() != null) {
-            kriterien.add(new Kriterium("Gehalt",
+
+            kriterien.add(new Kriterium("- Gehalt Erwartung <= " + s.getGehaltMaximum(),
                     k -> k.getGehaltMinimum() != null && k.getGehaltMinimum().compareTo(s.getGehaltMaximum()) <= 0));
         }
         if (!s.isZertifikateKOKriterium() && isNotBlank(s.getZertifikate())) {
-            addPerTermKriterien(kriterien, "Zertifikate", s.getZertifikate(), Kandidat::getZertifikate);
+            addPerTermKriterien(kriterien, "- Zertifikate", s.getZertifikate(), Kandidat::getZertifikate);
         }
         if (!s.isDeutschKOKriterium() && s.getDeutsch() != null) {
-            kriterien.add(new Kriterium("Deutsch",
+            kriterien.add(new Kriterium("- Deutsch " + s.getDeutsch().getLabel(),
                     k -> k.getDeutsch() != null && k.getDeutsch().ordinal() >= s.getDeutsch().ordinal()));
         }
         if (!s.isEnglischKOKriterium() && s.getEnglisch() != null) {
-            kriterien.add(new Kriterium("Englisch",
+            kriterien.add(new Kriterium("- Englisch " + s.getEnglisch().getLabel(),
                     k -> k.getEnglisch() != null && k.getEnglisch().ordinal() >= s.getEnglisch().ordinal()));
         }
         if (!s.isSonstigeSprachenKOKriterium() && isNotBlank(s.getSonstigeSprachen())) {
-            addPerTermKriterien(kriterien, "Sonstige Sprachen", s.getSonstigeSprachen(), Kandidat::getSonstigeSprachen);
+            addPerTermKriterien(kriterien, "- Sonstige Sprachen", s.getSonstigeSprachen(), Kandidat::getSonstigeSprachen);
         }
         return kriterien;
+    }
+
+    private static String buildKriterienExplained(Suchauftrag s, List<Kriterium> kriterien) {
+        List<String> koKriterien = new ArrayList<>();
+        if (s.isFachlicherSkillKOKriterium()) koKriterien.add("- Fachlicher Skill enhält: " + s.getFachlicherSkill());
+        if (s.isGehaltKOKriterium()) koKriterien.add("- Gehalt Erwartung <= " + s.getGehaltMaximum().toString());
+        if (s.isZertifikateKOKriterium()) koKriterien.add("- Zertifikate enhält: " + s.getZertifikate());
+        if (s.isDeutschKOKriterium()) koKriterien.add("- Deutsch Niveau mindestens:" + s.getDeutsch().getLabel());
+        if (s.isEnglischKOKriterium()) koKriterien.add("- Englisch Niveau mindestens:" + s.getEnglisch().getLabel());
+        if (s.isSonstigeSprachenKOKriterium()) koKriterien.add("- Sonstige Sprachenenhält: " + s.getSonstigeSprachen());
+
+        List<String> scoreKriterien = kriterien.stream().map(Kriterium::label).toList();
+
+        return "Kandidaten die folgende KO-Kriterien einhalten sind in der Trefferliste enthalten: \n"
+                + (koKriterien.isEmpty() ? "keine" : String.join(", \n", koKriterien)) + "."
+                + "\n \n" + "Kandidat wird für folgende Score-Kriterien (1 Punkt je erfülltes Kriterium) bewertet: \n"
+                + (scoreKriterien.isEmpty() ? "keine" : String.join(", \n", scoreKriterien))
+                + ".";
     }
 
     private static void addPerTermKriterien(List<Kriterium> kriterien, String label, String requiredTerms,
@@ -190,18 +221,6 @@ public class MatchKandidatService {
         }
     }
 
-    private MatchKandidatResult scoreKandidat(Kandidat kandidat, List<Kriterium> kriterien) {
-        List<String> satisfied = new ArrayList<>();
-        List<String> unsatisfied = new ArrayList<>();
-        for (Kriterium kriterium : kriterien) {
-            if (kriterium.isSatisfied().test(kandidat)) {
-                satisfied.add(kriterium.label());
-            } else {
-                unsatisfied.add(kriterium.label());
-            }
-        }
-        return new MatchKandidatResult(kandidat, satisfied.size(), String.join(", ", satisfied), String.join(", ", unsatisfied));
-    }
 
     private static boolean matchesTerm(String term, String actual) {
         return actual != null && actual.toLowerCase().contains(term.toLowerCase());

@@ -298,6 +298,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   </span>
                 </span>
                 <textarea rows="4" [(ngModel)]="draftSuchauftrag.fachlicherSkill" placeholder="z.B. Java, SAP, CAD"></textarea>
+                <span class="field-error" *ngIf="koError(draftSuchauftrag.fachlicherSkill, draftSuchauftrag.fachlicherSkillKOKriterium)">Fachlicher Skill ist als KO-Kriterium markiert und darf nicht leer sein.</span>
               </label>
               <label>
                 <span class="label-row">
@@ -311,6 +312,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   <input [(ngModel)]="draftSuchauftrag.gehalt" (input)="filterGehalt($event, 'suchauftrag')" placeholder="z.B. 60000-80000" />
                   <span class="input-suffix">(Tausend €)</span>
                 </div>
+                <span class="field-error" *ngIf="koError(draftSuchauftrag.gehalt, draftSuchauftrag.gehaltKOKriterium)">Gehalt ist als KO-Kriterium markiert und darf nicht leer sein.</span>
               </label>
               <label>Gehalt Mehr Info
                 <input [(ngModel)]="draftSuchauftrag.gehaltMehrInfo" placeholder="z.B. Bonus, Nebenleistungen" />
@@ -330,6 +332,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   </span>
                 </span>
                 <input [(ngModel)]="draftSuchauftrag.zertifikate" placeholder="z.B. PMP, ISO 9001" />
+                <span class="field-error" *ngIf="koError(draftSuchauftrag.zertifikate, draftSuchauftrag.zertifikateKOKriterium)">Zertifikate ist als KO-Kriterium markiert und darf nicht leer sein.</span>
               </label>
               <label>
                 <span class="label-row">
@@ -343,6 +346,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   <option [ngValue]="undefined">–</option>
                   <option *ngFor="let o of sprachniveauOptions" [value]="o">{{ o }}</option>
                 </select>
+                <span class="field-error" *ngIf="koError(draftSuchauftrag.deutsch, draftSuchauftrag.deutschKOKriterium)">Deutsch ist als KO-Kriterium markiert und darf nicht leer sein.</span>
               </label>
               <label>
                 <span class="label-row">
@@ -356,6 +360,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   <option [ngValue]="undefined">–</option>
                   <option *ngFor="let o of sprachniveauOptions" [value]="o">{{ o }}</option>
                 </select>
+                <span class="field-error" *ngIf="koError(draftSuchauftrag.englisch, draftSuchauftrag.englischKOKriterium)">Englisch ist als KO-Kriterium markiert und darf nicht leer sein.</span>
               </label>
               <label>
                 <span class="label-row">
@@ -366,14 +371,15 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   </span>
                 </span>
                 <input [(ngModel)]="draftSuchauftrag.sonstigeSprachen" placeholder="z.B. Französisch B2, Spanisch A2" />
+                <span class="field-error" *ngIf="koError(draftSuchauftrag.sonstigeSprachen, draftSuchauftrag.sonstigeSprachenKOKriterium)">Sonstige Sprachen ist als KO-Kriterium markiert und darf nicht leer sein.</span>
               </label>
               <label>Informationen
                 <textarea [(ngModel)]="draftSuchauftrag.informationen" placeholder="Notizen..." rows="8" style="min-height:160px"></textarea>
               </label>
             </div>
             <div class="modal-actions">
-              <button class="btn-save" (click)="saveSuchauftrag()">Speichern</button>
-              <button class="btn-match" (click)="openMatchedKandidaten()">Match option</button>
+              <button class="btn-save" [disabled]="suchauftragKOError" (click)="saveSuchauftrag()">Speichern</button>
+              <button class="btn-match" [disabled]="suchauftragKOError" (click)="openMatchedKandidaten()">Match option</button>
               <button class="btn-cancel" (click)="closeSuchauftragModal()">Abbrechen</button>
             </div>
           </div>
@@ -394,6 +400,10 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   {{ r.kandidat.vorname }} {{ r.kandidat.nachname }}
                   <span class="match-score">{{ r.score }} / {{ matchMaxScore }}</span>
                 </div>
+                <div class="card-divider">Score Erklärung</div>
+                <div class="card-row card-row-success" *ngIf="r.satisfiedKriterien"><span>Erfüllt:</span> {{ r.satisfiedKriterien }}</div>
+                <div class="card-row card-row-danger" *ngIf="r.unsatisfiedKriterien"><span>Nicht erfüllt:</span> {{ r.unsatisfiedKriterien }}</div>
+                <div class="card-divider">Kandidatendaten</div>
                 <div class="card-row" *ngIf="r.kandidat.aktuellePosition"><span>Position:</span> {{ r.kandidat.aktuellePosition }}</div>
                 <div class="card-row" *ngIf="r.kandidat.ort"><span>Ort:</span> {{ r.kandidat.ort }}</div>
                 <div class="card-row" *ngIf="gehaltDisplay(r.kandidat.gehaltMinimum, r.kandidat.gehaltMaximum) as g"><span>Gehalt:</span> {{ g }}</div>
@@ -401,8 +411,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <div class="card-row" *ngIf="r.kandidat.zertifikate"><span>Zertifikate:</span> {{ r.kandidat.zertifikate }}</div>
                 <div class="card-row" *ngIf="r.kandidat.allgemeinerSchwerpunkt"><span>Schwerpunkt:</span> {{ r.kandidat.allgemeinerSchwerpunkt }}</div>
                 <div class="card-row" *ngIf="r.kandidat.fachlicherSkill"><span>Fachlicher Skill:</span> {{ r.kandidat.fachlicherSkill }}</div>
-                <div class="card-row" *ngIf="r.satisfiedKriterien"><span>Erfüllt:</span> {{ r.satisfiedKriterien }}</div>
-                <div class="card-row" *ngIf="r.unsatisfiedKriterien"><span>Nicht erfüllt:</span> {{ r.unsatisfiedKriterien }}</div>
+
               </div>
             </div>
           </div>
@@ -558,7 +567,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
   styles: [`
     .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
     .page-header h1 { margin: 0; color: #1f2a44; }
-    .hint { color: #777; margin: 0 0 16px; font-size: 13px; }
+    .hint { color: #777; margin: 0 0 16px; font-size: 13px; white-space: pre-line; }
     .btn-add { background: #3b5bdb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; }
     .btn-add:hover { background: #2f4ac7; }
 
@@ -595,6 +604,9 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .match-score { font-size: 12px; font-weight: 700; color: #3b5bdb; background: #eef1fb; border-radius: 10px; padding: 2px 8px; }
     .card-row { font-size: 13px; margin: 4px 0; color: #333; }
     .card-row span:first-child { color: #777; margin-right: 4px; }
+    .card-row-success, .card-row-success span:first-child { color: #1e7d32; }
+    .card-row-danger, .card-row-danger span:first-child { color: #c92a2a; }
+    .card-row-success, .card-row-danger { white-space: pre-line; }
     .card-info { margin-top: 8px; font-size: 12px; color: #555; white-space: pre-wrap; }
     .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; background: #f5d97c; font-size: 12px; }
     .badge.done { background: #b6e3b6; }
@@ -628,8 +640,10 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
     .btn-save { background: #3b5bdb; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
     .btn-save:hover { background: #2f4ac7; }
+    .btn-save:disabled { background: #a9b4d6; cursor: not-allowed; }
     .btn-match { background: #2f9e44; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
     .btn-match:hover { background: #258836; }
+    .btn-match:disabled { background: #9dcfa9; cursor: not-allowed; }
     .btn-cancel { background: transparent; border: 1px solid #dfe3ee; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
     .input-with-btn { display: flex; gap: 6px; }
     .input-with-btn input { flex: 1; }
@@ -901,6 +915,20 @@ export class FirmenComponent implements OnInit {
         if (wasEditing) this.editingSuchauftragId = null;
       }
     });
+  }
+
+  koError(value: string | undefined | null, checked: boolean | undefined): boolean {
+    return !!checked && (value === undefined || value === null || value.toString().trim() === '');
+  }
+
+  get suchauftragKOError(): boolean {
+    const s = this.draftSuchauftrag;
+    return this.koError(s.fachlicherSkill, s.fachlicherSkillKOKriterium)
+      || this.koError(s.gehalt, s.gehaltKOKriterium)
+      || this.koError(s.zertifikate, s.zertifikateKOKriterium)
+      || this.koError(s.deutsch, s.deutschKOKriterium)
+      || this.koError(s.englisch, s.englischKOKriterium)
+      || this.koError(s.sonstigeSprachen, s.sonstigeSprachenKOKriterium);
   }
 
   filterGehalt(e: Event, target: 'suchauftrag' | 'kandidat'): void {
