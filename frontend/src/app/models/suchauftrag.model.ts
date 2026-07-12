@@ -16,6 +16,7 @@ export interface Suchauftrag {
   adresse?: string;
   fachlicherSkill?: string;
   fachlicherSkillKOKriterium?: boolean;
+  optionalFachlicheSkills?: string;
   gehalt?: string;
   gehaltKOKriterium?: boolean;
   gehaltMehrInfo?: string;
@@ -23,6 +24,7 @@ export interface Suchauftrag {
   branchenkenntnisse?: string;
   zertifikate?: string;
   zertifikateKOKriterium?: boolean;
+  optionalZertifikate?: string;
   deutsch?: Sprachniveau;
   deutschKOKriterium?: boolean;
   englisch?: Sprachniveau;

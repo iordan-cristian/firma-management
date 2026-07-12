@@ -97,11 +97,13 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                         <div class="card-row" *ngIf="s.postleitzahl || s.ort"><span>Ort:</span> {{ s.postleitzahl }} {{ s.ort }}</div>
                         <div class="card-row" *ngIf="s.adresse"><span>Adresse:</span> {{ s.adresse }}</div>
                         <div class="card-row" *ngIf="s.fachlicherSkill"><span>Fachlicher Skill:</span> {{ s.fachlicherSkill }}</div>
+                        <div class="card-row" *ngIf="s.optionalFachlicheSkills"><span>Optionale Fachliche Skills:</span> {{ s.optionalFachlicheSkills }}</div>
                         <div class="card-row" *ngIf="gehaltDisplay(s.gehaltMinimum, s.gehaltMaximum) as g"><span>Gehalt:</span> {{ g }}</div>
                         <div class="card-row" *ngIf="s.gehaltMehrInfo"><span>Gehalt Info:</span> {{ s.gehaltMehrInfo }}</div>
                         <div class="card-row" *ngIf="s.berufserfahrung"><span>Berufserfahrung:</span> {{ s.berufserfahrung }}</div>
                         <div class="card-row" *ngIf="s.branchenkenntnisse"><span>Branchenkenntnisse:</span> {{ s.branchenkenntnisse }}</div>
                         <div class="card-row" *ngIf="s.zertifikate"><span>Zertifikate:</span> {{ s.zertifikate }}</div>
+                        <div class="card-row" *ngIf="s.optionalZertifikate"><span>Optionale Zertifikate:</span> {{ s.optionalZertifikate }}</div>
                         <div class="card-row" *ngIf="s.deutsch"><span>Deutsch:</span> {{ s.deutsch }}</div>
                         <div class="card-row" *ngIf="s.englisch"><span>Englisch:</span> {{ s.englisch }}</div>
                         <div class="card-row" *ngIf="s.sonstigeSprachen"><span>Sonstige Sprachen:</span> {{ s.sonstigeSprachen }}</div>
@@ -300,6 +302,9 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <textarea rows="4" [(ngModel)]="draftSuchauftrag.fachlicherSkill" placeholder="z.B. Java, SAP, CAD"></textarea>
                 <span class="field-error" *ngIf="koError(draftSuchauftrag.fachlicherSkill, draftSuchauftrag.fachlicherSkillKOKriterium)">Fachlicher Skill ist als KO-Kriterium markiert und darf nicht leer sein.</span>
               </label>
+              <label>Optionale Fachliche Skills
+                <textarea rows="4" [(ngModel)]="draftSuchauftrag.optionalFachlicheSkills" placeholder="z.B. Kotlin, Scrum"></textarea>
+              </label>
               <label>
                 <span class="label-row">
                   Gehalt
@@ -333,6 +338,9 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 </span>
                 <input [(ngModel)]="draftSuchauftrag.zertifikate" placeholder="z.B. PMP, ISO 9001" />
                 <span class="field-error" *ngIf="koError(draftSuchauftrag.zertifikate, draftSuchauftrag.zertifikateKOKriterium)">Zertifikate ist als KO-Kriterium markiert und darf nicht leer sein.</span>
+              </label>
+              <label>Optionale Zertifikate
+                <input [(ngModel)]="draftSuchauftrag.optionalZertifikate" placeholder="z.B. Scrum Master, Prince2" />
               </label>
               <label>
                 <span class="label-row">

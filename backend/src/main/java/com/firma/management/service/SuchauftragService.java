@@ -55,12 +55,14 @@ public class SuchauftragService {
             existing.setAdresse(input.getAdresse());
             existing.setFachlicherSkill(input.getFachlicherSkill());
             existing.setFachlicherSkillKOKriterium(input.isFachlicherSkillKOKriterium());
+            existing.setOptionalFachlicheSkills(input.getOptionalFachlicheSkills());
             existing.setGehaltMehrInfo(input.getGehaltMehrInfo());
             existing.setGehaltKOKriterium(input.isGehaltKOKriterium());
             existing.setBerufserfahrung(input.getBerufserfahrung());
             existing.setBranchenkenntnisse(input.getBranchenkenntnisse());
             existing.setZertifikate(input.getZertifikate());
             existing.setZertifikateKOKriterium(input.isZertifikateKOKriterium());
+            existing.setOptionalZertifikate(input.getOptionalZertifikate());
             existing.setDeutsch(input.getDeutsch());
             existing.setDeutschKOKriterium(input.isDeutschKOKriterium());
             existing.setEnglisch(input.getEnglisch());
