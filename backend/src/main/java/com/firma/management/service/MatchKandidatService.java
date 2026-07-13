@@ -169,15 +169,20 @@ public class MatchKandidatService {
 
         if (!s.isFachlicherSkillKOKriterium() && isNotBlank(s.getFachlicherSkill())) {
             addPerTermKriterien(kriterien, "- Fachlicher Skill", s.getFachlicherSkill(), Kandidat::getFachlicherSkill);
+        } else if (s.isFachlicherSkillKOKriterium() && isNotBlank(s.getOptionalFachlicheSkills())) {
+            addPerTermKriterien(kriterien, "- Fachlicher Skill", s.getOptionalFachlicheSkills(), Kandidat::getFachlicherSkill);
+        }
+        if (!s.isZertifikateKOKriterium() && isNotBlank(s.getZertifikate())) {
+            addPerTermKriterien(kriterien, "- Zertifikate", s.getZertifikate(), Kandidat::getZertifikate);
+        } else if (s.isZertifikateKOKriterium() && isNotBlank(s.getOptionalZertifikate())) {
+            addPerTermKriterien(kriterien, "- Zertifikate", s.getOptionalZertifikate(), Kandidat::getZertifikate);
         }
         if (!s.isGehaltKOKriterium() && s.getGehaltMaximum() != null) {
 
             kriterien.add(new Kriterium("- Gehalt Erwartung <= " + s.getGehaltMaximum(),
                     k -> k.getGehaltMinimum() != null && k.getGehaltMinimum().compareTo(s.getGehaltMaximum()) <= 0));
         }
-        if (!s.isZertifikateKOKriterium() && isNotBlank(s.getZertifikate())) {
-            addPerTermKriterien(kriterien, "- Zertifikate", s.getZertifikate(), Kandidat::getZertifikate);
-        }
+
         if (!s.isDeutschKOKriterium() && s.getDeutsch() != null) {
             kriterien.add(new Kriterium("- Deutsch " + s.getDeutsch().getLabel(),
                     k -> k.getDeutsch() != null && k.getDeutsch().ordinal() >= s.getDeutsch().ordinal()));

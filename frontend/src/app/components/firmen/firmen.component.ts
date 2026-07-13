@@ -302,9 +302,11 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <textarea rows="4" [(ngModel)]="draftSuchauftrag.fachlicherSkill" placeholder="z.B. Java, SAP, CAD"></textarea>
                 <span class="field-error" *ngIf="koError(draftSuchauftrag.fachlicherSkill, draftSuchauftrag.fachlicherSkillKOKriterium)">Fachlicher Skill ist als KO-Kriterium markiert und darf nicht leer sein.</span>
               </label>
-              <label>Optionale Fachliche Skills
-                <textarea rows="4" [(ngModel)]="draftSuchauftrag.optionalFachlicheSkills" placeholder="z.B. Kotlin, Scrum"></textarea>
-              </label>
+              <ng-container *ngIf="draftSuchauftrag.fachlicherSkillKOKriterium">
+                <label>Optionale Fachliche Skills
+                  <textarea rows="4" [(ngModel)]="draftSuchauftrag.optionalFachlicheSkills" placeholder="z.B. Kotlin, Scrum"></textarea>
+                </label>
+              </ng-container>
               <label>
                 <span class="label-row">
                   Gehalt
@@ -339,9 +341,11 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <input [(ngModel)]="draftSuchauftrag.zertifikate" placeholder="z.B. PMP, ISO 9001" />
                 <span class="field-error" *ngIf="koError(draftSuchauftrag.zertifikate, draftSuchauftrag.zertifikateKOKriterium)">Zertifikate ist als KO-Kriterium markiert und darf nicht leer sein.</span>
               </label>
-              <label>Optionale Zertifikate
-                <input [(ngModel)]="draftSuchauftrag.optionalZertifikate" placeholder="z.B. Scrum Master, Prince2" />
-              </label>
+              <ng-container *ngIf="draftSuchauftrag.zertifikateKOKriterium">
+                <label>Optionale Zertifikate
+                  <input [(ngModel)]="draftSuchauftrag.optionalZertifikate" placeholder="z.B. Scrum Master, Prince2" />
+                </label>
+              </ng-container>
               <label>
                 <span class="label-row">
                   Deutsch
