@@ -12,7 +12,7 @@
 --
 -- Enum columns store the Java enum NAME (uppercase), e.g. 'MAENNLICH'.
 -- The frontend sends/receives human-readable labels (e.g. 'männlich') and
--- the backend converts them via @JsonCreator / @JsonValue.
+-- the backend converts them via @JsonCreatornpms  / @JsonValue.
 
 -- gen_random_uuid() is built into Postgres 13+.
 

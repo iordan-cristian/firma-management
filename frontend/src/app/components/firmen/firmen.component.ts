@@ -13,6 +13,8 @@ import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/su
 import { Vertrag } from '../../models/vertrag.model';
 import { Kandidat, GESCHLECHT_OPTIONS, TITEL_OPTIONS, SPRACHNIVEAU_OPTIONS, FUEHRERSCHEIN_OPTIONS } from '../../models/kandidat.model';
 import {MatchKandidatService, MatchKandidatResult} from "../../services/match-kandidat.service";
+import { VerknuepfungService } from '../../services/verknuepfung.service';
+import { VerknuepfungKandidat } from '../../models/verknuepfung.model';
 
 type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
 
@@ -91,19 +93,24 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                     <div class="cards" *ngIf="detailMode === 'suchauftraege'">
                       <div class="card" *ngFor="let s of suchauftragList" (dblclick)="openEditSuchauftrag(s)">
                         <div class="card-title">{{ s.aktivitaet }}</div>
+                        <ng-container *ngIf="verknuepfungenFor(s.id).length">
+                          <div class="card-divider">Verknüpfungen</div>
+                          <div class="card-row" *ngFor="let v of verknuepfungenFor(s.id)">
+                            <span>{{ v.vorname }} {{ v.nachname }}</span> <span *ngIf="v.position">— {{ v.position }}</span>
+                          </div>
+                          <hr class="card-hr" />
+                        </ng-container>
                         <div class="card-row"><span>Status:</span>
                           <span class="badge" [class.done]="s.status === 'Fertig'">{{ s.status }}</span>
                         </div>
                         <div class="card-row" *ngIf="s.postleitzahl || s.ort"><span>Ort:</span> {{ s.postleitzahl }} {{ s.ort }}</div>
                         <div class="card-row" *ngIf="s.adresse"><span>Adresse:</span> {{ s.adresse }}</div>
                         <div class="card-row" *ngIf="s.fachlicherSkill"><span>Fachlicher Skill:</span> {{ s.fachlicherSkill }}</div>
-                        <div class="card-row" *ngIf="s.optionalFachlicheSkills"><span>Optionale Fachliche Skills:</span> {{ s.optionalFachlicheSkills }}</div>
                         <div class="card-row" *ngIf="gehaltDisplay(s.gehaltMinimum, s.gehaltMaximum) as g"><span>Gehalt:</span> {{ g }}</div>
                         <div class="card-row" *ngIf="s.gehaltMehrInfo"><span>Gehalt Info:</span> {{ s.gehaltMehrInfo }}</div>
                         <div class="card-row" *ngIf="s.berufserfahrung"><span>Berufserfahrung:</span> {{ s.berufserfahrung }}</div>
                         <div class="card-row" *ngIf="s.branchenkenntnisse"><span>Branchenkenntnisse:</span> {{ s.branchenkenntnisse }}</div>
                         <div class="card-row" *ngIf="s.zertifikate"><span>Zertifikate:</span> {{ s.zertifikate }}</div>
-                        <div class="card-row" *ngIf="s.optionalZertifikate"><span>Optionale Zertifikate:</span> {{ s.optionalZertifikate }}</div>
                         <div class="card-row" *ngIf="s.deutsch"><span>Deutsch:</span> {{ s.deutsch }}</div>
                         <div class="card-row" *ngIf="s.englisch"><span>Englisch:</span> {{ s.englisch }}</div>
                         <div class="card-row" *ngIf="s.sonstigeSprachen"><span>Sonstige Sprachen:</span> {{ s.sonstigeSprachen }}</div>
@@ -142,6 +149,15 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
         <button (click)="loadDetail('ansprechpartner')">Ansprechpartner</button>
         <button (click)="loadDetail('suchauftraege')">Suchaufträge</button>
         <button (click)="loadDetail('vertraege')">Verträge</button>
+      </div>
+
+      <!-- Match Kandidat context menu -->
+      <div class="ctx-menu"
+           *ngIf="matchMenuOpen"
+           [style.top.px]="matchMenuY"
+           [style.left.px]="matchMenuX"
+           (click)="$event.stopPropagation()">
+        <button (click)="onVerknuepfung()">Verknüpfung</button>
       </div>
 
       <!-- Add Firma Modal -->
@@ -255,10 +271,22 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
 
       <!-- Add Suchauftrag Modal -->
       <div class="modal-backdrop" *ngIf="addSuchauftragOpen">
-        <div [class]="matchedKandidatenOpen ? 'modal-duo' : ''">
+        <div [class]="(matchedKandidatenOpen || kandidatDetailOpen) ? 'modal-duo' : ''">
           <div class="modal modal-suchauftrag">
             <h2>{{ editingSuchauftragId ? 'Suchauftrag der ' + expandedFirma?.name + ' bearbeiten' : 'Neuer Suchauftrag für ' + expandedFirma?.name }}</h2>
             <div class="modal-form-content">
+              <ng-container *ngIf="draftSuchauftragVerknuepfungen.length">
+                <div class="section-title">Verknüpfungen</div>
+                <div class="verknuepfung-list">
+                  <div class="verknuepfung-item" *ngFor="let v of draftSuchauftragVerknuepfungen">
+                    <span class="verknuepfung-name">{{ v.vorname }} {{ v.nachname }}</span>
+                    <span class="verknuepfung-position" *ngIf="v.position">{{ v.position }}</span>
+                    <button class="btn-link" (click)="openVerknuepfungKandidat(v.kandidatId)" title="Kandidat öffnen">→</button>
+                    <button class="btn-link btn-danger" (click)="deleteVerknuepfung(v.kandidatId)" title="Löschen">✕</button>
+                  </div>
+                </div>
+              </ng-container>
+              <div class="section-title">Allgemein</div>
               <label>Ansprechpartner *
                 <select [(ngModel)]="draftSuchauftrag.ansprechpartnerId">
                   <option value="" disabled>— auswählen —</option>
@@ -407,6 +435,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
             <div class="match-list">
               <div class="match-card" *ngFor="let r of matchedKandidaten"
                    (dblclick)="openKandidatDetail(r.kandidat)"
+                   (contextmenu)="openMatchMenu($event, r.kandidat)"
                    [class.match-card-selected]="selectedKandidat?.id === r.kandidat.id">
                 <div class="card-title">
                   {{ r.kandidat.vorname }} {{ r.kandidat.nachname }}
@@ -604,7 +633,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .ctx-menu {
       position: fixed; background: white; border: 1px solid #dfe3ee; border-radius: 6px;
       box-shadow: 0 6px 18px rgba(0,0,0,0.15); display: flex; flex-direction: column;
-      min-width: 180px; z-index: 1000; overflow: hidden;
+      min-width: 180px; z-index: 2100; overflow: hidden;
     }
     .ctx-menu button { background: white; border: none; text-align: left; padding: 10px 14px; font-size: 14px; cursor: pointer; }
     .ctx-menu button:hover { background: #eef2fb; }
@@ -620,6 +649,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .card-row-danger, .card-row-danger span:first-child { color: #c92a2a; }
     .card-row-success, .card-row-danger { white-space: pre-line; }
     .card-info { margin-top: 8px; font-size: 12px; color: #555; white-space: pre-wrap; }
+    .card-hr { border: none; border-top: 1px solid #e5e9f3; margin: 8px 0; }
     .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; background: #f5d97c; font-size: 12px; }
     .badge.done { background: #b6e3b6; }
     .profile-link { color: #3b5bdb; text-decoration: none; font-size: 13px; word-break: break-all; }
@@ -662,6 +692,12 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .btn-link { padding: 8px 10px; border: 1px solid #dfe3ee; border-radius: 6px; background: #f1f3f8; cursor: pointer; font-size: 14px; line-height: 1; }
     .btn-link:hover:not(:disabled) { background: #e2e6f0; }
     .btn-link:disabled { opacity: 0.4; cursor: default; }
+    .btn-danger { color: #e03131; }
+    .btn-danger:hover:not(:disabled) { background: #ffeaea; border-color: #e03131; }
+    .verknuepfung-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+    .verknuepfung-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: #f5f7fc; border-radius: 6px; border: 1px solid #e5e9f3; }
+    .verknuepfung-name { flex: 1; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .verknuepfung-position { font-size: 11px; color: #888; white-space: nowrap; flex-shrink: 0; }
     .field-error { color: #e03131; font-size: 11px; margin-top: 2px; }
     .input-suffix-wrapper { display: flex; align-items: stretch; border: 1px solid #dfe3ee; border-radius: 6px; overflow: hidden; }
     .input-suffix-wrapper:focus-within { border-color: #3b5bdb; }
@@ -690,6 +726,7 @@ export class FirmenComponent implements OnInit {
   private vertragService = inject(VertragService);
   private kandidatService = inject(KandidatService);
   private matchKandidatService = inject(MatchKandidatService);
+  private verknuepfungService = inject(VerknuepfungService);
 
   firmen: Firma[] = [];
   selectedFirma: Firma | null = null;
@@ -699,11 +736,18 @@ export class FirmenComponent implements OnInit {
   menuX = 0;
   menuY = 0;
 
+  matchMenuOpen = false;
+  matchMenuX = 0;
+  matchMenuY = 0;
+  selectedMatchKandidat: Kandidat | null = null;
+
   detailMode: DetailMode | null = null;
   detailTitle = '';
   ansprechpartnerList: Ansprechpartner[] = [];
   suchauftragList: Suchauftrag[] = [];
   vertragList: Vertrag[] = [];
+  verknuepfungenBySuchauftragId: Record<string, VerknuepfungKandidat[]> = {};
+  draftSuchauftragVerknuepfungen: VerknuepfungKandidat[] = [];
 
   readonly schwerpunktOptions = SCHWERPUNKT_OPTIONS;
   readonly aktivitaetOptions = AKTIVITAET_OPTIONS;
@@ -830,6 +874,7 @@ export class FirmenComponent implements OnInit {
   openAddSuchauftrag(): void {
     this.editingSuchauftragId = null;
     this.draftSuchauftrag = { aktivitaet: 'Personal', status: 'in Arbeit' };
+    this.draftSuchauftragVerknuepfungen = [];
     const now = new Date();
     const m = String(now.getMonth() + 1).padStart(2, '0');
     const d = String(now.getDate()).padStart(2, '0');
@@ -841,6 +886,10 @@ export class FirmenComponent implements OnInit {
     this.editingSuchauftragId = s.id ?? null;
     this.draftSuchauftrag = { ...s };
     this.draftSuchauftrag.gehalt = this.gehaltDisplay(s.gehaltMinimum, s.gehaltMaximum) ?? undefined;
+    this.draftSuchauftragVerknuepfungen = [];
+    if (s.id) {
+      this.verknuepfungService.getKandidatenForSuchauftrag(s.id).subscribe(links => (this.draftSuchauftragVerknuepfungen = links));
+    }
     if (s.anlageDatum) {
       const [d, m, y] = s.anlageDatum.split('/');
       this.anlageDatumInput = `${y}-${m}-${d}`;
@@ -882,6 +931,21 @@ export class FirmenComponent implements OnInit {
         this.matchedKandidaten = response.results;
         if (response.results.length === 1) this.openKandidatDetail(response.results[0].kandidat);
       });
+    });
+  }
+
+  openVerknuepfungKandidat(kandidatId: string): void {
+    this.kandidatService.getById(kandidatId).subscribe(k => this.openKandidatDetail(k));
+  }
+
+  deleteVerknuepfung(kandidatId: string): void {
+    if (!this.draftSuchauftrag.id) return;
+    const suchauftragId = this.draftSuchauftrag.id;
+    this.verknuepfungService.deleteLink(suchauftragId, kandidatId).subscribe(() => {
+      this.draftSuchauftragVerknuepfungen = this.draftSuchauftragVerknuepfungen.filter(v => v.kandidatId !== kandidatId);
+      if (this.verknuepfungenBySuchauftragId[suchauftragId]) {
+        this.verknuepfungenBySuchauftragId[suchauftragId] = this.verknuepfungenBySuchauftragId[suchauftragId].filter(v => v.kandidatId !== kandidatId);
+      }
     });
   }
 
@@ -989,6 +1053,10 @@ export class FirmenComponent implements OnInit {
     }
   }
 
+  verknuepfungenFor(suchauftragId?: string): VerknuepfungKandidat[] {
+    return suchauftragId ? this.verknuepfungenBySuchauftragId[suchauftragId] ?? [] : [];
+  }
+
   private parseGehalt(raw: string | undefined, type: 'kandidat' | 'suchauftrag'): [number | undefined, number | undefined] {
     const s = raw?.replace(/,/g, '').trim() ?? '';
     if (!s) return [undefined, undefined];
@@ -1019,7 +1087,40 @@ export class FirmenComponent implements OnInit {
     this.menuOpen = true;
   }
 
-  closeMenu(): void { this.menuOpen = false; }
+  closeMenu(): void {
+    this.menuOpen = false;
+    this.matchMenuOpen = false;
+  }
+
+  openMatchMenu(event: MouseEvent, kandidat: Kandidat): void {
+    event.preventDefault();
+    this.selectedMatchKandidat = kandidat;
+    this.matchMenuX = event.clientX;
+    this.matchMenuY = event.clientY;
+    this.matchMenuOpen = true;
+  }
+
+  onVerknuepfung(): void {
+    this.matchMenuOpen = false;
+    const kandidat = this.selectedMatchKandidat;
+    if (!kandidat?.id || !this.draftSuchauftrag.id || !this.expandedFirma?.id) return;
+    const suchauftragId = this.draftSuchauftrag.id;
+    const kandidatId = kandidat.id;
+
+    if (this.draftSuchauftragVerknuepfungen.some(v => v.kandidatId === kandidatId)) return;
+
+    this.verknuepfungService.create({
+      kandidatId,
+      suchauftragId,
+      firmaId: this.expandedFirma.id,
+    }).subscribe(() => {
+      const link: VerknuepfungKandidat = { kandidatId, vorname: kandidat.vorname, nachname: kandidat.nachname, position: kandidat.aktuellePosition };
+      this.draftSuchauftragVerknuepfungen = [...this.draftSuchauftragVerknuepfungen, link];
+      if (this.verknuepfungenBySuchauftragId[suchauftragId]) {
+        this.verknuepfungenBySuchauftragId[suchauftragId] = [...this.verknuepfungenBySuchauftragId[suchauftragId], link];
+      }
+    });
+  }
 
   loadDetail(mode: DetailMode): void {
     this.menuOpen = false;
@@ -1037,7 +1138,14 @@ export class FirmenComponent implements OnInit {
       this.firmaService.getAnsprechpartnerForFirma(id).subscribe(list => (this.ansprechpartnerList = list));
     } else if (mode === 'suchauftraege') {
       this.detailTitle = `Suchaufträge — ${this.expandedFirma.name ?? this.expandedFirma.standort ?? ''}`;
-      this.firmaService.getSuchauftragForFirma(id).subscribe(list => (this.suchauftragList = list));
+      this.firmaService.getSuchauftragForFirma(id).subscribe(list => {
+        this.suchauftragList = list;
+        this.verknuepfungenBySuchauftragId = {};
+        for (const s of list) {
+          if (!s.id) continue;
+          this.verknuepfungService.getKandidatenForSuchauftrag(s.id).subscribe(links => (this.verknuepfungenBySuchauftragId[s.id!] = links));
+        }
+      });
     } else if (mode === 'vertraege') {
       this.detailTitle = `Verträge — ${this.expandedFirma.name ?? this.expandedFirma.standort ?? ''}`;
       this.firmaService.getVertragForFirma(id).subscribe(list => (this.vertragList = list));
