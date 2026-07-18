@@ -59,7 +59,10 @@ public class SuchauftragService {
             existing.setGehaltMehrInfo(input.getGehaltMehrInfo());
             existing.setGehaltKOKriterium(input.isGehaltKOKriterium());
             existing.setBerufserfahrung(input.getBerufserfahrung());
+            existing.setBerufserfahrungKOKriterium(input.isBerufserfahrungKOKriterium());
             existing.setBranchenkenntnisse(input.getBranchenkenntnisse());
+            existing.setBranchenkenntnisseKOKriterium(input.isBranchenkenntnisseKOKriterium());
+            existing.setOptionalBranchenkenntnisse(input.getOptionalBranchenkenntnisse());
             existing.setZertifikate(input.getZertifikate());
             existing.setZertifikateKOKriterium(input.isZertifikateKOKriterium());
             existing.setOptionalZertifikate(input.getOptionalZertifikate());

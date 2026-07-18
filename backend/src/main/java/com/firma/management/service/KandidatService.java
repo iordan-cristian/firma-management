@@ -74,6 +74,7 @@ public class KandidatService {
             existing.setZertifikate(input.getZertifikate());
             existing.setTaeglicheFahrzeit(input.getTaeglicheFahrzeit());
             existing.setBranchenkenntnisse(input.getBranchenkenntnisse());
+            existing.setBerufserfahrung(input.getBerufserfahrung());
             existing.setAktuelleTaetigkeiten(input.getAktuelleTaetigkeiten());
             existing.setAktuellePosition(input.getAktuellePosition());
             existing.setAktuelleFirma(input.getAktuelleFirma());

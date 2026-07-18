@@ -64,6 +64,12 @@ public class MatchKandidatService {
             if (s.isZertifikateKOKriterium() && isNotBlank(s.getZertifikate())) {
                 appendZertifikate(Arrays.stream(s.getZertifikate().split(",")).toList(), clauses, params);
             }
+            if (s.isBerufserfahrungKOKriterium() && isNotBlank(s.getBerufserfahrung())) {
+               // TODO appendBerufserfahrung(Arrays.stream(s.getBerufserfahrung().split(",")).toList(), clauses, params);
+            }
+            if (s.isBranchenkenntnisseKOKriterium() && isNotBlank(s.getBranchenkenntnisse())) {
+                appendBranchenkenntnisse(Arrays.stream(s.getBranchenkenntnisse().split(",")).toList(), clauses, params);
+            }
             if (s.isDeutschKOKriterium() && s.getDeutsch() != null) {
                 appendDeutsch(suchauftrag, clauses, params);
             }
@@ -106,6 +112,14 @@ public class MatchKandidatService {
 
     private void appendZertifikate(List<String> zeritifikate, List<String> clauses, List<Object> params) {
         appendAllTermsMatch("zertifikate", zeritifikate, clauses, params);
+    }
+
+    private void appendBerufserfahrung(List<String> terms, List<String> clauses, List<Object> params) {
+        appendAllTermsMatch("berufserfahrung", terms, clauses, params);
+    }
+
+    private void appendBranchenkenntnisse(List<String> terms, List<String> clauses, List<Object> params) {
+        appendAllTermsMatch("branchenkenntnisse", terms, clauses, params);
     }
 
     private static void appendDeutsch(Optional<Suchauftrag> suchauftrag, List<String> clauses, List<Object> params) {
@@ -177,6 +191,14 @@ public class MatchKandidatService {
         } else if (s.isZertifikateKOKriterium() && isNotBlank(s.getOptionalZertifikate())) {
             addPerTermKriterien(kriterien, "- Zertifikate", s.getOptionalZertifikate(), Kandidat::getZertifikate);
         }
+        if (!s.isBerufserfahrungKOKriterium() && isNotBlank(s.getBerufserfahrung())) {
+           // TODO addPerTermKriterien(kriterien, "- Berufserfahrung", s.getBerufserfahrung(), Kandidat::getBerufserfahrung);
+        }
+        if (!s.isBranchenkenntnisseKOKriterium() && isNotBlank(s.getBranchenkenntnisse())) {
+            addPerTermKriterien(kriterien, "- Branchenkenntnisse", s.getBranchenkenntnisse(), Kandidat::getBranchenkenntnisse);
+        } else if (s.isBranchenkenntnisseKOKriterium() && isNotBlank(s.getOptionalBranchenkenntnisse())) {
+            addPerTermKriterien(kriterien, "- Branchenkenntnisse", s.getOptionalBranchenkenntnisse(), Kandidat::getBranchenkenntnisse);
+        }
         if (!s.isGehaltKOKriterium() && s.getGehaltMaximum() != null) {
 
             kriterien.add(new Kriterium("- Gehalt Erwartung <= " + s.getGehaltMaximum(),
@@ -202,6 +224,8 @@ public class MatchKandidatService {
         if (s.isFachlicherSkillKOKriterium()) koKriterien.add("- Fachlicher Skill enhält: " + s.getFachlicherSkill());
         if (s.isGehaltKOKriterium()) koKriterien.add("- Gehalt Erwartung <= " + s.getGehaltMaximum().toString());
         if (s.isZertifikateKOKriterium()) koKriterien.add("- Zertifikate enhält: " + s.getZertifikate());
+        // TODO if (s.isBerufserfahrungKOKriterium()) koKriterien.add("- Berufserfahrung enthält: " + s.getBerufserfahrung());
+        if (s.isBranchenkenntnisseKOKriterium()) koKriterien.add("- Branchenkenntnisse enthält: " + s.getBranchenkenntnisse());
         if (s.isDeutschKOKriterium()) koKriterien.add("- Deutsch Niveau mindestens:" + s.getDeutsch().getLabel());
         if (s.isEnglischKOKriterium()) koKriterien.add("- Englisch Niveau mindestens:" + s.getEnglisch().getLabel());
         if (s.isSonstigeSprachenKOKriterium()) koKriterien.add("- Sonstige Sprachenenhält: " + s.getSonstigeSprachen());
@@ -263,6 +287,7 @@ public class MatchKandidatService {
                 .zertifikate(rs.getString("zertifikate"))
                 .taeglicheFahrzeit(rs.getObject("taegliche_fahrzeit", Integer.class))
                 .branchenkenntnisse(rs.getString("branchenkenntnisse"))
+                .berufserfahrung(rs.getString("berufserfahrung"))
                 .aktuelleTaetigkeiten(rs.getString("aktuelle_taetigkeiten"))
                 .aktuellePosition(rs.getString("aktuelle_position"))
                 .aktuelleFirma(rs.getString("aktuelle_firma"))

@@ -77,7 +77,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
 
                     <div class="cards" *ngIf="detailMode === 'ansprechpartner'">
                       <div class="card" *ngFor="let a of ansprechpartnerList" (dblclick)="openEditAnsprechpartner(a)">
-                        <div class="card-title">{{ a.vorname }} {{ a.nachname }}</div>
+                        <div class="card-title">{{ a.geschlecht }} {{ a.title }} {{ a.vorname }} {{ a.nachname }}</div>
                         <div class="card-row"><span>Position:</span> {{ a.position }}</div>
                         <div class="card-row"><span>Schwerpunkt:</span> {{ a.schwerpunkt }}</div>
                         <div class="card-row"><span>E-Mail:</span> {{ a.email }}</div>
@@ -352,12 +352,33 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <label>Gehalt Mehr Info
                 <input [(ngModel)]="draftSuchauftrag.gehaltMehrInfo" placeholder="z.B. Bonus, Nebenleistungen" />
               </label>
-              <label>Berufserfahrung
+              <label>
+                <span class="label-row">
+                  Berufserfahrung
+                  <span class="ko-checkbox-label">
+                    <input type="checkbox" class="ko-checkbox" name="berufserfahrungKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.berufserfahrungKOKriterium" />
+                    KO Kriterium
+                  </span>
+                </span>
                 <input [(ngModel)]="draftSuchauftrag.berufserfahrung" placeholder="z.B. 5+ Jahre" />
+                <span class="field-error" *ngIf="koError(draftSuchauftrag.berufserfahrung, draftSuchauftrag.berufserfahrungKOKriterium)">Berufserfahrung ist als KO-Kriterium markiert und darf nicht leer sein.</span>
               </label>
-              <label>Branchenkenntnisse
+              <label>
+                <span class="label-row">
+                  Branchenkenntnisse
+                  <span class="ko-checkbox-label">
+                    <input type="checkbox" class="ko-checkbox" name="branchenkenntnisseKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.branchenkenntnisseKOKriterium" />
+                    KO Kriterium
+                  </span>
+                </span>
                 <textarea rows="4" [(ngModel)]="draftSuchauftrag.branchenkenntnisse" placeholder="z.B. Automotive, IT"></textarea>
+                <span class="field-error" *ngIf="koError(draftSuchauftrag.branchenkenntnisse, draftSuchauftrag.branchenkenntnisseKOKriterium)">Branchenkenntnisse ist als KO-Kriterium markiert und darf nicht leer sein.</span>
               </label>
+              <ng-container *ngIf="draftSuchauftrag.branchenkenntnisseKOKriterium">
+                <label>Optionale Branchenkenntnisse
+                  <textarea rows="4" [(ngModel)]="draftSuchauftrag.optionalBranchenkenntnisse" placeholder="z.B. E-Commerce, Handel"></textarea>
+                </label>
+              </ng-container>
               <label>
                 <span class="label-row">
                   Zertifikate
@@ -558,6 +579,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               </label>
               <label>Fachlicher Skill <textarea rows="4" [(ngModel)]="draftKandidat.fachlicherSkill" placeholder="Fachlicher Skill"></textarea></label>
               <label>Branchenkenntnisse <textarea rows="4" [(ngModel)]="draftKandidat.branchenkenntnisse"></textarea></label>
+              <label>Berufserfahrung <textarea rows="4" [(ngModel)]="draftKandidat.berufserfahrung"></textarea></label>
               <label>Aktuelle Tätigkeiten <input [(ngModel)]="draftKandidat.aktuelleTaetigkeiten" /></label>
               <label>Aktuelle Position <input [(ngModel)]="draftKandidat.aktuellePosition" /></label>
               <label>Aktuelle Firma <input [(ngModel)]="draftKandidat.aktuelleFirma" /></label>
@@ -1003,6 +1025,8 @@ export class FirmenComponent implements OnInit {
     const s = this.draftSuchauftrag;
     return this.koError(s.fachlicherSkill, s.fachlicherSkillKOKriterium)
       || this.koError(s.gehalt, s.gehaltKOKriterium)
+      || this.koError(s.berufserfahrung, s.berufserfahrungKOKriterium)
+      || this.koError(s.branchenkenntnisse, s.branchenkenntnisseKOKriterium)
       || this.koError(s.zertifikate, s.zertifikateKOKriterium)
       || this.koError(s.deutsch, s.deutschKOKriterium)
       || this.koError(s.englisch, s.englischKOKriterium)

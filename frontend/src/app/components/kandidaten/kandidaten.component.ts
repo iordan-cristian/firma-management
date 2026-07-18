@@ -231,6 +231,9 @@ import {
             <label>Branchenkenntnisse
               <textarea rows="4" [(ngModel)]="draft.branchenkenntnisse" placeholder="z.B. IT, Automotive"></textarea>
             </label>
+            <label>Berufserfahrung
+              <textarea rows="4" [(ngModel)]="draft.berufserfahrung" placeholder="z.B. 5+ Jahre Projektleitung"></textarea>
+            </label>
             <label>Aktuelle Tätigkeiten
               <input [(ngModel)]="draft.aktuelleTaetigkeiten" placeholder="Aktuelle Tätigkeiten" />
             </label>

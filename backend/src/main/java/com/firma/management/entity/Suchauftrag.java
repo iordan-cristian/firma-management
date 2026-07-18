@@ -56,8 +56,17 @@ public class Suchauftrag {
     @Column(columnDefinition = "TEXT")
     private String berufserfahrung;
 
+    @Column(name = "berufserfahrung_ko_kriterium", nullable = false)
+    private boolean berufserfahrungKOKriterium;
+
     @Column(columnDefinition = "TEXT")
     private String branchenkenntnisse;
+
+    @Column(name = "branchenkenntnisse_ko_kriterium", nullable = false)
+    private boolean branchenkenntnisseKOKriterium;
+
+    @Column(name = "optionale_branchenkenntnisse", columnDefinition = "TEXT")
+    private String optionalBranchenkenntnisse;
 
     @Column(columnDefinition = "TEXT")
     private String zertifikate;

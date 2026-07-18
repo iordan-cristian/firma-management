@@ -21,7 +21,10 @@ export interface Suchauftrag {
   gehaltKOKriterium?: boolean;
   gehaltMehrInfo?: string;
   berufserfahrung?: string;
+  berufserfahrungKOKriterium?: boolean;
   branchenkenntnisse?: string;
+  branchenkenntnisseKOKriterium?: boolean;
+  optionalBranchenkenntnisse?: string;
   zertifikate?: string;
   zertifikateKOKriterium?: boolean;
   optionalZertifikate?: string;

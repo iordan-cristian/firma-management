@@ -97,7 +97,10 @@ CREATE TABLE suchauftrag (
     gehalt_minimum       NUMERIC(10, 2),
     gehalt_maximum       NUMERIC(10, 2),
     berufserfahrung      TEXT,
+    berufserfahrung_ko_kriterium     BOOLEAN NOT NULL DEFAULT FALSE,
     branchenkenntnisse   TEXT,
+    branchenkenntnisse_ko_kriterium  BOOLEAN NOT NULL DEFAULT FALSE,
+    optionale_branchenkenntnisse     TEXT,
     zertifikate          TEXT,
     deutsch              VARCHAR(16)
         CHECK (deutsch  IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'MUTTERSPRACHE')),
@@ -212,6 +215,7 @@ CREATE TABLE kandidat (
 
     -- Berufserfahrung
     branchenkenntnisse                   TEXT,
+    berufserfahrung                      TEXT,
     aktuelle_taetigkeiten                TEXT,
     aktuelle_position                    TEXT,
     aktuelle_firma                       TEXT,
