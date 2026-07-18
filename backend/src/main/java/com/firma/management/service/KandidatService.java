@@ -76,6 +76,7 @@ public class KandidatService {
             existing.setBranchenkenntnisse(input.getBranchenkenntnisse());
             existing.setAktuelleTaetigkeiten(input.getAktuelleTaetigkeiten());
             existing.setAktuellePosition(input.getAktuellePosition());
+            existing.setAktuelleFirma(input.getAktuelleFirma());
             existing.setWechselgruende(input.getWechselgruende());
             existing.setZukuenftigePositionTaetigkeiten(input.getZukuenftigePositionTaetigkeiten());
             existing.setKuendigungsfrist(input.getKuendigungsfrist());

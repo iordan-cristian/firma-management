@@ -265,6 +265,7 @@ public class MatchKandidatService {
                 .branchenkenntnisse(rs.getString("branchenkenntnisse"))
                 .aktuelleTaetigkeiten(rs.getString("aktuelle_taetigkeiten"))
                 .aktuellePosition(rs.getString("aktuelle_position"))
+                .aktuelleFirma(rs.getString("aktuelle_firma"))
                 .wechselgruende(rs.getString("wechselgruende"))
                 .zukuenftigePositionTaetigkeiten(rs.getString("zukuenftige_position_taetigkeiten"))
                 .kuendigungsfrist(rs.getString("kuendigungsfrist"))

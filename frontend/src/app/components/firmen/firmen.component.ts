@@ -446,6 +446,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <div class="card-row card-row-danger" *ngIf="r.unsatisfiedKriterien"><span>Nicht erfüllt:</span> {{ r.unsatisfiedKriterien }}</div>
                 <div class="card-divider">Kandidatendaten</div>
                 <div class="card-row" *ngIf="r.kandidat.aktuellePosition"><span>Position:</span> {{ r.kandidat.aktuellePosition }}</div>
+                <div class="card-row" *ngIf="r.kandidat.aktuelleFirma"><span>Firma:</span> {{ r.kandidat.aktuelleFirma }}</div>
                 <div class="card-row" *ngIf="r.kandidat.ort"><span>Ort:</span> {{ r.kandidat.ort }}</div>
                 <div class="card-row" *ngIf="gehaltDisplay(r.kandidat.gehaltMinimum, r.kandidat.gehaltMaximum) as g"><span>Gehalt:</span> {{ g }}</div>
                 <div class="card-row" *ngIf="r.kandidat.branchenkenntnisse"><span>Branche:</span> {{ r.kandidat.branchenkenntnisse }}</div>
@@ -559,6 +560,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <label>Branchenkenntnisse <textarea rows="4" [(ngModel)]="draftKandidat.branchenkenntnisse"></textarea></label>
               <label>Aktuelle Tätigkeiten <input [(ngModel)]="draftKandidat.aktuelleTaetigkeiten" /></label>
               <label>Aktuelle Position <input [(ngModel)]="draftKandidat.aktuellePosition" /></label>
+              <label>Aktuelle Firma <input [(ngModel)]="draftKandidat.aktuelleFirma" /></label>
 
               <div class="k-section">Wechsel &amp; Zukunft</div>
               <label>Wechselgründe <input [(ngModel)]="draftKandidat.wechselgruende" /></label>

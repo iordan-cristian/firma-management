@@ -41,6 +41,7 @@ export interface Kandidat {
   branchenkenntnisse?: string;
   aktuelleTaetigkeiten?: string;
   aktuellePosition?: string;
+  aktuelleFirma?: string;
   wechselgruende?: string;
   zukuenftigePositionTaetigkeiten?: string;
   kuendigungsfrist?: string;

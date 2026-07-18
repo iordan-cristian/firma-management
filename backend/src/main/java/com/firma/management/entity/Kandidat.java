@@ -106,6 +106,9 @@ public class Kandidat {
     @Column(name = "aktuelle_position", columnDefinition = "TEXT")
     private String aktuellePosition;
 
+    @Column(name = "aktuelle_firma", columnDefinition = "TEXT")
+    private String aktuelleFirma;
+
     @Column(columnDefinition = "TEXT")
     private String wechselgruende;
 

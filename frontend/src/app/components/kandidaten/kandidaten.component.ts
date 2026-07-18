@@ -47,6 +47,7 @@ import {
               <th>Nachname</th>
               <th>PLZ / Ort</th>
               <th>Aktuelle Position</th>
+              <th>Aktuelle Firma</th>
               <th>Branchenkenntnisse</th>
               <th>Deutsch</th>
               <th>Englisch</th>
@@ -62,6 +63,7 @@ import {
               <td>{{ k.nachname ?? '–' }}</td>
               <td>{{ k.postleitzahl ?? '' }} {{ k.ort ?? '–' }}</td>
               <td>{{ k.aktuellePosition ?? '–' }}</td>
+              <td>{{ k.aktuelleFirma ?? '–' }}</td>
               <td>{{ k.branchenkenntnisse ?? '–' }}</td>
               <td>{{ k.deutsch ?? '–' }}</td>
               <td>{{ k.englisch ?? '–' }}</td>
@@ -232,6 +234,10 @@ import {
             <label>Aktuelle Tätigkeiten
               <input [(ngModel)]="draft.aktuelleTaetigkeiten" placeholder="Aktuelle Tätigkeiten" />
             </label>
+            <label>Aktuelle Firma
+              <input [(ngModel)]="draft.aktuelleFirma" placeholder="z.B. Siemens AG" />
+            </label>
+
             <label>Aktuelle Position
               <input [(ngModel)]="draft.aktuellePosition" placeholder="z.B. Senior Developer" />
             </label>

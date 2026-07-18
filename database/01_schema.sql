@@ -214,6 +214,7 @@ CREATE TABLE kandidat (
     branchenkenntnisse                   TEXT,
     aktuelle_taetigkeiten                TEXT,
     aktuelle_position                    TEXT,
+    aktuelle_firma                       TEXT,
 
     -- Wechsel & Zukunft
     wechselgruende                       TEXT,
