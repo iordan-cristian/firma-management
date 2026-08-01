@@ -53,8 +53,7 @@ public class Suchauftrag {
     @Column(name = "gehalt_ko_kriterium", nullable = false)
     private boolean gehaltKOKriterium;
 
-    @Column(columnDefinition = "TEXT")
-    private String berufserfahrung;
+    private Integer berufserfahrung;
 
     @Column(name = "berufserfahrung_ko_kriterium", nullable = false)
     private boolean berufserfahrungKOKriterium;

@@ -77,7 +77,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
 
                     <div class="cards" *ngIf="detailMode === 'ansprechpartner'">
                       <div class="card" *ngFor="let a of ansprechpartnerList" (dblclick)="openEditAnsprechpartner(a)">
-                        <div class="card-title">{{ a.geschlecht }} {{ a.title }} {{ a.vorname }} {{ a.nachname }}</div>
+                        <div class="card-title">{{ a.vorname }} {{ a.nachname }}</div>
                         <div class="card-row"><span>Position:</span> {{ a.position }}</div>
                         <div class="card-row"><span>Schwerpunkt:</span> {{ a.schwerpunkt }}</div>
                         <div class="card-row"><span>E-Mail:</span> {{ a.email }}</div>
@@ -108,7 +108,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                         <div class="card-row" *ngIf="s.fachlicherSkill"><span>Fachlicher Skill:</span> {{ s.fachlicherSkill }}</div>
                         <div class="card-row" *ngIf="gehaltDisplay(s.gehaltMinimum, s.gehaltMaximum) as g"><span>Gehalt:</span> {{ g }}</div>
                         <div class="card-row" *ngIf="s.gehaltMehrInfo"><span>Gehalt Info:</span> {{ s.gehaltMehrInfo }}</div>
-                        <div class="card-row" *ngIf="s.berufserfahrung"><span>Berufserfahrung:</span> {{ s.berufserfahrung }}</div>
+                        <div class="card-row" *ngIf="s.berufserfahrung != null"><span>Berufserfahrung:</span> {{ s.berufserfahrung }} Jahre</div>
                         <div class="card-row" *ngIf="s.branchenkenntnisse"><span>Branchenkenntnisse:</span> {{ s.branchenkenntnisse }}</div>
                         <div class="card-row" *ngIf="s.zertifikate"><span>Zertifikate:</span> {{ s.zertifikate }}</div>
                         <div class="card-row" *ngIf="s.deutsch"><span>Deutsch:</span> {{ s.deutsch }}</div>
@@ -360,7 +360,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                     KO Kriterium
                   </span>
                 </span>
-                <input [(ngModel)]="draftSuchauftrag.berufserfahrung" placeholder="z.B. 5+ Jahre" />
+                <input type="number" min="0" [(ngModel)]="draftSuchauftrag.berufserfahrung" placeholder="z.B. 5" />
                 <span class="field-error" *ngIf="koError(draftSuchauftrag.berufserfahrung, draftSuchauftrag.berufserfahrungKOKriterium)">Berufserfahrung ist als KO-Kriterium markiert und darf nicht leer sein.</span>
               </label>
               <label>
@@ -579,7 +579,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               </label>
               <label>Fachlicher Skill <textarea rows="4" [(ngModel)]="draftKandidat.fachlicherSkill" placeholder="Fachlicher Skill"></textarea></label>
               <label>Branchenkenntnisse <textarea rows="4" [(ngModel)]="draftKandidat.branchenkenntnisse"></textarea></label>
-              <label>Berufserfahrung <textarea rows="4" [(ngModel)]="draftKandidat.berufserfahrung"></textarea></label>
+              <label>Berufserfahrung <input type="number" min="0" [(ngModel)]="draftKandidat.berufserfahrung" placeholder="z.B. 5" /></label>
               <label>Aktuelle Tätigkeiten <input [(ngModel)]="draftKandidat.aktuelleTaetigkeiten" /></label>
               <label>Aktuelle Position <input [(ngModel)]="draftKandidat.aktuellePosition" /></label>
               <label>Aktuelle Firma <input [(ngModel)]="draftKandidat.aktuelleFirma" /></label>
@@ -1017,7 +1017,7 @@ export class FirmenComponent implements OnInit {
     });
   }
 
-  koError(value: string | undefined | null, checked: boolean | undefined): boolean {
+  koError(value: string | number | undefined | null, checked: boolean | undefined): boolean {
     return !!checked && (value === undefined || value === null || value.toString().trim() === '');
   }
 

@@ -100,8 +100,7 @@ public class Kandidat {
     @Column(columnDefinition = "TEXT")
     private String branchenkenntnisse;
 
-    @Column(columnDefinition = "TEXT")
-    private String berufserfahrung;
+    private Integer berufserfahrung;
 
     @Column(name = "aktuelle_taetigkeiten", columnDefinition = "TEXT")
     private String aktuelleTaetigkeiten;

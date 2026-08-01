@@ -96,7 +96,7 @@ CREATE TABLE suchauftrag (
     gehalt_mehr_info     TEXT,
     gehalt_minimum       NUMERIC(10, 2),
     gehalt_maximum       NUMERIC(10, 2),
-    berufserfahrung      TEXT,
+    berufserfahrung      INTEGER,
     berufserfahrung_ko_kriterium     BOOLEAN NOT NULL DEFAULT FALSE,
     branchenkenntnisse   TEXT,
     branchenkenntnisse_ko_kriterium  BOOLEAN NOT NULL DEFAULT FALSE,
@@ -215,7 +215,7 @@ CREATE TABLE kandidat (
 
     -- Berufserfahrung
     branchenkenntnisse                   TEXT,
-    berufserfahrung                      TEXT,
+    berufserfahrung                      INTEGER,
     aktuelle_taetigkeiten                TEXT,
     aktuelle_position                    TEXT,
     aktuelle_firma                       TEXT,

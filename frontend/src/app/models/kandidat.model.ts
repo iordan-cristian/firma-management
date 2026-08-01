@@ -39,7 +39,7 @@ export interface Kandidat {
   zertifikate?: string;
   taeglicheFahrzeit?: number;
   branchenkenntnisse?: string;
-  berufserfahrung?: string;
+  berufserfahrung?: number;
   aktuelleTaetigkeiten?: string;
   aktuellePosition?: string;
   aktuelleFirma?: string;
