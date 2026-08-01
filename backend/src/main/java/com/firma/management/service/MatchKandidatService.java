@@ -55,6 +55,9 @@ public class MatchKandidatService {
 
         if (suchauftrag.isPresent()) {
             Suchauftrag s = suchauftrag.get();
+            if (s.isAllgemeinerSchwerpunktKOKriterium() && s.getAllgemeinerSchwerpunkt() != null) {
+                appendAllgemeinerSchwerpunkt(suchauftrag, clauses, params);
+            }
             if (s.isFachlicherSkillKOKriterium() && isNotBlank(s.getFachlicherSkill())) {
                 appendFachlicherSkill(Arrays.stream(s.getFachlicherSkill().split(",")).toList(), clauses, params);
             }
@@ -99,6 +102,11 @@ public class MatchKandidatService {
             throw new RuntimeException("Failed to query kandidat. Querry:" + sql,  e);
         }
         return result;
+    }
+
+    private static void appendAllgemeinerSchwerpunkt(Optional<Suchauftrag> suchauftrag, List<String> clauses, List<Object> params) {
+        clauses.add("allgemeiner_schwerpunkt = ?");
+        params.add(suchauftrag.get().getAllgemeinerSchwerpunkt().name());
     }
 
     private static void appendGehalt(Optional<Suchauftrag> suchauftrag, List<String> clauses, List<Object> params) {
@@ -182,6 +190,10 @@ public class MatchKandidatService {
     private List<Kriterium> buildKriterien(Suchauftrag s) {
         List<Kriterium> kriterien = new ArrayList<>();
 
+        if (!s.isAllgemeinerSchwerpunktKOKriterium() && s.getAllgemeinerSchwerpunkt() != null) {
+            kriterien.add(new Kriterium("- Allgemeiner Schwerpunkt: " + s.getAllgemeinerSchwerpunkt().getLabel(),
+                    k -> k.getAllgemeinerSchwerpunkt() == s.getAllgemeinerSchwerpunkt()));
+        }
         if (!s.isFachlicherSkillKOKriterium() && isNotBlank(s.getFachlicherSkill())) {
             addPerTermKriterien(kriterien, "- Fachlicher Skill", s.getFachlicherSkill(), Kandidat::getFachlicherSkill);
         } else if (s.isFachlicherSkillKOKriterium() && isNotBlank(s.getOptionalFachlicheSkills())) {
@@ -222,6 +234,7 @@ public class MatchKandidatService {
 
     private static String buildKriterienExplained(Suchauftrag s, List<Kriterium> kriterien) {
         List<String> koKriterien = new ArrayList<>();
+        if (s.isAllgemeinerSchwerpunktKOKriterium()) koKriterien.add("- Allgemeiner Schwerpunkt: " + s.getAllgemeinerSchwerpunkt().getLabel());
         if (s.isFachlicherSkillKOKriterium()) koKriterien.add("- Fachlicher Skill enhält: " + s.getFachlicherSkill());
         if (s.isGehaltKOKriterium()) koKriterien.add("- Gehalt Erwartung <= " + s.getGehaltMaximum().toString());
         if (s.isBerufserfahrungKOKriterium()) koKriterien.add("- Berufserfahrung mindestens: " + s.getBerufserfahrung() + " Jahre");

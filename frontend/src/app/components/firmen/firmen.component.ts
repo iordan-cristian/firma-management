@@ -313,11 +313,19 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               </label>
               
                <div class="section-title">Kandidat</div>
-              <label>Allgemeiner Schwerpunkt
+              <label>
+                <span class="label-row">
+                  Allgemeiner Schwerpunkt
+                  <span class="ko-checkbox-label">
+                    <input type="checkbox" class="ko-checkbox" name="allgemeinerSchwerpunktKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.allgemeinerSchwerpunktKOKriterium" />
+                    KO Kriterium
+                  </span>
+                </span>
                 <select [(ngModel)]="draftSuchauftrag.allgemeinerSchwerpunkt">
                   <option [ngValue]="undefined">–</option>
                   <option *ngFor="let o of schwerpunktOptions" [value]="o">{{ o }}</option>
                 </select>
+                <span class="field-error" *ngIf="koError(draftSuchauftrag.allgemeinerSchwerpunkt, draftSuchauftrag.allgemeinerSchwerpunktKOKriterium)">Allgemeiner Schwerpunkt ist als KO-Kriterium markiert und darf nicht leer sein.</span>
               </label>
               <label>
                 <span class="label-row">
@@ -895,7 +903,7 @@ export class FirmenComponent implements OnInit {
   // ── Suchauftrag ──────────────────────────────────────────
   openAddSuchauftrag(): void {
     this.editingSuchauftragId = null;
-    this.draftSuchauftrag = { aktivitaet: 'Personal', status: 'in Arbeit' };
+    this.draftSuchauftrag = { aktivitaet: 'Personal', status: 'in Arbeit', allgemeinerSchwerpunktKOKriterium: true };
     this.draftSuchauftragVerknuepfungen = [];
     const now = new Date();
     const m = String(now.getMonth() + 1).padStart(2, '0');
@@ -945,7 +953,7 @@ export class FirmenComponent implements OnInit {
     this.kandidatDetailOpen = false;
     this.selectedKandidat = null;
     this.buildSuchauftragSaveRequest().subscribe(saved => {
-      this.draftSuchauftrag = { ...this.draftSuchauftrag, id: saved.id };
+      this.draftSuchauftrag = { ...this.draftSuchauftrag, ...saved };
       this.firmaService.getSuchauftragForFirma(this.expandedFirma!.id!).subscribe(list => (this.suchauftragList = list));
       this.matchKandidatService.matchKandidat({ suchauftragId: saved.id! }).subscribe(response => {
         this.matchKriterienExplained = response.kriterienExplained;
@@ -1006,7 +1014,7 @@ export class FirmenComponent implements OnInit {
   saveSuchauftrag(closeModal: boolean = true): void {
     const wasEditing = this.editingSuchauftragId;
     this.buildSuchauftragSaveRequest().subscribe(saved => {
-      this.draftSuchauftrag = { ...this.draftSuchauftrag, id: saved.id };
+      this.draftSuchauftrag = { ...this.draftSuchauftrag, ...saved };
       this.firmaService.getSuchauftragForFirma(this.expandedFirma!.id!).subscribe(list => (this.suchauftragList = list));
       if (closeModal) {
         this.closeSuchauftragModal();
@@ -1021,7 +1029,8 @@ export class FirmenComponent implements OnInit {
 
   get suchauftragKOError(): boolean {
     const s = this.draftSuchauftrag;
-    return this.koError(s.fachlicherSkill, s.fachlicherSkillKOKriterium)
+    return this.koError(s.allgemeinerSchwerpunkt, s.allgemeinerSchwerpunktKOKriterium)
+      || this.koError(s.fachlicherSkill, s.fachlicherSkillKOKriterium)
       || this.koError(s.gehalt, s.gehaltKOKriterium)
       || this.koError(s.berufserfahrung, s.berufserfahrungKOKriterium)
       || this.koError(s.branchenkenntnisse, s.branchenkenntnisseKOKriterium)

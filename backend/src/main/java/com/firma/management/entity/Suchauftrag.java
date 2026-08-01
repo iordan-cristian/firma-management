@@ -42,6 +42,9 @@ public class Suchauftrag {
     @Column(name = "allgemeiner_schwerpunkt")
     private AllgemeinerSchwerpunkt allgemeinerSchwerpunkt;
 
+    @Column(name = "allgemeiner_schwerpunkt_ko_kriterium", nullable = false)
+    private boolean allgemeinerSchwerpunktKOKriterium = true;
+
     @Column(name = "fachlicher_skill", columnDefinition = "TEXT")
     private String fachlicherSkill;
 

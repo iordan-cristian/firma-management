@@ -16,6 +16,7 @@ export interface Suchauftrag {
   postleitzahl?: string;
   adresse?: string;
   allgemeinerSchwerpunkt?: AllgemeinerSchwerpunkt;
+  allgemeinerSchwerpunktKOKriterium?: boolean;
   fachlicherSkill?: string;
   fachlicherSkillKOKriterium?: boolean;
   optionalFachlicheSkills?: string;
