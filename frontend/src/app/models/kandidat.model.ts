@@ -1,5 +1,5 @@
-export { AllgemeinerSchwerpunkt, SCHWERPUNKT_OPTIONS } from './firma.model';
-import { AllgemeinerSchwerpunkt } from './firma.model';
+export { AllgemeinerSchwerpunkt, SCHWERPUNKT_OPTIONS } from './allgemeiner-schwerpunkt.model';
+import { AllgemeinerSchwerpunkt } from './allgemeiner-schwerpunkt.model';
 
 export type Geschlecht = 'männlich' | 'weiblich' | 'divers' | 'Bevorzuge nicht zu sagen';
 export type Titel = 'Dr.' | 'Ing.';

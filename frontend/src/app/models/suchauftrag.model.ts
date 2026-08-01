@@ -1,4 +1,5 @@
 import { Sprachniveau } from './kandidat.model';
+import { AllgemeinerSchwerpunkt } from './allgemeiner-schwerpunkt.model';
 export { Sprachniveau };
 
 export type Aktivitaet = 'Investoren' | 'Vertrieb' | 'Imobilien' | 'Personal';
@@ -14,6 +15,7 @@ export interface Suchauftrag {
   ort?: string;
   postleitzahl?: string;
   adresse?: string;
+  allgemeinerSchwerpunkt?: AllgemeinerSchwerpunkt;
   fachlicherSkill?: string;
   fachlicherSkillKOKriterium?: boolean;
   optionalFachlicheSkills?: string;

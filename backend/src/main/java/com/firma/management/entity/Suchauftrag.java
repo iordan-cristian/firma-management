@@ -38,6 +38,10 @@ public class Suchauftrag {
     @Column(columnDefinition = "TEXT")
     private String adresse;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "allgemeiner_schwerpunkt")
+    private AllgemeinerSchwerpunkt allgemeinerSchwerpunkt;
+
     @Column(name = "fachlicher_skill", columnDefinition = "TEXT")
     private String fachlicherSkill;
 

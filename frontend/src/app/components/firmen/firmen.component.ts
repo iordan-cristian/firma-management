@@ -7,7 +7,8 @@ import { AnsprechpartnerService } from '../../services/ansprechpartner.service';
 import { SuchauftragService } from '../../services/suchauftrag.service';
 import { VertragService } from '../../services/vertrag.service';
 import { KandidatService } from '../../services/kandidat.service';
-import { Firma, SCHWERPUNKT_OPTIONS } from '../../models/firma.model';
+import { Firma } from '../../models/firma.model';
+import { SCHWERPUNKT_OPTIONS } from '../../models/allgemeiner-schwerpunkt.model';
 import { Ansprechpartner } from '../../models/ansprechpartner.model';
 import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
 import { Vertrag } from '../../models/vertrag.model';
@@ -103,6 +104,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                         </div>
                         <div class="card-row" *ngIf="s.postleitzahl || s.ort"><span>Ort:</span> {{ s.postleitzahl }} {{ s.ort }}</div>
                         <div class="card-row" *ngIf="s.adresse"><span>Adresse:</span> {{ s.adresse }}</div>
+                        <div class="card-row" *ngIf="s.allgemeinerSchwerpunkt"><span>Allgemeiner Schwerpunkt:</span> {{ s.allgemeinerSchwerpunkt }}</div>
                         <div class="card-row" *ngIf="s.fachlicherSkill"><span>Fachlicher Skill:</span> {{ s.fachlicherSkill }}</div>
                         <div class="card-row" *ngIf="gehaltDisplay(s.gehaltMinimum, s.gehaltMaximum) as g"><span>Gehalt:</span> {{ g }}</div>
                         <div class="card-row" *ngIf="s.gehaltMehrInfo"><span>Gehalt Info:</span> {{ s.gehaltMehrInfo }}</div>
@@ -311,6 +313,12 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               </label>
               
                <div class="section-title">Kandidat</div>
+              <label>Allgemeiner Schwerpunkt
+                <select [(ngModel)]="draftSuchauftrag.allgemeinerSchwerpunkt">
+                  <option [ngValue]="undefined">–</option>
+                  <option *ngFor="let o of schwerpunktOptions" [value]="o">{{ o }}</option>
+                </select>
+              </label>
               <label>
                 <span class="label-row">
                   Fachlicher Skill
