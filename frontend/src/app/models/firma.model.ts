@@ -8,7 +8,6 @@ export interface Firma {
   id?: string;
   name?: string;
   standort?: string;
-  allgemeinerSchwerpunkt?: AllgemeinerSchwerpunkt;
   email?: string;
   telefon?: string;
   mobil?: string;

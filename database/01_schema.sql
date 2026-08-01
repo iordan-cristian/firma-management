@@ -35,8 +35,6 @@ CREATE TABLE firma (
     id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name                     TEXT,
     standort                 TEXT,
-    allgemeiner_schwerpunkt  VARCHAR(32)
-        CHECK (allgemeiner_schwerpunkt IN ('GEBAEUDETECHNIK', 'ENERGIETECHNIK', 'MASCHINENBAU', 'INFORMATIK', 'KAUFMAENNISCH')),
     email                    TEXT,
     telefon                  TEXT,
     mobil                    TEXT,
@@ -45,7 +43,6 @@ CREATE TABLE firma (
 
 COMMENT ON TABLE  firma                         IS 'Companies tracked in the system';
 COMMENT ON COLUMN firma.standort                IS 'Location';
-COMMENT ON COLUMN firma.allgemeiner_schwerpunkt IS 'General focus / industry';
 COMMENT ON COLUMN firma.email                   IS 'Company e-mail address (validated by the API)';
 COMMENT ON COLUMN firma.telefon                 IS 'Company phone number (validated by the API)';
 COMMENT ON COLUMN firma.mobil                   IS 'Company mobile phone number (validated by the API)';

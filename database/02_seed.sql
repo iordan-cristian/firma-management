@@ -10,18 +10,18 @@
 BEGIN;
 SET client_encoding = 'UTF8';
 -- -- FIRMA -------------------------------------------------------------------
-INSERT INTO firma (id, name, standort, allgemeiner_schwerpunkt, email, telefon, mobil, angebot_website) VALUES
+INSERT INTO firma (id, name, standort, email, telefon, mobil, angebot_website) VALUES
     ('11111111-1111-1111-1111-111111111111',
-     'Alpha Bau GmbH', 'Berlin', 'GEBAEUDETECHNIK',
+     'Alpha Bau GmbH', 'Berlin',
      'info@alphabau.de', '+49 30 1111111', '+49 170 1111111', 'https://www.alphabau.de'),
     ('22222222-2222-2222-2222-222222222222',
-     'Bayern Kapital AG', 'München', 'KAUFMAENNISCH',
+     'Bayern Kapital AG', 'München',
      'kontakt@bayernkapital.de', '+49 89 2222222', '+49 171 2222222', 'https://www.bayernkapital.de'),
     ('33333333-3333-3333-3333-333333333333',
-     'Hansa Grupp GmbH', 'Hamburg', 'INFORMATIK',
+     'Hansa Grupp GmbH', 'Hamburg',
      'office@hansagrupp.de', '+49 40 3333333', '+49 172 3333333', 'https://www.hansagrupp.de'),
     ('44444444-4444-4444-4444-444444444444',
-     'Rhein Vertrieb KG', 'Köln', 'MASCHINENBAU',
+     'Rhein Vertrieb KG', 'Köln',
      'hello@rheinvertrieb.de', '+49 221 4444444', '+49 173 4444444', NULL)
 ON CONFLICT (id) DO NOTHING;
 

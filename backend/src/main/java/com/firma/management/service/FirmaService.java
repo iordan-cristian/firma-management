@@ -30,7 +30,6 @@ public class FirmaService {
         return repo.findById(id).map(existing -> {
             existing.setName(input.getName());
             existing.setStandort(input.getStandort());
-            existing.setAllgemeinerSchwerpunkt(input.getAllgemeinerSchwerpunkt());
             existing.setEmail(input.getEmail());
             existing.setTelefon(input.getTelefon());
             existing.setMobil(input.getMobil());

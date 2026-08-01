@@ -11,7 +11,7 @@ import { Firma, SCHWERPUNKT_OPTIONS } from '../../models/firma.model';
 import { Ansprechpartner } from '../../models/ansprechpartner.model';
 import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
 import { Vertrag } from '../../models/vertrag.model';
-import { Kandidat, GESCHLECHT_OPTIONS, TITEL_OPTIONS, SPRACHNIVEAU_OPTIONS, FUEHRERSCHEIN_OPTIONS } from '../../models/kandidat.model';
+import { Kandidat, Geschlecht, GESCHLECHT_OPTIONS, TITEL_OPTIONS, SPRACHNIVEAU_OPTIONS, FUEHRERSCHEIN_OPTIONS } from '../../models/kandidat.model';
 import {MatchKandidatService, MatchKandidatResult} from "../../services/match-kandidat.service";
 import { VerknuepfungService } from '../../services/verknuepfung.service';
 import { VerknuepfungKandidat } from '../../models/verknuepfung.model';
@@ -36,7 +36,6 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
             <tr>
               <th>Name</th>
               <th>Standort</th>
-              <th>Allgemeiner Schwerpunkt</th>
               <th>E-Mail</th>
               <th>Telefon</th>
               <th>Mobil</th>
@@ -50,7 +49,6 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   [class.selected]="expandedFirma?.id === f.id">
                 <td>{{ f.name }}</td>
                 <td>{{ f.standort }}</td>
-                <td>{{ f.allgemeinerSchwerpunkt }}</td>
                 <td>{{ f.email }}</td>
                 <td>{{ f.telefon }}</td>
                 <td>{{ f.mobil }}</td>
@@ -60,7 +58,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 </td>
               </tr>
               <tr *ngIf="expandedFirma?.id === f.id && detailMode" class="detail-row">
-                <td colspan="7">
+                <td colspan="6">
                   <div class="inline-detail">
                     <div class="inline-detail-header">
                       <strong>{{ detailTitle }}</strong>
@@ -169,12 +167,6 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
           </label>
           <label>Standort
             <input [(ngModel)]="draftFirma.standort" placeholder="Standort" />
-          </label>
-          <label>Allgemeiner Schwerpunkt
-            <select [(ngModel)]="draftFirma.allgemeinerSchwerpunkt">
-              <option value="" disabled>— auswählen —</option>
-              <option *ngFor="let s of schwerpunktOptions" [value]="s">{{ s }}</option>
-            </select>
           </label>
           <label>E-Mail
             <div class="input-with-btn">
@@ -459,22 +451,20 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                    (contextmenu)="openMatchMenu($event, r.kandidat)"
                    [class.match-card-selected]="selectedKandidat?.id === r.kandidat.id">
                 <div class="card-title">
-                  {{ r.kandidat.vorname }} {{ r.kandidat.nachname }}
+                  {{ anrede(r.kandidat.geschlecht) }} {{ r.kandidat.titel }} {{ r.kandidat.vorname }} {{ r.kandidat.nachname }}
                   <span class="match-score">{{ r.score }} / {{ matchMaxScore }}</span>
                 </div>
                 <div class="card-divider">Score Erklärung</div>
                 <div class="card-row card-row-success" *ngIf="r.satisfiedKriterien"><span>Erfüllt:</span> {{ r.satisfiedKriterien }}</div>
                 <div class="card-row card-row-danger" *ngIf="r.unsatisfiedKriterien"><span>Nicht erfüllt:</span> {{ r.unsatisfiedKriterien }}</div>
                 <div class="card-divider">Kandidatendaten</div>
-                <div class="card-row" *ngIf="r.kandidat.aktuellePosition"><span>Position:</span> {{ r.kandidat.aktuellePosition }}</div>
-                <div class="card-row" *ngIf="r.kandidat.aktuelleFirma"><span>Firma:</span> {{ r.kandidat.aktuelleFirma }}</div>
-                <div class="card-row" *ngIf="r.kandidat.ort"><span>Ort:</span> {{ r.kandidat.ort }}</div>
-                <div class="card-row" *ngIf="gehaltDisplay(r.kandidat.gehaltMinimum, r.kandidat.gehaltMaximum) as g"><span>Gehalt:</span> {{ g }}</div>
-                <div class="card-row" *ngIf="r.kandidat.branchenkenntnisse"><span>Branche:</span> {{ r.kandidat.branchenkenntnisse }}</div>
-                <div class="card-row" *ngIf="r.kandidat.zertifikate"><span>Zertifikate:</span> {{ r.kandidat.zertifikate }}</div>
                 <div class="card-row" *ngIf="r.kandidat.allgemeinerSchwerpunkt"><span>Schwerpunkt:</span> {{ r.kandidat.allgemeinerSchwerpunkt }}</div>
+                <div class="card-row" *ngIf="r.kandidat.ort"><span>Ort:</span> {{ r.kandidat.ort }}</div>
                 <div class="card-row" *ngIf="r.kandidat.fachlicherSkill"><span>Fachlicher Skill:</span> {{ r.kandidat.fachlicherSkill }}</div>
-
+                <div class="card-row" *ngIf="gehaltDisplay(r.kandidat.gehaltMinimum, r.kandidat.gehaltMaximum) as g"><span>Gehalt:</span> {{ g }} <span>Tausend €</span> </div>
+                <div class="card-row" *ngIf="r.kandidat.berufserfahrung"><span>Berufserfahrung:</span> {{ r.kandidat.berufserfahrung }}</div>
+                <div class="card-row" *ngIf="r.kandidat.branchenkenntnisse"><span>Branchenkenntnisse:</span> {{ r.kandidat.branchenkenntnisse }}</div>
+                <div class="card-row" *ngIf="r.kandidat.zertifikate"><span>Zertifikate:</span> {{ r.kandidat.zertifikate }}</div>
               </div>
             </div>
           </div>
@@ -1095,6 +1085,12 @@ export class FirmenComponent implements OnInit {
     const val = parseFloat(s);
     const v = isNaN(val) ? undefined : val;
     return type === 'kandidat' ? [v, undefined] : [undefined, v];
+  }
+
+  anrede(geschlecht?: Geschlecht): string {
+    if (geschlecht === 'männlich') return 'Herr';
+    if (geschlecht === 'weiblich') return 'Frau';
+    return '';
   }
 
   gehaltDisplay(min?: number, max?: number): string | null {
