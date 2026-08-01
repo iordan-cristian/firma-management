@@ -219,11 +219,12 @@ import {
             </div>
 
             <div class="section-title">Berufserfahrung</div>
-            <label>Allgemeiner Schwerpunkt
+            <label>Allgemeiner Schwerpunkt *
               <select [(ngModel)]="draft.allgemeinerSchwerpunkt">
                 <option [ngValue]="undefined">–</option>
                 <option *ngFor="let o of schwerpunktOptions" [value]="o">{{ o }}</option>
               </select>
+              <span class="field-error" *ngIf="!draft.allgemeinerSchwerpunkt">Allgemeiner Schwerpunkt ist ein Pflichtfeld.</span>
             </label>
             <label>Fachlicher Skill
               <textarea rows="4" [(ngModel)]="draft.fachlicherSkill" placeholder="Fachlicher Skill"></textarea>
@@ -331,7 +332,7 @@ import {
           </div>
 
           <div class="modal-actions">
-            <button class="btn-save" (click)="saveKandidat()">Speichern</button>
+            <button class="btn-save" [disabled]="!draft.allgemeinerSchwerpunkt" (click)="saveKandidat()">Speichern</button>
             <button class="btn-cancel" (click)="closeAddModal()">Abbrechen</button>
           </div>
         </div>

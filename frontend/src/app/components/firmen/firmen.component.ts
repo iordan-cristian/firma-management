@@ -577,11 +577,12 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               </div>
 
               <div class="k-section">Berufserfahrung</div>
-              <label>Allgemeiner Schwerpunkt
+              <label>Allgemeiner Schwerpunkt *
                 <select [(ngModel)]="draftKandidat.allgemeinerSchwerpunkt">
                   <option [ngValue]="undefined">–</option>
                   <option *ngFor="let o of schwerpunktOptions" [value]="o">{{ o }}</option>
                 </select>
+                <span class="field-error" *ngIf="!draftKandidat.allgemeinerSchwerpunkt">Allgemeiner Schwerpunkt ist ein Pflichtfeld.</span>
               </label>
               <label>Fachlicher Skill <textarea rows="4" [(ngModel)]="draftKandidat.fachlicherSkill" placeholder="Fachlicher Skill"></textarea></label>
               <label>Branchenkenntnisse <textarea rows="4" [(ngModel)]="draftKandidat.branchenkenntnisse"></textarea></label>
@@ -599,7 +600,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               </div>
             </div>
             <div class="modal-actions">
-              <button class="btn-save" (click)="saveKandidatDetail()">Speichern</button>
+              <button class="btn-save" [disabled]="!draftKandidat.allgemeinerSchwerpunkt" (click)="saveKandidatDetail()">Speichern</button>
               <button class="btn-cancel" (click)="kandidatDetailOpen = false">Abbrechen</button>
             </div>
           </div>

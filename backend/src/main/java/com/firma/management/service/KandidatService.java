@@ -31,7 +31,7 @@ public class KandidatService {
     }
 
     public List<Kandidat> getAll() {
-        List<Kandidat> kandidaten = repo.findAll();
+        List<Kandidat> kandidaten = repo.findAllByOrderByNachnameAscVornameAsc();
         Map<UUID, Set<DokumentTyp>> typMap = new HashMap<>();
         for (KandidatDokument d : dokumentRepo.findAll()) {
             typMap.computeIfAbsent(d.getKandidatId(), k -> new HashSet<>()).add(d.getDokumentTyp());
