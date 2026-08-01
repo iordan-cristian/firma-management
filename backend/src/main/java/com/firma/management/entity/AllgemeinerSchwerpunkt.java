@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum AllgemeinerSchwerpunkt {
-    GEBAEUDETECHNIK("Gebäudetechnik"),
-    ENERGIETECHNIK("Energietechnik"),
-    MASCHINENBAU("Maschinenbau"),
+    TECHNIK("Technik"),
     INFORMATIK("Informatik"),
     KAUFMAENNISCH("Kaufmännisch");
 

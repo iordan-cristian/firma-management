@@ -1,7 +1,7 @@
-export type AllgemeinerSchwerpunkt = 'Gebäudetechnik' | 'Energietechnik' | 'Maschinenbau' | 'Informatik' | 'Kaufmännisch';
+export type AllgemeinerSchwerpunkt = 'Technik' | 'Informatik' | 'Kaufmännisch';
 
 export const SCHWERPUNKT_OPTIONS: AllgemeinerSchwerpunkt[] = [
-  'Gebäudetechnik', 'Energietechnik', 'Maschinenbau', 'Informatik', 'Kaufmännisch'
+  'Technik', 'Informatik', 'Kaufmännisch'
 ];
 
 export interface Firma {
