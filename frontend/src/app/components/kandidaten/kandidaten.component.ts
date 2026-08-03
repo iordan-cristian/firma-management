@@ -26,6 +26,10 @@ import {
       <header class="page-header">
         <h1>Kandidaten</h1>
         <div class="header-right">
+          <label class="checkbox-filter">
+            <input type="checkbox" [(ngModel)]="onlyAbgelaufeneDsgvo" />
+            Abgelaufene DSGVO-Bestätigung
+          </label>
           <input
             class="search-input"
             type="text"
@@ -52,12 +56,13 @@ import {
               <th>Deutsch</th>
               <th>Englisch</th>
               <th class="doc-col">CV</th>
-              <th class="doc-col">DSGVO</th>
               <th class="doc-col">Interview</th>
+              <th class="doc-col">DSGVO</th>
+              <th>Bestätigungs Datum</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let k of filtered" (dblclick)="openEditModal(k)" class="clickable">
+            <tr *ngFor="let k of filtered" (dblclick)="openEditModal(k)" class="clickable" [class.row-dsgvo-expired]="isDsgvoAbgelaufen(k)">
               <td>{{ k.titel ?? '–' }}</td>
               <td>{{ k.vorname ?? '–' }}</td>
               <td>{{ k.nachname ?? '–' }}</td>
@@ -68,8 +73,9 @@ import {
               <td>{{ k.deutsch ?? '–' }}</td>
               <td>{{ k.englisch ?? '–' }}</td>
               <td class="doc-col"><input type="checkbox" [checked]="k.dokumentTypen?.includes('CV')" disabled /></td>
-              <td class="doc-col"><input type="checkbox" [checked]="k.dokumentTypen?.includes('DSGVO')" disabled /></td>
               <td class="doc-col"><input type="checkbox" [checked]="k.dokumentTypen?.includes('INTERVIEW')" disabled /></td>
+              <td class="doc-col"><input type="checkbox" [checked]="k.dokumentTypen?.includes('DSGVO')" disabled /></td>
+              <td>{{ k.dsgvoBestaetigungsDatum ?? '–' }}</td>
             </tr>
             <tr *ngIf="!filtered.length">
               <td colspan="8" class="empty">Keine Kandidaten gefunden.</td>
@@ -343,6 +349,8 @@ import {
     .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
     h1 { margin: 0; color: #1f2a44; }
     .header-right { display: flex; align-items: center; gap: 12px; }
+    .checkbox-filter { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #555; white-space: nowrap; cursor: pointer; }
+    .checkbox-filter input[type=checkbox] { cursor: pointer; accent-color: #3b5bdb; width: 15px; height: 15px; }
     .hint { color: #777; font-size: 13px; margin: 4px 0 16px; }
     .search-input {
       padding: 8px 12px; border: 1px solid #dfe3ee; border-radius: 6px;
@@ -362,6 +370,8 @@ import {
     .empty { text-align: center; color: #999; padding: 24px; }
     .doc-col { text-align: center; width: 60px; }
     .doc-col input[type=checkbox] { cursor: default; accent-color: #3b5bdb; width: 15px; height: 15px; }
+    tr.row-dsgvo-expired td { background: #fdecea; }
+    tr.row-dsgvo-expired:hover td { background: #fbdcd9; }
 
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.4);
@@ -429,6 +439,7 @@ export class KandidatenComponent implements OnInit {
 
   items: Kandidat[] = [];
   searchText = '';
+  onlyAbgelaufeneDsgvo = false;
 
   readonly geschlechtOptions = GESCHLECHT_OPTIONS;
   readonly titelOptions = TITEL_OPTIONS;
@@ -456,11 +467,11 @@ export class KandidatenComponent implements OnInit {
 
   get filtered(): Kandidat[] {
     const q = this.searchText.trim().toLowerCase();
-    if (!q) return this.items;
-    return this.items.filter(k =>
-      k.vorname?.toLowerCase().includes(q) ||
-      k.nachname?.toLowerCase().includes(q)
-    );
+    return this.items.filter(k => {
+      if (q && !k.vorname?.toLowerCase().includes(q) && !k.nachname?.toLowerCase().includes(q)) return false;
+      if (this.onlyAbgelaufeneDsgvo && !this.isDsgvoAbgelaufen(k)) return false;
+      return true;
+    });
   }
 
   openLink(url?: string): void {
@@ -664,5 +675,18 @@ export class KandidatenComponent implements OnInit {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+
+  isDsgvoAbgelaufen(k: Kandidat): boolean {
+    const raw = k.dsgvoBestaetigungsDatum;
+    if (!raw) return false;
+    const match = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (!match) return false;
+    const [, day, month, year] = match;
+    const date = new Date(+year, +month - 1, +day);
+    if (isNaN(date.getTime())) return false;
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    return date < oneYearAgo;
   }
 }
