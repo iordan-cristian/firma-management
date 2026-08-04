@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { KandidatService } from '../../services/kandidat.service';
 import { KandidatDokumentService } from '../../services/kandidat-dokument.service';
 import { XlsxImportService } from '../../services/xlsx-import.service';
+import { KandidatExportService } from '../../services/kandidat-export.service';
 import {
   Kandidat,
   KandidatDokument,
@@ -338,6 +339,16 @@ import {
           </div>
 
           <div class="modal-actions">
+            <div class="dropdown">
+              <button type="button" class="btn-export" (click)="exportMenuOpen = !exportMenuOpen">Export ▾</button>
+              <div class="dropdown-menu" *ngIf="exportMenuOpen">
+                <button type="button" (click)="exportKundendaten()">Export Kundendaten</button>
+                <button type="button" (click)="exportKundendatenAnonymisiert()">Export Kundendaten anonymisiert</button>
+                <button type="button" (click)="exportKundendatenPdf()">Export Kundendaten als PDF</button>
+                <button type="button" (click)="exportKundendatenAnonymisiertPdf()">Export Kundendaten anonymisiert als PDF</button>
+              </div>
+            </div>
+            <span class="import-status" *ngIf="exportStatus">{{ exportStatus }}</span>
             <button class="btn-save" [disabled]="!draft.allgemeinerSchwerpunkt" (click)="saveKandidat()">Speichern</button>
             <button class="btn-cancel" (click)="closeAddModal()">Abbrechen</button>
           </div>
@@ -398,7 +409,20 @@ import {
     }
     input:focus, select:focus, textarea:focus { outline: none; border-color: #3b5bdb; }
     textarea { resize: vertical; font-family: inherit; }
-    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; flex-shrink: 0; }
+    .modal-actions { display: flex; align-items: center; gap: 10px; justify-content: flex-end; margin-top: 16px; flex-shrink: 0; }
+    .dropdown { position: relative; margin-right: auto; }
+    .btn-export { background: transparent; border: 1px solid #dfe3ee; color: #3b5bdb; padding: 8px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; }
+    .btn-export:hover { background: #f1f3f8; }
+    .dropdown-menu {
+      position: absolute; bottom: calc(100% + 6px); left: 0; min-width: 240px;
+      background: white; border: 1px solid #dfe3ee; border-radius: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.14); overflow: hidden; z-index: 10;
+    }
+    .dropdown-menu button {
+      display: block; width: 100%; text-align: left; padding: 10px 14px;
+      border: none; background: none; font-size: 13px; color: #333; cursor: pointer;
+    }
+    .dropdown-menu button:hover { background: #f5f7fc; }
     .btn-save { background: #3b5bdb; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; }
     .btn-save:hover { background: #2f4ac7; }
     .btn-cancel { background: transparent; border: 1px solid #dfe3ee; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; }
@@ -436,6 +460,7 @@ export class KandidatenComponent implements OnInit {
   private service = inject(KandidatService);
   private dokumentService = inject(KandidatDokumentService);
   private xlsxImportService = inject(XlsxImportService);
+  private exportService = inject(KandidatExportService);
 
   items: Kandidat[] = [];
   searchText = '';
@@ -459,7 +484,17 @@ export class KandidatenComponent implements OnInit {
   dokumentUploadError = '';
   importStatus = '';
 
+  exportMenuOpen = false;
+  exportStatus = '';
+
   ngOnInit(): void { this.reload(); }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.exportMenuOpen && !(event.target as HTMLElement).closest('.dropdown')) {
+      this.exportMenuOpen = false;
+    }
+  }
 
   reload(): void {
     this.service.getAll().subscribe(list => (this.items = list));
@@ -688,5 +723,37 @@ export class KandidatenComponent implements OnInit {
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
     return date < oneYearAgo;
+  }
+
+  private copyExportToClipboard(anonymisiert: boolean): void {
+    this.exportService.copyToClipboard(this.draft, anonymisiert).then(() => {
+      this.exportStatus = 'In Zwischenablage kopiert.';
+      setTimeout(() => (this.exportStatus = ''), 2500);
+    });
+    this.exportMenuOpen = false;
+  }
+
+  exportKundendaten(): void {
+    this.copyExportToClipboard(false);
+  }
+
+  exportKundendatenAnonymisiert(): void {
+    this.copyExportToClipboard(true);
+  }
+
+  private exportAsPdf(anonymisiert: boolean): void {
+    this.exportService.exportAsPdf(this.draft, anonymisiert).then(() => {
+      this.exportStatus = 'PDF erstellt.';
+      setTimeout(() => (this.exportStatus = ''), 2500);
+    });
+    this.exportMenuOpen = false;
+  }
+
+  exportKundendatenPdf(): void {
+    this.exportAsPdf(false);
+  }
+
+  exportKundendatenAnonymisiertPdf(): void {
+    this.exportAsPdf(true);
   }
 }
