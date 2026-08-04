@@ -1,6 +1,10 @@
+import { Geschlecht, Titel } from './kandidat.model';
+
 export interface Ansprechpartner {
   id?: string;
   firmaId: string;
+  geschlecht?: Geschlecht;
+  titel?: Titel;
   vorname?: string;
   nachname?: string;
   schwerpunkt?: string;

@@ -33,6 +33,8 @@ public class AnsprechpartnerService {
     public Optional<Ansprechpartner> update(UUID id, Ansprechpartner input) {
         return repo.findById(id).map(existing -> {
             existing.setFirmaId(input.getFirmaId());
+            existing.setGeschlecht(input.getGeschlecht());
+            existing.setTitel(input.getTitel());
             existing.setVorname(input.getVorname());
             existing.setNachname(input.getNachname());
             existing.setSchwerpunkt(input.getSchwerpunkt());

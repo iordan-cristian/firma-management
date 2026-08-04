@@ -76,7 +76,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
 
                     <div class="cards" *ngIf="detailMode === 'ansprechpartner'">
                       <div class="card" *ngFor="let a of ansprechpartnerList" (dblclick)="openEditAnsprechpartner(a)">
-                        <div class="card-title">{{ a.vorname }} {{ a.nachname }}</div>
+                        <div class="card-title">{{ anrede(a.geschlecht) }} {{ a.titel }} {{ a.vorname }} {{ a.nachname }}</div>
                         <div class="card-row"><span>Position:</span> {{ a.position }}</div>
                         <div class="card-row"><span>Schwerpunkt:</span> {{ a.schwerpunkt }}</div>
                         <div class="card-row"><span>E-Mail:</span> {{ a.email }}</div>
@@ -209,6 +209,18 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
         <div class="modal modal-wide">
           <h2>{{ editingAnsprechpartnerId ? 'Ansprechpartner bearbeiten' : 'Neuer Ansprechpartner' }}</h2>
           <div class="section-title">Persönliche Daten</div>
+          <label>Geschlecht
+            <select [(ngModel)]="draftAnsprechpartner.geschlecht">
+              <option [ngValue]="undefined">–</option>
+              <option *ngFor="let o of geschlechtOptions" [value]="o">{{ o }}</option>
+            </select>
+          </label>
+          <label>Titel
+            <select [(ngModel)]="draftAnsprechpartner.titel">
+              <option [ngValue]="undefined">–</option>
+              <option *ngFor="let o of titelOptions" [value]="o">{{ o }}</option>
+            </select>
+          </label>
           <label>Vorname
             <input [(ngModel)]="draftAnsprechpartner.vorname" placeholder="Vorname" />
           </label>

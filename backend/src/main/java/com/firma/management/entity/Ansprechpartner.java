@@ -24,6 +24,12 @@ public class Ansprechpartner {
     @Column(name = "firma_id", columnDefinition = "uuid", nullable = false)
     private UUID firmaId;
 
+    @Enumerated(EnumType.STRING)
+    private Geschlecht geschlecht;
+
+    @Enumerated(EnumType.STRING)
+    private Titel titel;
+
     @Column(columnDefinition = "TEXT")
     private String vorname;
 
