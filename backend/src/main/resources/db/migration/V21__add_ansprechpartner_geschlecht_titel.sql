@@ -1,0 +1,3 @@
+ALTER TABLE ansprechpartner
+    ADD COLUMN IF NOT EXISTS geschlecht VARCHAR(32),
+    ADD COLUMN IF NOT EXISTS titel      VARCHAR(16);
