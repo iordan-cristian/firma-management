@@ -27,6 +27,12 @@ public class Firma {
     @Column(columnDefinition = "TEXT")
     private String standort;
 
+    @Column(columnDefinition = "TEXT")
+    private String postleitzahl;
+
+    @Column(columnDefinition = "TEXT")
+    private String adresse;
+
     @Email(message = "email must be a valid e-mail address")
     @Column(columnDefinition = "TEXT")
     private String email;

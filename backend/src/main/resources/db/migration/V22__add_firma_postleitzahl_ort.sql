@@ -1,0 +1,3 @@
+ALTER TABLE firma
+    ADD COLUMN IF NOT EXISTS postleitzahl TEXT,
+    ADD COLUMN IF NOT EXISTS ort          TEXT;

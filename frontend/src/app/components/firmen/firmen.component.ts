@@ -171,6 +171,12 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
           <label>Standort
             <input [(ngModel)]="draftFirma.standort" placeholder="Standort" />
           </label>
+          <label>Postleitzahl
+            <input [(ngModel)]="draftFirma.postleitzahl" placeholder="PLZ" />
+          </label>
+          <label>Adresse
+            <input [(ngModel)]="draftFirma.adresse" placeholder="Straße und Nummer" />
+          </label>
           <label>E-Mail
             <div class="input-with-btn">
               <input type="email" [(ngModel)]="draftFirma.email" placeholder="info@beispiel.de" />
