@@ -92,7 +92,7 @@ export class KandidatExportService {
     const namePart = anonymisiert
       ? [k.vorname?.trim().charAt(0), k.nachname?.trim().charAt(0)].filter(Boolean).join('')
       : [k.vorname, k.nachname].filter(Boolean).join('_');
-    return ['Kundendaten', namePart, suffix].filter(Boolean).join('_') + '.pdf';
+    return ['Kandidatdaten', namePart, suffix].filter(Boolean).join('_') + '.pdf';
   }
 
   private async saveBlob(blob: Blob, filename: string): Promise<void> {

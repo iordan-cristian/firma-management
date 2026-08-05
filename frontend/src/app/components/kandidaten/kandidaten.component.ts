@@ -76,7 +76,7 @@ import {
               <td class="doc-col"><input type="checkbox" [checked]="k.dokumentTypen?.includes('CV')" disabled /></td>
               <td class="doc-col"><input type="checkbox" [checked]="k.dokumentTypen?.includes('INTERVIEW')" disabled /></td>
               <td class="doc-col"><input type="checkbox" [checked]="k.dokumentTypen?.includes('DSGVO')" disabled /></td>
-              <td>{{ k.dsgvoBestaetigungsDatum ?? '–' }}</td>
+              <td>{{ formatDsgvoDatum(k.dsgvoBestaetigungsDatum) ?? '–' }}</td>
             </tr>
             <tr *ngIf="!filtered.length">
               <td colspan="8" class="empty">Keine Kandidaten gefunden.</td>
@@ -101,7 +101,21 @@ import {
 
             <div class="section-title">DSGVO</div>
             <label>DSGVO Bestätigungs Datum
-              <input [(ngModel)]="draft.dsgvoBestaetigungsDatum" placeholder="TT/MM/JJJJ" />
+              <div class="input-with-btn">
+                <input
+                  [(ngModel)]="draft.dsgvoBestaetigungsDatum"
+                  placeholder="TT.MM.JJJJ"
+                  (blur)="normalizeDsgvoDatum()"
+                />
+                <button class="btn-link" type="button" (click)="openDsgvoDatePicker(dsgvoDatePicker)" title="Datum auswählen">📅</button>
+                <input
+                  #dsgvoDatePicker
+                  class="date-picker-hidden"
+                  type="date"
+                  tabindex="-1"
+                  (change)="onDsgvoDatePicked($event)"
+                />
+              </div>
             </label>
 
             <div class="section-title">Persönliche Daten</div>
@@ -342,10 +356,10 @@ import {
             <div class="dropdown">
               <button type="button" class="btn-export" (click)="exportMenuOpen = !exportMenuOpen">Export ▾</button>
               <div class="dropdown-menu" *ngIf="exportMenuOpen">
-                <button type="button" (click)="exportKundendaten()">Export Kundendaten</button>
-                <button type="button" (click)="exportKundendatenAnonymisiert()">Export Kundendaten anonymisiert</button>
-                <button type="button" (click)="exportKundendatenPdf()">Export Kundendaten als PDF</button>
-                <button type="button" (click)="exportKundendatenAnonymisiertPdf()">Export Kundendaten anonymisiert als PDF</button>
+                <button type="button" (click)="exportKandidatdaten()">Export Kandidatdaten</button>
+                <button type="button" (click)="exportKandidatdatenAnonymisiert()">Export Kandidatdaten anonymisiert</button>
+                <button type="button" (click)="exportKandidatdatenPdf()">Export Kandidatdaten als PDF</button>
+                <button type="button" (click)="exportKandidatdatenAnonymisiertPdf()">Export Kandidatdaten anonymisiert als PDF</button>
               </div>
             </div>
             <span class="import-status" *ngIf="exportStatus">{{ exportStatus }}</span>
@@ -431,6 +445,7 @@ import {
     .btn-link { padding: 8px 10px; border: 1px solid #dfe3ee; border-radius: 6px; background: #f1f3f8; cursor: pointer; font-size: 14px; line-height: 1; }
     .btn-link:hover:not(:disabled) { background: #e2e6f0; }
     .btn-link:disabled { opacity: 0.4; cursor: default; }
+    .date-picker-hidden { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
     .field-error { color: #e03131; font-size: 11px; margin-top: 2px; }
     .input-suffix-wrapper { display: flex; align-items: stretch; border: 1px solid #dfe3ee; border-radius: 6px; overflow: hidden; }
     .input-suffix-wrapper:focus-within { border-color: #3b5bdb; }
@@ -531,7 +546,7 @@ export class KandidatenComponent implements OnInit {
 
   openEditModal(k: Kandidat): void {
     this.editingId = k.id ?? null;
-    this.draft = { ...k };
+    this.draft = { ...k, dsgvoBestaetigungsDatum: this.formatDsgvoDatum(k.dsgvoBestaetigungsDatum) };
     const mn = k.gehaltMinimum, mx = k.gehaltMaximum;
     this.draft.gehalt = mn != null && mx != null ? `${mn}-${mx}` : mn != null ? `${mn}` : mx != null ? `${mx}` : undefined;
     this.kandidatErrors = {};
@@ -577,17 +592,22 @@ export class KandidatenComponent implements OnInit {
   }
 
   saveKandidat(): void {
+    this.normalizeDsgvoDatum();
     [this.draft.gehaltMinimum, this.draft.gehaltMaximum] = this.parseGehalt(this.draft.gehalt, 'kandidat');
+    const payload: Kandidat = {
+      ...this.draft,
+      dsgvoBestaetigungsDatum: this.toBackendDsgvoDatum(this.draft.dsgvoBestaetigungsDatum),
+    } as Kandidat;
     const onError = (err: any) => {
       if (err.status === 400) this.kandidatErrors = err.error ?? {};
     };
     if (this.editingId) {
-      this.service.update(this.editingId, this.draft as Kandidat).subscribe({
+      this.service.update(this.editingId, payload).subscribe({
         next: () => { this.reload(); this.closeAddModal(); },
         error: onError,
       });
     } else {
-      this.service.create(this.draft as Kandidat).subscribe({
+      this.service.create(payload).subscribe({
         next: (created) => {
           this.uploadStagedDokumente(created.id!, () => {
             this.reload();
@@ -715,7 +735,7 @@ export class KandidatenComponent implements OnInit {
   isDsgvoAbgelaufen(k: Kandidat): boolean {
     const raw = k.dsgvoBestaetigungsDatum;
     if (!raw) return false;
-    const match = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    const match = raw.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/);
     if (!match) return false;
     const [, day, month, year] = match;
     const date = new Date(+year, +month - 1, +day);
@@ -723,6 +743,49 @@ export class KandidatenComponent implements OnInit {
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
     return date < oneYearAgo;
+  }
+
+  normalizeDsgvoDatum(): void {
+    if (this.draft.dsgvoBestaetigungsDatum) {
+      this.draft.dsgvoBestaetigungsDatum = this.draft.dsgvoBestaetigungsDatum.replace(/\//g, '.');
+    }
+  }
+
+  openDsgvoDatePicker(picker: HTMLInputElement): void {
+    const iso = this.toIsoDate(this.draft.dsgvoBestaetigungsDatum);
+    picker.value = iso ?? '';
+    if (typeof (picker as any).showPicker === 'function') {
+      try {
+        (picker as any).showPicker();
+        return;
+      } catch {
+        // fall through to click()
+      }
+    }
+    picker.click();
+  }
+
+  onDsgvoDatePicked(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    if (!value) return;
+    const [year, month, day] = value.split('-');
+    this.draft.dsgvoBestaetigungsDatum = `${day}.${month}.${year}`;
+  }
+
+  formatDsgvoDatum(value?: string): string | undefined {
+    return value ? value.replace(/\//g, '.') : undefined;
+  }
+
+  private toBackendDsgvoDatum(value?: string): string | undefined {
+    return value ? value.replace(/\./g, '/') : undefined;
+  }
+
+  private toIsoDate(value?: string): string | null {
+    if (!value) return null;
+    const match = value.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/);
+    if (!match) return null;
+    const [, day, month, year] = match;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
 
   private copyExportToClipboard(anonymisiert: boolean): void {
@@ -733,11 +796,11 @@ export class KandidatenComponent implements OnInit {
     this.exportMenuOpen = false;
   }
 
-  exportKundendaten(): void {
+  exportKandidatdaten(): void {
     this.copyExportToClipboard(false);
   }
 
-  exportKundendatenAnonymisiert(): void {
+  exportKandidatdatenAnonymisiert(): void {
     this.copyExportToClipboard(true);
   }
 
@@ -749,11 +812,11 @@ export class KandidatenComponent implements OnInit {
     this.exportMenuOpen = false;
   }
 
-  exportKundendatenPdf(): void {
+  exportKandidatdatenPdf(): void {
     this.exportAsPdf(false);
   }
 
-  exportKundendatenAnonymisiertPdf(): void {
+  exportKandidatdatenAnonymisiertPdf(): void {
     this.exportAsPdf(true);
   }
 }
