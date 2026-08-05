@@ -322,7 +322,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                 <input [(ngModel)]="draftSuchauftrag.postleitzahl" placeholder="PLZ" />
               </label>
               <label>Adresse
-                <input [(ngModel)]="draftSuchauftrag.adresse" placeholder="Straße und Hausnummer" />
+                <input [(ngModel)]="draftSuchauftrag.adresse" placeholder="Straße und Nummer" />
               </label>
               
                <div class="section-title">Kandidat</div>
