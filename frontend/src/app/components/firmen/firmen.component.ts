@@ -16,6 +16,7 @@ import { Kandidat, Geschlecht, GESCHLECHT_OPTIONS, TITEL_OPTIONS, SPRACHNIVEAU_O
 import {MatchKandidatService, MatchKandidatResult} from "../../services/match-kandidat.service";
 import { VerknuepfungService } from '../../services/verknuepfung.service';
 import { VerknuepfungKandidat } from '../../models/verknuepfung.model';
+import { KandidatExportService } from '../../services/kandidat-export.service';
 
 type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
 
@@ -612,6 +613,16 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               </div>
             </div>
             <div class="modal-actions">
+              <div class="dropdown">
+                <button type="button" class="btn-export" (click)="kandidatExportMenuOpen = !kandidatExportMenuOpen">Export ▾</button>
+                <div class="dropdown-menu" *ngIf="kandidatExportMenuOpen">
+                  <button type="button" (click)="exportKandidatdaten()">Export Kandidatdaten</button>
+                  <button type="button" (click)="exportKandidatdatenAnonymisiert()">Export Kandidatdaten anonymisiert</button>
+                  <button type="button" (click)="exportKandidatdatenPdf()">Export Kandidatdaten als PDF</button>
+                  <button type="button" (click)="exportKandidatdatenAnonymisiertPdf()">Export Kandidatdaten anonymisiert als PDF</button>
+                </div>
+              </div>
+              <span class="import-status" *ngIf="kandidatExportStatus">{{ kandidatExportStatus }}</span>
               <button class="btn-save" [disabled]="!draftKandidat.allgemeinerSchwerpunkt" (click)="saveKandidatDetail()">Speichern</button>
               <button class="btn-cancel" (click)="kandidatDetailOpen = false">Abbrechen</button>
             </div>
@@ -722,7 +733,21 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     }
     .modal textarea { resize: vertical; }
     .modal.modal-wide { width: 640px; }
-    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+    .modal-actions { display: flex; align-items: center; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+    .dropdown { position: relative; margin-right: auto; }
+    .btn-export { background: transparent; border: 1px solid #dfe3ee; color: #3b5bdb; padding: 8px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; }
+    .btn-export:hover { background: #f1f3f8; }
+    .dropdown-menu {
+      position: absolute; bottom: calc(100% + 6px); left: 0; min-width: 240px;
+      background: white; border: 1px solid #dfe3ee; border-radius: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.14); overflow: hidden; z-index: 10;
+    }
+    .dropdown-menu button {
+      display: block; width: 100%; text-align: left; padding: 10px 14px;
+      border: none; background: none; font-size: 13px; color: #333; cursor: pointer;
+    }
+    .dropdown-menu button:hover { background: #f5f7fc; }
+    .import-status { font-size: 12px; color: #3b5bdb; }
     .btn-save { background: #3b5bdb; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
     .btn-save:hover { background: #2f4ac7; }
     .btn-save:disabled { background: #a9b4d6; cursor: not-allowed; }
@@ -770,6 +795,7 @@ export class FirmenComponent implements OnInit {
   private kandidatService = inject(KandidatService);
   private matchKandidatService = inject(MatchKandidatService);
   private verknuepfungService = inject(VerknuepfungService);
+  private kandidatExportService = inject(KandidatExportService);
 
   firmen: Firma[] = [];
   selectedFirma: Firma | null = null;
@@ -824,6 +850,8 @@ export class FirmenComponent implements OnInit {
   kandidatDetailOpen = false;
   selectedKandidat: Kandidat | null = null;
   draftKandidat: Partial<Kandidat> = {};
+  kandidatExportMenuOpen = false;
+  kandidatExportStatus = '';
 
   // Add / Edit Vertrag
   addVertragOpen = false;
@@ -833,6 +861,13 @@ export class FirmenComponent implements OnInit {
 
   ngOnInit(): void {
     this.firmaService.getAll().subscribe(list => (this.firmen = list));
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.kandidatExportMenuOpen && !(event.target as HTMLElement).closest('.dropdown')) {
+      this.kandidatExportMenuOpen = false;
+    }
   }
 
   openLink(url?: string): void {
@@ -996,7 +1031,41 @@ export class FirmenComponent implements OnInit {
     this.selectedKandidat = k;
     this.draftKandidat = { ...k };
     this.draftKandidat.gehalt = this.gehaltDisplay(k.gehaltMinimum, k.gehaltMaximum) ?? undefined;
+    this.kandidatExportMenuOpen = false;
+    this.kandidatExportStatus = '';
     this.kandidatDetailOpen = true;
+  }
+
+  private copyKandidatExportToClipboard(anonymisiert: boolean): void {
+    this.kandidatExportService.copyToClipboard(this.draftKandidat, anonymisiert).then(() => {
+      this.kandidatExportStatus = 'In Zwischenablage kopiert.';
+      setTimeout(() => (this.kandidatExportStatus = ''), 2500);
+    });
+    this.kandidatExportMenuOpen = false;
+  }
+
+  exportKandidatdaten(): void {
+    this.copyKandidatExportToClipboard(false);
+  }
+
+  exportKandidatdatenAnonymisiert(): void {
+    this.copyKandidatExportToClipboard(true);
+  }
+
+  private exportKandidatAsPdf(anonymisiert: boolean): void {
+    this.kandidatExportService.exportAsPdf(this.draftKandidat, anonymisiert).then(() => {
+      this.kandidatExportStatus = 'PDF erstellt.';
+      setTimeout(() => (this.kandidatExportStatus = ''), 2500);
+    });
+    this.kandidatExportMenuOpen = false;
+  }
+
+  exportKandidatdatenPdf(): void {
+    this.exportKandidatAsPdf(false);
+  }
+
+  exportKandidatdatenAnonymisiertPdf(): void {
+    this.exportKandidatAsPdf(true);
   }
 
   saveKandidatDetail(): void {
