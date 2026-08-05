@@ -692,7 +692,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .ctx-menu button { background: white; border: none; text-align: left; padding: 10px 14px; font-size: 14px; cursor: pointer; }
     .ctx-menu button:hover { background: #eef2fb; }
 
-    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; max-height: 300px; overflow-y: auto; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
     .card { background: white; border: 1px solid #e5e9f3; border-radius: 8px; padding: 14px; cursor: pointer; }
     .card:hover { border-color: #3b5bdb; }
     .card-title { font-weight: 600; margin-bottom: 8px; color: #1f2a44; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
