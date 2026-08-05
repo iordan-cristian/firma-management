@@ -19,6 +19,7 @@ export interface Suchauftrag {
   allgemeinerSchwerpunktKOKriterium?: boolean;
   fachlicherSkill?: string;
   fachlicherSkillKOKriterium?: boolean;
+  fachlicherSkillMindestensEin?: boolean;
   optionalFachlicheSkills?: string;
   gehalt?: string;
   gehaltKOKriterium?: boolean;
@@ -27,9 +28,11 @@ export interface Suchauftrag {
   berufserfahrungKOKriterium?: boolean;
   branchenkenntnisse?: string;
   branchenkenntnisseKOKriterium?: boolean;
+  branchenkenntnisseMindestensEin?: boolean;
   optionalBranchenkenntnisse?: string;
   zertifikate?: string;
   zertifikateKOKriterium?: boolean;
+  zertifikateMindestensEin?: boolean;
   optionalZertifikate?: string;
   deutsch?: Sprachniveau;
   deutschKOKriterium?: boolean;

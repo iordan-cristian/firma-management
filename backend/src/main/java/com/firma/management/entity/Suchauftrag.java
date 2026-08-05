@@ -51,6 +51,9 @@ public class Suchauftrag {
     @Column(name = "fachlicher_skill_ko_kriterium", nullable = false)
     private boolean fachlicherSkillKOKriterium;
 
+    @Column(name = "fachlicher_skill_mindestens_ein", nullable = false)
+    private boolean fachlicherSkillMindestensEin;
+
     @Column(name = "optionale_fachliche_skills", columnDefinition = "TEXT")
     private String optionalFachlicheSkills;
 
@@ -71,6 +74,9 @@ public class Suchauftrag {
     @Column(name = "branchenkenntnisse_ko_kriterium", nullable = false)
     private boolean branchenkenntnisseKOKriterium;
 
+    @Column(name = "branchenkenntnisse_mindestens_ein", nullable = false)
+    private boolean branchenkenntnisseMindestensEin;
+
     @Column(name = "optionale_branchenkenntnisse", columnDefinition = "TEXT")
     private String optionalBranchenkenntnisse;
 
@@ -79,6 +85,9 @@ public class Suchauftrag {
 
     @Column(name = "zertifikate_ko_kriterium", nullable = false)
     private boolean zertifikateKOKriterium;
+
+    @Column(name = "zertifikate_mindestens_ein", nullable = false)
+    private boolean zertifikateMindestensEin;
 
     @Column(name = "optionale_zertifikate", columnDefinition = "TEXT")
     private String optionalZertifikate;

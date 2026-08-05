@@ -57,6 +57,7 @@ public class SuchauftragService {
             existing.setAllgemeinerSchwerpunktKOKriterium(input.isAllgemeinerSchwerpunktKOKriterium());
             existing.setFachlicherSkill(input.getFachlicherSkill());
             existing.setFachlicherSkillKOKriterium(input.isFachlicherSkillKOKriterium());
+            existing.setFachlicherSkillMindestensEin(input.isFachlicherSkillMindestensEin());
             existing.setOptionalFachlicheSkills(input.getOptionalFachlicheSkills());
             existing.setGehaltMehrInfo(input.getGehaltMehrInfo());
             existing.setGehaltKOKriterium(input.isGehaltKOKriterium());
@@ -64,9 +65,11 @@ public class SuchauftragService {
             existing.setBerufserfahrungKOKriterium(input.isBerufserfahrungKOKriterium());
             existing.setBranchenkenntnisse(input.getBranchenkenntnisse());
             existing.setBranchenkenntnisseKOKriterium(input.isBranchenkenntnisseKOKriterium());
+            existing.setBranchenkenntnisseMindestensEin(input.isBranchenkenntnisseMindestensEin());
             existing.setOptionalBranchenkenntnisse(input.getOptionalBranchenkenntnisse());
             existing.setZertifikate(input.getZertifikate());
             existing.setZertifikateKOKriterium(input.isZertifikateKOKriterium());
+            existing.setZertifikateMindestensEin(input.isZertifikateMindestensEin());
             existing.setOptionalZertifikate(input.getOptionalZertifikate());
             existing.setDeutsch(input.getDeutsch());
             existing.setDeutschKOKriterium(input.isDeutschKOKriterium());

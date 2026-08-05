@@ -349,9 +349,15 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <label>
                 <span class="label-row">
                   Fachlicher Skill
-                  <span class="ko-checkbox-label">
-                    <input type="checkbox" class="ko-checkbox" name="fachlicherSkillKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.fachlicherSkillKOKriterium" />
-                    KO Kriterium
+                  <span class="ko-checkbox-group">
+                    <span class="ko-checkbox-label">
+                      <input type="checkbox" class="ko-checkbox" name="fachlicherSkillMindestensEin" title="Mindestens ein" [(ngModel)]="draftSuchauftrag.fachlicherSkillMindestensEin" />
+                      Mindestens ein
+                    </span>
+                    <span class="ko-checkbox-label">
+                      <input type="checkbox" class="ko-checkbox" name="fachlicherSkillKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.fachlicherSkillKOKriterium" />
+                      KO Kriterium
+                    </span>
                   </span>
                 </span>
                 <textarea rows="4" [(ngModel)]="draftSuchauftrag.fachlicherSkill" placeholder="z.B. Java, SAP, CAD"></textarea>
@@ -393,9 +399,15 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <label>
                 <span class="label-row">
                   Branchenkenntnisse
-                  <span class="ko-checkbox-label">
-                    <input type="checkbox" class="ko-checkbox" name="branchenkenntnisseKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.branchenkenntnisseKOKriterium" />
-                    KO Kriterium
+                  <span class="ko-checkbox-group">
+                    <span class="ko-checkbox-label">
+                      <input type="checkbox" class="ko-checkbox" name="branchenkenntnisseMindestensEin" title="Mindestens ein" [(ngModel)]="draftSuchauftrag.branchenkenntnisseMindestensEin" />
+                      Mindestens ein
+                    </span>
+                    <span class="ko-checkbox-label">
+                      <input type="checkbox" class="ko-checkbox" name="branchenkenntnisseKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.branchenkenntnisseKOKriterium" />
+                      KO Kriterium
+                    </span>
                   </span>
                 </span>
                 <textarea rows="4" [(ngModel)]="draftSuchauftrag.branchenkenntnisse" placeholder="z.B. Automotive, IT"></textarea>
@@ -409,9 +421,15 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
               <label>
                 <span class="label-row">
                   Zertifikate
-                  <span class="ko-checkbox-label">
-                    <input type="checkbox" class="ko-checkbox" name="zertifikateKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.zertifikateKOKriterium" />
-                    KO Kriterium
+                  <span class="ko-checkbox-group">
+                    <span class="ko-checkbox-label">
+                      <input type="checkbox" class="ko-checkbox" name="zertifikateMindestensEin" title="Mindestens ein" [(ngModel)]="draftSuchauftrag.zertifikateMindestensEin" />
+                      Mindestens ein
+                    </span>
+                    <span class="ko-checkbox-label">
+                      <input type="checkbox" class="ko-checkbox" name="zertifikateKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.zertifikateKOKriterium" />
+                      KO Kriterium
+                    </span>
                   </span>
                 </span>
                 <input [(ngModel)]="draftSuchauftrag.zertifikate" placeholder="z.B. PMP, ISO 9001" />
@@ -731,6 +749,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
     .label-row { display: flex; align-items: center; justify-content: space-between; }
     .label-row .ko-checkbox { margin: 0; }
     .ko-checkbox-label { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 400; text-transform: none; letter-spacing: normal; color: #8a90a2; }
+    .ko-checkbox-group { display: flex; align-items: center; gap: 12px; }
     .modal input:not([type="checkbox"]), .modal select, .modal textarea {
       padding: 8px 10px; border: 1px solid #dfe3ee; border-radius: 6px; font-size: 14px; font-family: inherit;
     }
