@@ -37,7 +37,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
           <thead>
             <tr>
               <th>Name</th>
-              <th>Standort</th>
+              <th>Anschrift</th>
               <th>E-Mail</th>
               <th>Telefon</th>
               <th>Mobil</th>
@@ -50,7 +50,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   (dblclick)="openEditFirma(f)"
                   [class.selected]="expandedFirma?.id === f.id">
                 <td>{{ f.name }}</td>
-                <td>{{ f.standort }}</td>
+                <td>{{ anschrift(f) }}</td>
                 <td>{{ f.email }}</td>
                 <td>{{ f.telefon }}</td>
                 <td>{{ f.mobil }}</td>
@@ -1209,6 +1209,10 @@ export class FirmenComponent implements OnInit {
     const val = parseFloat(s);
     const v = isNaN(val) ? undefined : val;
     return type === 'kandidat' ? [v, undefined] : [undefined, v];
+  }
+
+  anschrift(f: Firma): string {
+    return [f.adresse, f.postleitzahl, f.standort].filter(v => v).join(', ');
   }
 
   anrede(geschlecht?: Geschlecht): string {
