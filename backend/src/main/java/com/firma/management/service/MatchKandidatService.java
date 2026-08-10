@@ -59,19 +59,25 @@ public class MatchKandidatService {
                 appendAllgemeinerSchwerpunkt(suchauftrag, clauses, params);
             }
             if (s.isFachlicherSkillKOKriterium() && isNotBlank(s.getFachlicherSkill())) {
-                appendFachlicherSkill(Arrays.stream(s.getFachlicherSkill().split(",")).toList(), clauses, params);
+                appendAllFachlicherSkill(Arrays.stream(s.getFachlicherSkill().split(",")).toList(), clauses, params);
+            } else if (s.isFachlicherSkillMindestensEin() && isNotBlank(s.getFachlicherSkill())) {
+                appendAtLeastOneFachlicherSkill(Arrays.stream(s.getFachlicherSkill().split(",")).toList(), clauses, params);
             }
             if (s.isGehaltKOKriterium() && s.getGehaltMaximum() != null) {
                 appendGehalt(suchauftrag, clauses, params);
             }
             if (s.isZertifikateKOKriterium() && isNotBlank(s.getZertifikate())) {
-                appendZertifikate(Arrays.stream(s.getZertifikate().split(",")).toList(), clauses, params);
+                appendAllZertifikate(Arrays.stream(s.getZertifikate().split(",")).toList(), clauses, params);
+            } else if (s.isZertifikateMindestensEin() && isNotBlank(s.getZertifikate())) {
+                appendAtLeastOneZertifikate(Arrays.stream(s.getZertifikate().split(",")).toList(), clauses, params);
             }
             if (s.isBerufserfahrungKOKriterium() && s.getBerufserfahrung() != null) {
                 appendBerufserfahrung(suchauftrag, clauses, params);
             }
             if (s.isBranchenkenntnisseKOKriterium() && isNotBlank(s.getBranchenkenntnisse())) {
-                appendBranchenkenntnisse(Arrays.stream(s.getBranchenkenntnisse().split(",")).toList(), clauses, params);
+                appendAllBranchenkenntnisse(Arrays.stream(s.getBranchenkenntnisse().split(",")).toList(), clauses, params);
+            } else if (s.isBranchenkenntnisseMindestensEin() && isNotBlank(s.getBranchenkenntnisse())) {
+                appendAtLeastOneBranchenkenntnisse(Arrays.stream(s.getBranchenkenntnisse().split(",")).toList(), clauses, params);
             }
             if (s.isDeutschKOKriterium() && s.getDeutsch() != null) {
                 appendDeutsch(suchauftrag, clauses, params);
@@ -114,12 +120,20 @@ public class MatchKandidatService {
         params.add(suchauftrag.get().getGehaltMaximum());
     }
 
-    private void appendFachlicherSkill(List<String> skills, List<String> clauses, List<Object> params) {
+    private void appendAllFachlicherSkill(List<String> skills, List<String> clauses, List<Object> params) {
         appendAllTermsMatch("fachlicher_skill", skills, clauses, params);
     }
 
-    private void appendZertifikate(List<String> zeritifikate, List<String> clauses, List<Object> params) {
+    private void appendAtLeastOneFachlicherSkill(List<String> skills, List<String> clauses, List<Object> params) {
+        appendAtLeastOneTermsMatch("fachlicher_skill", skills, clauses, params);
+    }
+
+    private void appendAllZertifikate(List<String> zeritifikate, List<String> clauses, List<Object> params) {
         appendAllTermsMatch("zertifikate", zeritifikate, clauses, params);
+    }
+
+    private void appendAtLeastOneZertifikate(List<String> skills, List<String> clauses, List<Object> params) {
+        appendAtLeastOneTermsMatch("zertifikate", skills, clauses, params);
     }
 
     private static void appendBerufserfahrung(Optional<Suchauftrag> suchauftrag, List<String> clauses, List<Object> params) {
@@ -127,8 +141,12 @@ public class MatchKandidatService {
         params.add(suchauftrag.get().getBerufserfahrung());
     }
 
-    private void appendBranchenkenntnisse(List<String> terms, List<String> clauses, List<Object> params) {
+    private void appendAllBranchenkenntnisse(List<String> terms, List<String> clauses, List<Object> params) {
         appendAllTermsMatch("branchenkenntnisse", terms, clauses, params);
+    }
+
+    private void appendAtLeastOneBranchenkenntnisse(List<String> skills, List<String> clauses, List<Object> params) {
+        appendAtLeastOneTermsMatch("branchenkenntnisse", skills, clauses, params);
     }
 
     private static void appendDeutsch(Optional<Suchauftrag> suchauftrag, List<String> clauses, List<Object> params) {
@@ -158,6 +176,23 @@ public class MatchKandidatService {
             params.add("%" + term.trim().toLowerCase() + "%");
         }
         clauses.add("( " + String.join(" AND ", termClauses) + " )");
+    }
+
+    private static void appendAtLeastOneTermsMatch(String column, List<String> values, List<String> clauses, List<Object> params) {
+        List<String> terms = values.stream()
+                .filter(s -> s != null && !s.isBlank())
+                .toList();
+
+        if (terms.isEmpty()) {
+            return;
+        }
+
+        List<String> termClauses = new ArrayList<>();
+        for (String term : terms) {
+            termClauses.add("LOWER(" + column + ") LIKE ?");
+            params.add("%" + term.trim().toLowerCase() + "%");
+        }
+        clauses.add("( " + String.join(" OR ", termClauses) + " )");
     }
 
     private static void appendMindestSprachniveau(String column, Sprachniveau minimum, List<String> clauses, List<Object> params) {
@@ -236,10 +271,16 @@ public class MatchKandidatService {
         List<String> koKriterien = new ArrayList<>();
         if (s.isAllgemeinerSchwerpunktKOKriterium()) koKriterien.add("- Allgemeiner Schwerpunkt: " + s.getAllgemeinerSchwerpunkt().getLabel());
         if (s.isFachlicherSkillKOKriterium()) koKriterien.add("- Fachlicher Skill enhält: " + s.getFachlicherSkill());
+        else if (s.isFachlicherSkillMindestensEin())
+            koKriterien.add("- Fachlicher Skill enhält mindestens ein: " + s.getFachlicherSkill());
         if (s.isGehaltKOKriterium()) koKriterien.add("- Gehalt Erwartung <= " + s.getGehaltMaximum().toString());
         if (s.isBerufserfahrungKOKriterium()) koKriterien.add("- Berufserfahrung mindestens: " + s.getBerufserfahrung() + " Jahre");
         if (s.isBranchenkenntnisseKOKriterium()) koKriterien.add("- Branchenkenntnisse enthält: " + s.getBranchenkenntnisse());
+        else if (s.isBranchenkenntnisseMindestensEin())
+            koKriterien.add("- Branchenkenntnisse enhält mindestens ein: " + s.getBranchenkenntnisse());
         if (s.isZertifikateKOKriterium()) koKriterien.add("- Zertifikate enhält: " + s.getZertifikate());
+        else if (s.isZertifikateMindestensEin())
+            koKriterien.add("- Zertifikate enhält mindestens ein: " + s.getZertifikate());
         if (s.isDeutschKOKriterium()) koKriterien.add("- Deutsch Niveau mindestens:" + s.getDeutsch().getLabel());
         if (s.isEnglischKOKriterium()) koKriterien.add("- Englisch Niveau mindestens:" + s.getEnglisch().getLabel());
         if (s.isSonstigeSprachenKOKriterium()) koKriterien.add("- Sonstige Sprachenenhält: " + s.getSonstigeSprachen());
