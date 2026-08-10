@@ -351,11 +351,11 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   Fachlicher Skill
                   <span class="ko-checkbox-group">
                     <span class="ko-checkbox-label">
-                      <input type="checkbox" class="ko-checkbox" name="fachlicherSkillMindestensEin" title="Mindestens ein" [(ngModel)]="draftSuchauftrag.fachlicherSkillMindestensEin" />
+                      <input type="checkbox" class="ko-checkbox" name="fachlicherSkillMindestensEin" title="Mindestens ein" [ngModel]="draftSuchauftrag.fachlicherSkillMindestensEin" (ngModelChange)="setExclusive(draftSuchauftrag, 'fachlicherSkillMindestensEin', 'fachlicherSkillKOKriterium', $event)" />
                       Mindestens ein
                     </span>
                     <span class="ko-checkbox-label">
-                      <input type="checkbox" class="ko-checkbox" name="fachlicherSkillKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.fachlicherSkillKOKriterium" />
+                      <input type="checkbox" class="ko-checkbox" name="fachlicherSkillKOKriterium" title="KO Kriterium" [ngModel]="draftSuchauftrag.fachlicherSkillKOKriterium" (ngModelChange)="setExclusive(draftSuchauftrag, 'fachlicherSkillKOKriterium', 'fachlicherSkillMindestensEin', $event)" />
                       KO Kriterium
                     </span>
                   </span>
@@ -401,11 +401,11 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   Branchenkenntnisse
                   <span class="ko-checkbox-group">
                     <span class="ko-checkbox-label">
-                      <input type="checkbox" class="ko-checkbox" name="branchenkenntnisseMindestensEin" title="Mindestens ein" [(ngModel)]="draftSuchauftrag.branchenkenntnisseMindestensEin" />
+                      <input type="checkbox" class="ko-checkbox" name="branchenkenntnisseMindestensEin" title="Mindestens ein" [ngModel]="draftSuchauftrag.branchenkenntnisseMindestensEin" (ngModelChange)="setExclusive(draftSuchauftrag, 'branchenkenntnisseMindestensEin', 'branchenkenntnisseKOKriterium', $event)" />
                       Mindestens ein
                     </span>
                     <span class="ko-checkbox-label">
-                      <input type="checkbox" class="ko-checkbox" name="branchenkenntnisseKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.branchenkenntnisseKOKriterium" />
+                      <input type="checkbox" class="ko-checkbox" name="branchenkenntnisseKOKriterium" title="KO Kriterium" [ngModel]="draftSuchauftrag.branchenkenntnisseKOKriterium" (ngModelChange)="setExclusive(draftSuchauftrag, 'branchenkenntnisseKOKriterium', 'branchenkenntnisseMindestensEin', $event)" />
                       KO Kriterium
                     </span>
                   </span>
@@ -423,11 +423,11 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   Zertifikate
                   <span class="ko-checkbox-group">
                     <span class="ko-checkbox-label">
-                      <input type="checkbox" class="ko-checkbox" name="zertifikateMindestensEin" title="Mindestens ein" [(ngModel)]="draftSuchauftrag.zertifikateMindestensEin" />
+                      <input type="checkbox" class="ko-checkbox" name="zertifikateMindestensEin" title="Mindestens ein" [ngModel]="draftSuchauftrag.zertifikateMindestensEin" (ngModelChange)="setExclusive(draftSuchauftrag, 'zertifikateMindestensEin', 'zertifikateKOKriterium', $event)" />
                       Mindestens ein
                     </span>
                     <span class="ko-checkbox-label">
-                      <input type="checkbox" class="ko-checkbox" name="zertifikateKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.zertifikateKOKriterium" />
+                      <input type="checkbox" class="ko-checkbox" name="zertifikateKOKriterium" title="KO Kriterium" [ngModel]="draftSuchauftrag.zertifikateKOKriterium" (ngModelChange)="setExclusive(draftSuchauftrag, 'zertifikateKOKriterium', 'zertifikateMindestensEin', $event)" />
                       KO Kriterium
                     </span>
                   </span>
@@ -1209,6 +1209,11 @@ export class FirmenComponent implements OnInit {
     const val = parseFloat(s);
     const v = isNaN(val) ? undefined : val;
     return type === 'kandidat' ? [v, undefined] : [undefined, v];
+  }
+
+  setExclusive(target: any, changedField: string, otherField: string, value: boolean): void {
+    target[changedField] = value;
+    if (value) target[otherField] = false;
   }
 
   anschrift(f: Firma): string {
