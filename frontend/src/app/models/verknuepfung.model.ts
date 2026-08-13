@@ -11,3 +11,14 @@ export interface VerknuepfungKandidat {
   nachname?: string;
   position?: string;
 }
+
+export interface VerknuepfungOverview {
+  id: string;
+  firmaId?: string;
+  firmaName?: string;
+  suchauftragId?: string;
+  suchauftragAktivitaet?: string;
+  kandidatId?: string;
+  kandidatVorname?: string;
+  kandidatNachname?: string;
+}
