@@ -1,6 +1,8 @@
 package com.firma.management.service.matchkandidat;
 
+import com.firma.management.entity.Kandidat;
 import com.firma.management.entity.Suchauftrag;
+import com.firma.management.service.matching.Kriterium;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -9,7 +11,7 @@ import java.util.List;
 @Component
 class KriterienKandidatExplanationBuilder {
 
-    String explain(Suchauftrag s, List<KriteriumKandidat> kriterien) {
+    String explain(Suchauftrag s, List<Kriterium<Kandidat>> kriterien) {
         List<String> koKriterien = new ArrayList<>();
         if (s.isAllgemeinerSchwerpunktKOKriterium()) koKriterien.add("- Allgemeiner Schwerpunkt: " + s.getAllgemeinerSchwerpunkt().getLabel());
         if (s.isFachlicherSkillKOKriterium()) koKriterien.add("- Fachlicher Skill enhält: " + s.getFachlicherSkill());
@@ -27,7 +29,7 @@ class KriterienKandidatExplanationBuilder {
         if (s.isEnglischKOKriterium()) koKriterien.add("- Englisch Niveau mindestens:" + s.getEnglisch().getLabel());
         if (s.isSonstigeSprachenKOKriterium()) koKriterien.add("- Sonstige Sprachenenhält: " + s.getSonstigeSprachen());
 
-        List<String> scoreKriterien = kriterien.stream().map(KriteriumKandidat::label).toList();
+        List<String> scoreKriterien = kriterien.stream().map(Kriterium::label).toList();
 
         return "Kandidaten die folgende KO-Kriterien einhalten sind in der Trefferliste enthalten: \n"
                 + (koKriterien.isEmpty() ? "keine" : String.join(", \n", koKriterien)) + "."

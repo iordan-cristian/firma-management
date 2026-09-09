@@ -5,6 +5,8 @@ import { KandidatService } from '../../services/kandidat.service';
 import { KandidatDokumentService } from '../../services/kandidat-dokument.service';
 import { XlsxImportService } from '../../services/xlsx-import.service';
 import { KandidatExportService } from '../../services/kandidat-export.service';
+import { MatchSuchauftragService, MatchSuchauftragResult } from '../../services/match-suchauftrag.service';
+import { Suchauftrag } from '../../models/suchauftrag.model';
 import {
   Kandidat,
   KandidatDokument,
@@ -363,9 +365,221 @@ import {
               </div>
             </div>
             <span class="import-status" *ngIf="exportStatus">{{ exportStatus }}</span>
+            <button class="btn-match" *ngIf="editingId" [disabled]="kandidatKOError" (click)="openMatchSuchauftrag()">Match Suchauftrag</button>
             <button class="btn-save" [disabled]="!draft.allgemeinerSchwerpunkt" (click)="saveKandidat()">Speichern</button>
             <button class="btn-cancel" (click)="closeAddModal()">Abbrechen</button>
           </div>
+        </div>
+      </div>
+
+      <!-- Match Suchauftrag Overlay -->
+      <div class="modal-backdrop" *ngIf="matchModalOpen">
+        <div [class]="(matchResultsOpen || suchauftragDetailOpen) ? 'modal-duo' : ''">
+
+          <!-- Panel 1: Kriterien -->
+          <div class="modal modal-kriterien">
+            <h2>Match Suchauftrag – {{ draft.vorname }} {{ draft.nachname }}</h2>
+            <div class="modal-body">
+
+              <label>
+                <span class="label-row">
+                  Allgemeiner Schwerpunkt
+                  <span class="ko-checkbox-label">
+                    <input type="checkbox" class="ko-checkbox" title="KO Kriterium" [(ngModel)]="draft.allgemeinerSchwerpunktKOKriterium" />
+                    KO Kriterium
+                  </span>
+                </span>
+                <select [(ngModel)]="draft.allgemeinerSchwerpunkt">
+                  <option [ngValue]="undefined">–</option>
+                  <option *ngFor="let o of schwerpunktOptions" [value]="o">{{ o }}</option>
+                </select>
+                <span class="field-error" *ngIf="koError(draft.allgemeinerSchwerpunkt, draft.allgemeinerSchwerpunktKOKriterium)">Allgemeiner Schwerpunkt ist als KO-Kriterium markiert und darf nicht leer sein.</span>
+              </label>
+
+              <label>
+                <span class="label-row">
+                  Fachlicher Skill
+                  <span class="ko-checkbox-group">
+                    <span class="ko-checkbox-label">
+                      <input type="checkbox" class="ko-checkbox" title="Mindestens ein" [ngModel]="draft.fachlicherSkillMindestensEin" (ngModelChange)="setExclusive(draft, 'fachlicherSkillMindestensEin', 'fachlicherSkillKOKriterium', $event)" />
+                      Mindestens ein
+                    </span>
+                    <span class="ko-checkbox-label">
+                      <input type="checkbox" class="ko-checkbox" title="KO Kriterium" [ngModel]="draft.fachlicherSkillKOKriterium" (ngModelChange)="setExclusive(draft, 'fachlicherSkillKOKriterium', 'fachlicherSkillMindestensEin', $event)" />
+                      KO Kriterium
+                    </span>
+                  </span>
+                </span>
+                <textarea rows="4" [(ngModel)]="draft.fachlicherSkill" placeholder="z.B. Java, SAP, CAD"></textarea>
+                <span class="field-error" *ngIf="koError(draft.fachlicherSkill, draft.fachlicherSkillKOKriterium)">Fachlicher Skill ist als KO-Kriterium markiert und darf nicht leer sein.</span>
+              </label>
+
+              <label>
+                <span class="label-row">
+                  Gehalt
+                  <span class="ko-checkbox-label">
+                    <input type="checkbox" class="ko-checkbox" title="KO Kriterium" [(ngModel)]="draft.gehaltKOKriterium" />
+                    KO Kriterium
+                  </span>
+                </span>
+                <div class="input-suffix-wrapper">
+                  <input [(ngModel)]="draft.gehalt" (input)="filterGehalt($event)" placeholder="z.B. 60000 oder 55000-70000" />
+                  <span class="input-suffix">(Tausend €)</span>
+                </div>
+                <span class="field-error" *ngIf="koError(draft.gehalt, draft.gehaltKOKriterium)">Gehalt ist als KO-Kriterium markiert und darf nicht leer sein.</span>
+              </label>
+
+              <label>
+                <span class="label-row">
+                  Berufserfahrung
+                  <span class="ko-checkbox-label">
+                    <input type="checkbox" class="ko-checkbox" title="KO Kriterium" [(ngModel)]="draft.berufserfahrungKOKriterium" />
+                    KO Kriterium
+                  </span>
+                </span>
+                <input type="number" min="0" [(ngModel)]="draft.berufserfahrung" placeholder="z.B. 5" />
+                <span class="field-error" *ngIf="koError(draft.berufserfahrung, draft.berufserfahrungKOKriterium)">Berufserfahrung ist als KO-Kriterium markiert und darf nicht leer sein.</span>
+              </label>
+
+              <label>
+                <span class="label-row">
+                  Branchenkenntnisse
+                  <span class="ko-checkbox-group">
+                    <span class="ko-checkbox-label">
+                      <input type="checkbox" class="ko-checkbox" title="Mindestens ein" [ngModel]="draft.branchenkenntnisseMindestensEin" (ngModelChange)="setExclusive(draft, 'branchenkenntnisseMindestensEin', 'branchenkenntnisseKOKriterium', $event)" />
+                      Mindestens ein
+                    </span>
+                    <span class="ko-checkbox-label">
+                      <input type="checkbox" class="ko-checkbox" title="KO Kriterium" [ngModel]="draft.branchenkenntnisseKOKriterium" (ngModelChange)="setExclusive(draft, 'branchenkenntnisseKOKriterium', 'branchenkenntnisseMindestensEin', $event)" />
+                      KO Kriterium
+                    </span>
+                  </span>
+                </span>
+                <textarea rows="4" [(ngModel)]="draft.branchenkenntnisse" placeholder="z.B. Automotive, IT"></textarea>
+                <span class="field-error" *ngIf="koError(draft.branchenkenntnisse, draft.branchenkenntnisseKOKriterium)">Branchenkenntnisse ist als KO-Kriterium markiert und darf nicht leer sein.</span>
+              </label>
+
+              <label>
+                <span class="label-row">
+                  Zertifikate
+                  <span class="ko-checkbox-group">
+                    <span class="ko-checkbox-label">
+                      <input type="checkbox" class="ko-checkbox" title="Mindestens ein" [ngModel]="draft.zertifikateMindestensEin" (ngModelChange)="setExclusive(draft, 'zertifikateMindestensEin', 'zertifikateKOKriterium', $event)" />
+                      Mindestens ein
+                    </span>
+                    <span class="ko-checkbox-label">
+                      <input type="checkbox" class="ko-checkbox" title="KO Kriterium" [ngModel]="draft.zertifikateKOKriterium" (ngModelChange)="setExclusive(draft, 'zertifikateKOKriterium', 'zertifikateMindestensEin', $event)" />
+                      KO Kriterium
+                    </span>
+                  </span>
+                </span>
+                <input [(ngModel)]="draft.zertifikate" placeholder="z.B. AWS, PMP" />
+                <span class="field-error" *ngIf="koError(draft.zertifikate, draft.zertifikateKOKriterium)">Zertifikate ist als KO-Kriterium markiert und darf nicht leer sein.</span>
+              </label>
+
+              <label>
+                <span class="label-row">
+                  Deutsch
+                  <span class="ko-checkbox-label">
+                    <input type="checkbox" class="ko-checkbox" title="KO Kriterium" [(ngModel)]="draft.deutschKOKriterium" />
+                    KO Kriterium
+                  </span>
+                </span>
+                <select [(ngModel)]="draft.deutsch">
+                  <option [ngValue]="undefined">–</option>
+                  <option *ngFor="let o of sprachniveauOptions" [value]="o">{{ o }}</option>
+                </select>
+                <span class="field-error" *ngIf="koError(draft.deutsch, draft.deutschKOKriterium)">Deutsch ist als KO-Kriterium markiert und darf nicht leer sein.</span>
+              </label>
+
+              <label>
+                <span class="label-row">
+                  Englisch
+                  <span class="ko-checkbox-label">
+                    <input type="checkbox" class="ko-checkbox" title="KO Kriterium" [(ngModel)]="draft.englischKOKriterium" />
+                    KO Kriterium
+                  </span>
+                </span>
+                <select [(ngModel)]="draft.englisch">
+                  <option [ngValue]="undefined">–</option>
+                  <option *ngFor="let o of sprachniveauOptions" [value]="o">{{ o }}</option>
+                </select>
+                <span class="field-error" *ngIf="koError(draft.englisch, draft.englischKOKriterium)">Englisch ist als KO-Kriterium markiert und darf nicht leer sein.</span>
+              </label>
+
+              <label>
+                <span class="label-row">
+                  Sonstige Sprachen
+                  <span class="ko-checkbox-label">
+                    <input type="checkbox" class="ko-checkbox" title="KO Kriterium" [(ngModel)]="draft.sonstigeSprachenKOKriterium" />
+                    KO Kriterium
+                  </span>
+                </span>
+                <input [(ngModel)]="draft.sonstigeSprachen" placeholder="z.B. Französisch B2, Spanisch A2" />
+                <span class="field-error" *ngIf="koError(draft.sonstigeSprachen, draft.sonstigeSprachenKOKriterium)">Sonstige Sprachen ist als KO-Kriterium markiert und darf nicht leer sein.</span>
+              </label>
+
+            </div>
+            <div class="modal-actions">
+              <button class="btn-cancel" (click)="backFromMatch()">Zurück</button>
+              <button class="btn-match" [disabled]="kandidatKOError" (click)="runMatchSuchauftrag()">Match Suchauftrag</button>
+            </div>
+          </div>
+
+          <!-- Panel 2: Matched Suchaufträge -->
+          <div class="modal modal-match" *ngIf="matchResultsOpen">
+            <div class="match-header">
+              <h2>Matched Suchaufträge</h2>
+              <button class="close" (click)="matchResultsOpen = false; suchauftragDetailOpen = false">✕</button>
+            </div>
+            <p class="hint" *ngIf="matchedSuchauftraege.length" [title]="matchKriterienExplained">{{ matchKriterienExplained }}</p>
+            <div *ngIf="!matchedSuchauftraege.length" class="empty">Keine Treffer gefunden.</div>
+            <div class="match-list">
+              <div class="match-card" *ngFor="let r of matchedSuchauftraege"
+                   (dblclick)="openSuchauftragDetail(r.suchauftrag)"
+                   [class.match-card-selected]="selectedSuchauftrag?.id === r.suchauftrag.id">
+                <div class="card-title">
+                  {{ r.suchauftrag.aktivitaet }}
+                  <span class="match-score">{{ r.score }} / {{ matchMaxScore }}</span>
+                </div>
+                <div class="card-divider">Score Erklärung</div>
+                <div class="card-row card-row-success" *ngIf="r.satisfiedKriterien"><span>Erfüllt:</span> {{ r.satisfiedKriterien }}</div>
+                <div class="card-row card-row-danger" *ngIf="r.unsatisfiedKriterien"><span>Nicht erfüllt:</span> {{ r.unsatisfiedKriterien }}</div>
+                <div class="card-divider">Suchauftragdaten</div>
+                <div class="card-row" *ngIf="r.suchauftrag.allgemeinerSchwerpunkt"><span>Schwerpunkt:</span> {{ r.suchauftrag.allgemeinerSchwerpunkt }}</div>
+                <div class="card-row" *ngIf="r.suchauftrag.ort"><span>Ort:</span> {{ r.suchauftrag.ort }}</div>
+                <div class="card-row" *ngIf="r.suchauftrag.fachlicherSkill"><span>Fachlicher Skill:</span> {{ r.suchauftrag.fachlicherSkill }}</div>
+                <div class="card-row" *ngIf="r.suchauftrag.berufserfahrung"><span>Berufserfahrung:</span> {{ r.suchauftrag.berufserfahrung }}</div>
+                <div class="card-row" *ngIf="r.suchauftrag.branchenkenntnisse"><span>Branchenkenntnisse:</span> {{ r.suchauftrag.branchenkenntnisse }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel 3: read-only Suchauftrag detail -->
+          <div class="modal modal-suchauftrag-detail" *ngIf="suchauftragDetailOpen && selectedSuchauftrag as s">
+            <div class="match-header">
+              <h2>{{ s.aktivitaet }}</h2>
+              <button class="close" (click)="closeSuchauftragDetail()">✕</button>
+            </div>
+            <div class="modal-body">
+              <div class="card-row" *ngIf="s.status"><span>Status:</span> {{ s.status }}</div>
+              <div class="card-row" *ngIf="s.ort"><span>Ort:</span> {{ s.ort }}</div>
+              <div class="card-row" *ngIf="s.postleitzahl"><span>PLZ:</span> {{ s.postleitzahl }}</div>
+              <div class="card-row" *ngIf="s.adresse"><span>Adresse:</span> {{ s.adresse }}</div>
+              <div class="card-row" *ngIf="s.allgemeinerSchwerpunkt"><span>Allgemeiner Schwerpunkt:</span> {{ s.allgemeinerSchwerpunkt }}</div>
+              <div class="card-row" *ngIf="s.fachlicherSkill"><span>Fachlicher Skill:</span> {{ s.fachlicherSkill }}</div>
+              <div class="card-row" *ngIf="s.gehaltMinimum || s.gehaltMaximum"><span>Gehalt:</span> {{ s.gehaltMinimum }}–{{ s.gehaltMaximum }} (Tausend €)</div>
+              <div class="card-row" *ngIf="s.berufserfahrung"><span>Berufserfahrung:</span> {{ s.berufserfahrung }}</div>
+              <div class="card-row" *ngIf="s.branchenkenntnisse"><span>Branchenkenntnisse:</span> {{ s.branchenkenntnisse }}</div>
+              <div class="card-row" *ngIf="s.zertifikate"><span>Zertifikate:</span> {{ s.zertifikate }}</div>
+              <div class="card-row" *ngIf="s.deutsch"><span>Deutsch:</span> {{ s.deutsch }}</div>
+              <div class="card-row" *ngIf="s.englisch"><span>Englisch:</span> {{ s.englisch }}</div>
+              <div class="card-row" *ngIf="s.sonstigeSprachen"><span>Sonstige Sprachen:</span> {{ s.sonstigeSprachen }}</div>
+              <div class="card-row" *ngIf="s.informationen"><span>Informationen:</span> {{ s.informationen }}</div>
+              <div class="card-row" *ngIf="s.anlageDatum"><span>Anlage Datum:</span> {{ s.anlageDatum }}</div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -469,6 +683,34 @@ import {
     .btn-interview-import { display: inline-block; padding: 7px 14px; background: #3b5bdb; color: white; border-radius: 6px; font-size: 13px; cursor: pointer; white-space: nowrap; margin: 0; }
     .btn-interview-import:hover { background: #2f4ac7; }
     .import-status { font-size: 12px; color: #3b5bdb; }
+
+    /* Match Suchauftrag overlay */
+    .btn-match { background: #2f9e44; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .btn-match:hover { background: #258836; }
+    .btn-match:disabled { background: #9dcfa9; cursor: not-allowed; }
+    .close { background: transparent; border: 1px solid #dfe3ee; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .modal-duo { display: flex; gap: 20px; align-items: stretch; }
+    .modal-kriterien { width: 460px; }
+    .modal-match { width: 400px; flex-shrink: 0; }
+    .modal-suchauftrag-detail { width: 540px; flex-shrink: 0; }
+    .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-shrink: 0; }
+    .match-header h2 { margin: 0; color: #1f2a44; font-size: 18px; }
+    .match-list { display: flex; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto; }
+    .match-card { background: #f8f9ff; border: 1px solid #e5e9f3; border-radius: 8px; padding: 12px; cursor: pointer; }
+    .match-card:hover { border-color: #3b5bdb; }
+    .match-card-selected { border-color: #3b5bdb; background: #eef2fb; }
+    .card-title { font-weight: 600; margin-bottom: 8px; color: #1f2a44; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .match-score { font-size: 12px; font-weight: 700; color: #3b5bdb; background: #eef1fb; border-radius: 10px; padding: 2px 8px; }
+    .card-divider { font-size: 11px; font-weight: 700; color: #8a90a2; text-transform: uppercase; letter-spacing: 0.04em; margin: 8px 0 4px; }
+    .card-row { font-size: 13px; margin: 4px 0; color: #333; }
+    .card-row span:first-child { color: #777; margin-right: 4px; }
+    .card-row-success, .card-row-success span:first-child { color: #1e7d32; }
+    .card-row-danger, .card-row-danger span:first-child { color: #c92a2a; }
+    .card-row-success, .card-row-danger { white-space: pre-line; }
+    .label-row { display: flex; align-items: center; justify-content: space-between; }
+    .label-row .ko-checkbox { margin: 0; }
+    .ko-checkbox-label { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 400; text-transform: none; letter-spacing: normal; color: #8a90a2; }
+    .ko-checkbox-group { display: flex; align-items: center; gap: 12px; }
   `]
 })
 export class KandidatenComponent implements OnInit {
@@ -476,6 +718,7 @@ export class KandidatenComponent implements OnInit {
   private dokumentService = inject(KandidatDokumentService);
   private xlsxImportService = inject(XlsxImportService);
   private exportService = inject(KandidatExportService);
+  private matchService = inject(MatchSuchauftragService);
 
   items: Kandidat[] = [];
   searchText = '';
@@ -501,6 +744,15 @@ export class KandidatenComponent implements OnInit {
 
   exportMenuOpen = false;
   exportStatus = '';
+
+  // Match Suchauftrag overlay
+  matchModalOpen = false;
+  matchResultsOpen = false;
+  matchedSuchauftraege: MatchSuchauftragResult[] = [];
+  matchKriterienExplained = '';
+  matchMaxScore = 0;
+  suchauftragDetailOpen = false;
+  selectedSuchauftrag: Suchauftrag | null = null;
 
   ngOnInit(): void { this.reload(); }
 
@@ -534,7 +786,7 @@ export class KandidatenComponent implements OnInit {
 
   openAddModal(): void {
     this.editingId = null;
-    this.draft = {};
+    this.draft = { allgemeinerSchwerpunktKOKriterium: true };
     this.kandidatErrors = {};
     this.dokumente = [];
     this.stagedDokumente = [];
@@ -560,7 +812,10 @@ export class KandidatenComponent implements OnInit {
   }
 
   @HostListener('document:keydown.escape')
-  onEscape(): void { if (this.addModalOpen) this.closeAddModal(); }
+  onEscape(): void {
+    if (this.matchModalOpen) { this.closeMatchModal(); return; }
+    if (this.addModalOpen) this.closeAddModal();
+  }
 
   closeAddModal(): void {
     this.addModalOpen = false;
@@ -569,6 +824,87 @@ export class KandidatenComponent implements OnInit {
     this.dokumente = [];
     this.stagedDokumente = [];
     this.dokumentUploadError = '';
+    this.closeMatchModal();
+  }
+
+  // --- Match Suchauftrag ---
+
+  private resetMatchState(): void {
+    this.matchResultsOpen = false;
+    this.matchedSuchauftraege = [];
+    this.matchKriterienExplained = '';
+    this.matchMaxScore = 0;
+    this.suchauftragDetailOpen = false;
+    this.selectedSuchauftrag = null;
+  }
+
+  closeMatchModal(): void {
+    this.matchModalOpen = false;
+    this.resetMatchState();
+  }
+
+  openMatchSuchauftrag(): void {
+    this.resetMatchState();
+    this.addModalOpen = false;
+    this.matchModalOpen = true;
+  }
+
+  backFromMatch(): void {
+    this.matchModalOpen = false;
+    this.resetMatchState();
+    this.addModalOpen = true;
+  }
+
+  runMatchSuchauftrag(): void {
+    if (!this.editingId) return;
+    this.normalizeDsgvoDatum();
+    [this.draft.gehaltMinimum, this.draft.gehaltMaximum] = this.parseGehalt(this.draft.gehalt, 'kandidat');
+    const payload = {
+      ...this.draft,
+      dsgvoBestaetigungsDatum: this.toBackendDsgvoDatum(this.draft.dsgvoBestaetigungsDatum),
+    } as Kandidat;
+    const id = this.editingId;
+    this.service.update(id, payload).subscribe(() => {
+      this.matchResultsOpen = true;
+      this.matchService.matchSuchauftrag({ kandidatId: id }).subscribe(res => {
+        this.matchKriterienExplained = res.kriterienExplained;
+        this.matchMaxScore = res.maxScore;
+        this.matchedSuchauftraege = res.results;
+        if (res.results.length === 1) this.openSuchauftragDetail(res.results[0].suchauftrag);
+      });
+    });
+  }
+
+  openSuchauftragDetail(s: Suchauftrag): void {
+    this.selectedSuchauftrag = s;
+    this.suchauftragDetailOpen = true;
+  }
+
+  closeSuchauftragDetail(): void {
+    this.suchauftragDetailOpen = false;
+    this.selectedSuchauftrag = null;
+  }
+
+  setExclusive(target: any, changedField: string, otherField: string, value: boolean): void {
+    target[changedField] = value;
+    if (value) target[otherField] = false;
+  }
+
+  koError(value: string | number | undefined | null, checked: boolean | undefined): boolean {
+    return !!checked && (value === undefined || value === null || value.toString().trim() === '');
+  }
+
+  get kandidatKOError(): boolean {
+    const k = this.draft;
+    return this.koError(k.allgemeinerSchwerpunkt, k.allgemeinerSchwerpunktKOKriterium)
+      || this.koError(k.fachlicherSkill, k.fachlicherSkillKOKriterium)
+      || this.koError(k.gehalt, k.gehaltKOKriterium)
+      || this.koError(k.berufserfahrung, k.berufserfahrungKOKriterium)
+      || this.koError(k.branchenkenntnisse, k.branchenkenntnisseKOKriterium)
+      || this.koError(k.zertifikate, k.zertifikateKOKriterium)
+      || this.koError(k.deutsch, k.deutschKOKriterium)
+      || this.koError(k.englisch, k.englischKOKriterium)
+      || this.koError(k.sonstigeSprachen, k.sonstigeSprachenKOKriterium);
   }
 
   filterGehalt(e: Event): void {

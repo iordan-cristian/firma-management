@@ -2,20 +2,26 @@ package com.firma.management.service.matchkandidat;
 
 import com.firma.management.entity.Kandidat;
 import com.firma.management.entity.Suchauftrag;
+import com.firma.management.service.matching.Kriterium;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * Builds the in-memory soft-scoring criteria (one point each) for a Suchauftrag: one
+ * {@link Kriterium} per dimension whose KO flag is <em>off</em> (or, for skill / branchen /
+ * zertifikate, from the {@code optional*} field when the KO flag is <em>on</em>).
+ */
 @Component
-class KriterienBuilder {
+class KriterienKandidatBuilder {
 
-    List<KriteriumKandidat> build(Suchauftrag s) {
-        List<KriteriumKandidat> kriterien = new ArrayList<>();
+    List<Kriterium<Kandidat>> build(Suchauftrag s) {
+        List<Kriterium<Kandidat>> kriterien = new ArrayList<>();
 
         if (!s.isAllgemeinerSchwerpunktKOKriterium() && s.getAllgemeinerSchwerpunkt() != null) {
-            kriterien.add(new KriteriumKandidat("- Allgemeiner Schwerpunkt: " + s.getAllgemeinerSchwerpunkt().getLabel(),
+            kriterien.add(new Kriterium<>("- Allgemeiner Schwerpunkt: " + s.getAllgemeinerSchwerpunkt().getLabel(),
                     k -> k.getAllgemeinerSchwerpunkt() == s.getAllgemeinerSchwerpunkt()));
         }
         if (!s.isFachlicherSkillKOKriterium() && isNotBlank(s.getFachlicherSkill())) {
@@ -24,12 +30,11 @@ class KriterienBuilder {
             addPerTermKriterien(kriterien, "- Fachlicher Skill", s.getOptionalFachlicheSkills(), Kandidat::getFachlicherSkill);
         }
         if (!s.isGehaltKOKriterium() && s.getGehaltMaximum() != null) {
-
-            kriterien.add(new KriteriumKandidat("- Gehalt Erwartung <= " + s.getGehaltMaximum(),
+            kriterien.add(new Kriterium<>("- Gehalt Erwartung <= " + s.getGehaltMaximum(),
                     k -> k.getGehaltMinimum() != null && k.getGehaltMinimum().compareTo(s.getGehaltMaximum()) <= 0));
         }
         if (!s.isBerufserfahrungKOKriterium() && s.getBerufserfahrung() != null) {
-            kriterien.add(new KriteriumKandidat("- Berufserfahrung >= " + s.getBerufserfahrung() + " Jahre",
+            kriterien.add(new Kriterium<>("- Berufserfahrung >= " + s.getBerufserfahrung() + " Jahre",
                     k -> k.getBerufserfahrung() != null && k.getBerufserfahrung() >= s.getBerufserfahrung()));
         }
         if (!s.isBranchenkenntnisseKOKriterium() && isNotBlank(s.getBranchenkenntnisse())) {
@@ -43,11 +48,11 @@ class KriterienBuilder {
             addPerTermKriterien(kriterien, "- Zertifikate", s.getOptionalZertifikate(), Kandidat::getZertifikate);
         }
         if (!s.isDeutschKOKriterium() && s.getDeutsch() != null) {
-            kriterien.add(new KriteriumKandidat("- Deutsch " + s.getDeutsch().getLabel(),
+            kriterien.add(new Kriterium<>("- Deutsch " + s.getDeutsch().getLabel(),
                     k -> k.getDeutsch() != null && k.getDeutsch().ordinal() >= s.getDeutsch().ordinal()));
         }
         if (!s.isEnglischKOKriterium() && s.getEnglisch() != null) {
-            kriterien.add(new KriteriumKandidat("- Englisch " + s.getEnglisch().getLabel(),
+            kriterien.add(new Kriterium<>("- Englisch " + s.getEnglisch().getLabel(),
                     k -> k.getEnglisch() != null && k.getEnglisch().ordinal() >= s.getEnglisch().ordinal()));
         }
         if (!s.isSonstigeSprachenKOKriterium() && isNotBlank(s.getSonstigeSprachen())) {
@@ -56,12 +61,12 @@ class KriterienBuilder {
         return kriterien;
     }
 
-    private static void addPerTermKriterien(List<KriteriumKandidat> kriterien, String label, String requiredTerms,
+    private static void addPerTermKriterien(List<Kriterium<Kandidat>> kriterien, String label, String requiredTerms,
                                             Function<Kandidat, String> actualValue) {
         for (String rawTerm : requiredTerms.split(",")) {
             String term = rawTerm.trim();
             if (!term.isEmpty()) {
-                kriterien.add(new KriteriumKandidat(label + ": " + term,
+                kriterien.add(new Kriterium<>(label + ": " + term,
                         k -> matchesTerm(term, actualValue.apply(k))));
             }
         }

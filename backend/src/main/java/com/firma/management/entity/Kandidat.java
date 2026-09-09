@@ -159,6 +159,45 @@ public class Kandidat {
     @Column(name = "gehalt_maximum", precision = 10, scale = 2)
     private BigDecimal gehaltMaximum;
 
+    // --- Matching criterion flags (mirror Suchauftrag): drive matchSuchauftrag(kandidatId) ---
+
+    @Builder.Default
+    @Column(name = "allgemeiner_schwerpunkt_ko_kriterium", nullable = false)
+    private boolean allgemeinerSchwerpunktKOKriterium = true;
+
+    @Column(name = "fachlicher_skill_ko_kriterium", nullable = false)
+    private boolean fachlicherSkillKOKriterium;
+
+    @Column(name = "fachlicher_skill_mindestens_ein", nullable = false)
+    private boolean fachlicherSkillMindestensEin;
+
+    @Column(name = "gehalt_ko_kriterium", nullable = false)
+    private boolean gehaltKOKriterium;
+
+    @Column(name = "berufserfahrung_ko_kriterium", nullable = false)
+    private boolean berufserfahrungKOKriterium;
+
+    @Column(name = "branchenkenntnisse_ko_kriterium", nullable = false)
+    private boolean branchenkenntnisseKOKriterium;
+
+    @Column(name = "branchenkenntnisse_mindestens_ein", nullable = false)
+    private boolean branchenkenntnisseMindestensEin;
+
+    @Column(name = "zertifikate_ko_kriterium", nullable = false)
+    private boolean zertifikateKOKriterium;
+
+    @Column(name = "zertifikate_mindestens_ein", nullable = false)
+    private boolean zertifikateMindestensEin;
+
+    @Column(name = "deutsch_ko_kriterium", nullable = false)
+    private boolean deutschKOKriterium;
+
+    @Column(name = "englisch_ko_kriterium", nullable = false)
+    private boolean englischKOKriterium;
+
+    @Column(name = "sonstige_sprachen_ko_kriterium", nullable = false)
+    private boolean sonstigeSprachenKOKriterium;
+
     @Transient
     @com.fasterxml.jackson.annotation.JsonProperty("dokumentTypen")
     @lombok.Builder.Default

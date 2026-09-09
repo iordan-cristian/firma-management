@@ -6,6 +6,8 @@ import com.firma.management.entity.Kandidat;
 import com.firma.management.entity.Suchauftrag;
 import com.firma.management.repository.KandidatMatchRepository;
 import com.firma.management.service.SuchauftragService;
+import com.firma.management.service.matching.Kriterium;
+import com.firma.management.service.matching.KriterienScorer;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -18,19 +20,19 @@ public class MatchKandidatService {
 
     private final SuchauftragService suchauftragService;
     private final KandidatMatchRepository kandidatMatchRepository;
-    private final KriterienBuilder kriterienBuilder;
-    private final KandidatScorer kandidatScorer;
+    private final KriterienKandidatBuilder kriterienBuilder;
+    private final KriterienScorer kriterienScorer;
     private final KriterienKandidatExplanationBuilder explanationBuilder;
 
     public MatchKandidatService(SuchauftragService suchauftragService,
                                 KandidatMatchRepository kandidatMatchRepository,
-                                KriterienBuilder kriterienBuilder,
-                                KandidatScorer kandidatScorer,
+                                KriterienKandidatBuilder kriterienBuilder,
+                                KriterienScorer kriterienScorer,
                                 KriterienKandidatExplanationBuilder explanationBuilder) {
         this.suchauftragService = suchauftragService;
         this.kandidatMatchRepository = kandidatMatchRepository;
         this.kriterienBuilder = kriterienBuilder;
-        this.kandidatScorer = kandidatScorer;
+        this.kriterienScorer = kriterienScorer;
         this.explanationBuilder = explanationBuilder;
     }
 
@@ -38,7 +40,7 @@ public class MatchKandidatService {
         Suchauftrag suchauftrag = suchauftragService.getById(suchauftragId)
                 .orElseThrow(() -> new NoSuchElementException("Kein Suchauftrag gefunden: " + suchauftragId));
 
-        List<KriteriumKandidat> scoreKriterien = kriterienBuilder.build(suchauftrag);
+        List<Kriterium<Kandidat>> scoreKriterien = kriterienBuilder.build(suchauftrag);
         List<Kandidat> kandidaten = kandidatMatchRepository.findExcludingKoKriterien(suchauftrag);
         List<MatchKandidatResult> treffer = rankByScore(kandidaten, scoreKriterien);
 
@@ -46,9 +48,12 @@ public class MatchKandidatService {
         return new MatchKandidatResponse(erklaerung, scoreKriterien.size(), treffer);
     }
 
-    private List<MatchKandidatResult> rankByScore(List<Kandidat> kandidaten, List<KriteriumKandidat> scoreKriterien) {
+    private List<MatchKandidatResult> rankByScore(List<Kandidat> kandidaten, List<Kriterium<Kandidat>> scoreKriterien) {
         return kandidaten.stream()
-                .map(kandidat -> kandidatScorer.score(kandidat, scoreKriterien))
+                .map(kandidat -> {
+                    KriterienScorer.Bewertung b = kriterienScorer.score(kandidat, scoreKriterien);
+                    return new MatchKandidatResult(kandidat, b.score(), b.satisfiedKriterien(), b.unsatisfiedKriterien());
+                })
                 .sorted(Comparator.comparing(MatchKandidatResult::getScore).reversed())
                 .toList();
     }

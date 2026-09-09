@@ -31,7 +31,7 @@ public class KandidatMatchRepository {
     /**
      * Loads the candidates that pass every KO criterion configured on the Suchauftrag. Each active
      * KO criterion (or its "mindestens ein" variant) contributes one SQL condition; candidates must
-     * satisfy all of them. Soft/scoring criteria are applied later, in memory, by {@code KandidatScorer}.
+     * satisfy all of them. Soft/scoring criteria are applied later, in memory, by {@code KriterienScorer}.
      */
     public List<Kandidat> findExcludingKoKriterien(Suchauftrag s) {
         WhereClause where = new WhereClause();
@@ -98,76 +98,6 @@ public class KandidatMatchRepository {
         return value != null && !value.isBlank();
     }
 
-    /**
-     * Accumulates SQL condition fragments (each with {@code ?} placeholders) and the values bound to
-     * them, in matching order. Fragments are AND-joined into the final {@code WHERE} clause.
-     */
-    private static final class WhereClause {
-
-        private final List<String> conditions = new ArrayList<>();
-        private final List<Object> params = new ArrayList<>();
-
-        void eq(String column, Object value) {
-            conditions.add(column + " = ?");
-            params.add(value);
-        }
-
-        void atMost(String column, Object value) {
-            conditions.add(column + " <= ?");
-            params.add(value);
-        }
-
-        void atLeast(String column, Object value) {
-            conditions.add(column + " >= ?");
-            params.add(value);
-        }
-
-        /** Candidate's {@code column} must contain every comma-separated term. */
-        void allTermsMatch(String column, String csvTerms) {
-            like(column, csvTerms, " AND ");
-        }
-
-        /** Candidate's {@code column} must contain at least one of the comma-separated terms. */
-        void atLeastOneTermMatches(String column, String csvTerms) {
-            like(column, csvTerms, " OR ");
-        }
-
-        private void like(String column, String csvTerms, String joiner) {
-            List<String> likes = new ArrayList<>();
-            for (String rawTerm : csvTerms.split(",")) {
-                String term = rawTerm.trim();
-                if (term.isEmpty()) {
-                    continue;
-                }
-                likes.add("LOWER(" + column + ") LIKE ?");
-                params.add("%" + term.toLowerCase() + "%");
-            }
-            if (!likes.isEmpty()) {
-                conditions.add("(" + String.join(joiner, likes) + ")");
-            }
-        }
-
-        /** Candidate's {@code column} must be at or above {@code minimum} on the Sprachniveau scale. */
-        void minSprachniveau(String column, Sprachniveau minimum) {
-            List<String> placeholders = new ArrayList<>();
-            for (Sprachniveau level : Sprachniveau.values()) {
-                if (level.ordinal() >= minimum.ordinal()) {
-                    placeholders.add("?");
-                    params.add(level.name());
-                }
-            }
-            conditions.add(column + " IN (" + String.join(", ", placeholders) + ")");
-        }
-
-        String whereSql() {
-            return conditions.isEmpty() ? "1=1" : String.join(" AND ", conditions);
-        }
-
-        List<Object> params() {
-            return params;
-        }
-    }
-
     private Kandidat mapRow(ResultSet rs) throws SQLException {
         return Kandidat.builder()
                 .id(rs.getObject("id", UUID.class))
@@ -214,6 +144,18 @@ public class KandidatMatchRepository {
                 .xingProfil(rs.getString("xing_profil"))
                 .gehaltMinimum(rs.getBigDecimal("gehalt_minimum"))
                 .gehaltMaximum(rs.getBigDecimal("gehalt_maximum"))
+                .allgemeinerSchwerpunktKOKriterium(rs.getBoolean("allgemeiner_schwerpunkt_ko_kriterium"))
+                .fachlicherSkillKOKriterium(rs.getBoolean("fachlicher_skill_ko_kriterium"))
+                .fachlicherSkillMindestensEin(rs.getBoolean("fachlicher_skill_mindestens_ein"))
+                .gehaltKOKriterium(rs.getBoolean("gehalt_ko_kriterium"))
+                .berufserfahrungKOKriterium(rs.getBoolean("berufserfahrung_ko_kriterium"))
+                .branchenkenntnisseKOKriterium(rs.getBoolean("branchenkenntnisse_ko_kriterium"))
+                .branchenkenntnisseMindestensEin(rs.getBoolean("branchenkenntnisse_mindestens_ein"))
+                .zertifikateKOKriterium(rs.getBoolean("zertifikate_ko_kriterium"))
+                .zertifikateMindestensEin(rs.getBoolean("zertifikate_mindestens_ein"))
+                .deutschKOKriterium(rs.getBoolean("deutsch_ko_kriterium"))
+                .englischKOKriterium(rs.getBoolean("englisch_ko_kriterium"))
+                .sonstigeSprachenKOKriterium(rs.getBoolean("sonstige_sprachen_ko_kriterium"))
                 .build();
     }
 

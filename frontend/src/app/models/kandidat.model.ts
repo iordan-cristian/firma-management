@@ -58,6 +58,20 @@ export interface Kandidat {
   gehaltMinimum?: number;
   gehaltMaximum?: number;
   dokumentTypen?: DokumentTyp[];
+
+  // Matching criterion flags (mirror Suchauftrag) — drive "Match Suchauftrag"
+  allgemeinerSchwerpunktKOKriterium?: boolean;
+  fachlicherSkillKOKriterium?: boolean;
+  fachlicherSkillMindestensEin?: boolean;
+  gehaltKOKriterium?: boolean;
+  berufserfahrungKOKriterium?: boolean;
+  branchenkenntnisseKOKriterium?: boolean;
+  branchenkenntnisseMindestensEin?: boolean;
+  zertifikateKOKriterium?: boolean;
+  zertifikateMindestensEin?: boolean;
+  deutschKOKriterium?: boolean;
+  englischKOKriterium?: boolean;
+  sonstigeSprachenKOKriterium?: boolean;
 }
 
 export type DokumentTyp = 'CV' | 'DSGVO' | 'INTERVIEW';
