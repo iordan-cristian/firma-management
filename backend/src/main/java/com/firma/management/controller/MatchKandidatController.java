@@ -1,7 +1,7 @@
 package com.firma.management.controller;
 
 import com.firma.management.dto.MatchKandidatResponse;
-import com.firma.management.service.MatchKandidatService;
+import com.firma.management.service.matchkandidat.MatchKandidatService;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +21,7 @@ public class MatchKandidatController {
 
     @GetMapping
     public MatchKandidatResponse matchKandidat(MatchKandidatRequest matchKandidatRequest) {
-        return matchKandidatService.matchKandidat(matchKandidatRequest);
+        return matchKandidatService.matchKandidat(matchKandidatRequest.suchauftragId());
     }
 
     public record MatchKandidatRequest(
