@@ -29,6 +29,9 @@ public class Suchauftrag {
     @Column(name = "aktivitaet", nullable = false)
     private Aktivitaet aktivitaet;
 
+    @Column(name = "suche_nach", columnDefinition = "TEXT")
+    private String sucheNach;
+
     @Column(columnDefinition = "TEXT")
     private String ort;
 

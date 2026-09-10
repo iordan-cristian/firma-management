@@ -12,6 +12,7 @@ export interface Suchauftrag {
   id?: string;
   ansprechpartnerId: string;
   aktivitaet: Aktivitaet;
+  sucheNach?: string;
   ort?: string;
   postleitzahl?: string;
   adresse?: string;

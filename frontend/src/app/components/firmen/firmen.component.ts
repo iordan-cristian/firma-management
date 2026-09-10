@@ -93,6 +93,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                     <div class="cards" *ngIf="detailMode === 'suchauftraege'">
                       <div class="card" *ngFor="let s of suchauftragList" (dblclick)="openEditSuchauftrag(s)">
                         <div class="card-title">{{ s.aktivitaet }}</div>
+                        <div class="card-row" *ngIf="s.sucheNach"><span>Suche Nach:</span> {{ s.sucheNach }}</div>
                         <ng-container *ngIf="verknuepfungenFor(s.id).length">
                           <div class="card-divider">Verknüpfungen</div>
                           <div class="card-row" *ngFor="let v of verknuepfungenFor(s.id)">
@@ -319,7 +320,10 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                   <option *ngFor="let k of aktivitaetOptions" [value]="k">{{ k }}</option>
                 </select>
               </label>
-              
+              <label>Suche Nach
+                <input [(ngModel)]="draftSuchauftrag.sucheNach" placeholder="Suche nach ..." />
+              </label>
+
               <div class="section-title">Arbeitsplatz</div>
               <label>Ort
                 <input [(ngModel)]="draftSuchauftrag.ort" placeholder="Ort" />

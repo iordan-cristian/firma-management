@@ -50,6 +50,7 @@ public class SuchauftragService {
         return repo.findById(id).map(existing -> {
             existing.setAnsprechpartnerId(input.getAnsprechpartnerId());
             existing.setAktivitaet(input.getAktivitaet());
+            existing.setSucheNach(input.getSucheNach());
             existing.setOrt(input.getOrt());
             existing.setPostleitzahl(input.getPostleitzahl());
             existing.setAdresse(input.getAdresse());
