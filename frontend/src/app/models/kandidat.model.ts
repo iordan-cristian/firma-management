@@ -21,6 +21,7 @@ export interface Kandidat {
   nachname?: string;
   postleitzahl?: number;
   ort?: string;
+  umzugsbereitschaft?: string;
   geburtsjahr?: number;
   staatsangehoerigkeit?: string;
   familienstand?: string;

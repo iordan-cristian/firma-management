@@ -53,6 +53,9 @@ public class Kandidat {
     @Column(columnDefinition = "TEXT")
     private String ort;
 
+    @Column(columnDefinition = "TEXT")
+    private String umzugsbereitschaft;
+
     private Integer geburtsjahr;
 
     @Column(columnDefinition = "TEXT")

@@ -152,6 +152,11 @@ import {
               </label>
             </div>
             <div class="form-row">
+              <label>Umzugsbereitschaft
+                <input [(ngModel)]="draft.umzugsbereitschaft" placeholder="z.B. ja, nein, innerhalb DE" />
+              </label>
+            </div>
+            <div class="form-row">
               <label>Geburtsjahr
                 <input type="number" [(ngModel)]="draft.geburtsjahr" placeholder="JJJJ" min="1900" max="2099" />
               </label>

@@ -58,6 +58,7 @@ public class KandidatService {
             existing.setNachname(input.getNachname());
             existing.setPostleitzahl(input.getPostleitzahl());
             existing.setOrt(input.getOrt());
+            existing.setUmzugsbereitschaft(input.getUmzugsbereitschaft());
             existing.setGeburtsjahr(input.getGeburtsjahr());
             existing.setStaatsangehoerigkeit(input.getStaatsangehoerigkeit());
             existing.setFamilienstand(input.getFamilienstand());
