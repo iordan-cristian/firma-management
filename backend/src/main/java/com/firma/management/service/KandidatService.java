@@ -8,6 +8,7 @@ import com.firma.management.repository.KandidatRepository;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +45,7 @@ public class KandidatService {
 
     public Kandidat create(Kandidat k) {
         k.setId(null);
+        k.setAnlageDatum(LocalDate.now());
         return repo.save(k);
     }
 

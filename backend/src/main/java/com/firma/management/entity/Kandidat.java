@@ -1,6 +1,7 @@
 package com.firma.management.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -29,6 +30,11 @@ public class Kandidat {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     @Column(name = "dsgvo_bestaetigungs_datum")
     private LocalDate dsgvoBestaetigungsDatum;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Column(name = "anlage_datum")
+    private LocalDate anlageDatum;
 
     @Enumerated(EnumType.STRING)
     private Geschlecht geschlecht;
