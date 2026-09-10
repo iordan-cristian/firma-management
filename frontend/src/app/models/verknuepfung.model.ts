@@ -3,6 +3,9 @@ export interface Verknuepfung {
   suchauftragId?: string;
   firmaId?: string;
   kandidatId?: string;
+  gebuehren?: number;
+  mainAnteil?: number;
+  verknuepfungStatus?: string;
 }
 
 export interface VerknuepfungKandidat {
