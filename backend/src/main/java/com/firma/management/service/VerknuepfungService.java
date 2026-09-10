@@ -51,6 +51,10 @@ public class VerknuepfungService {
                 .toList();
     }
 
+    public List<Verknuepfung> getVerknuepfungenForKandidat(UUID kandidatId) {
+        return repo.findAllByKandidatId(kandidatId);
+    }
+
     @Transactional
     public void deleteLink(UUID suchauftragId, UUID kandidatId) {
         repo.deleteBySuchauftragIdAndKandidatId(suchauftragId, kandidatId);

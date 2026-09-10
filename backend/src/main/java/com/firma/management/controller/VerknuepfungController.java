@@ -29,6 +29,11 @@ public class VerknuepfungController {
         return service.getKandidatenForSuchauftrag(suchauftragId);
     }
 
+    @GetMapping("/kandidat/{kandidatId}")
+    public List<Verknuepfung> getVerknuepfungenForKandidat(@PathVariable UUID kandidatId) {
+        return service.getVerknuepfungenForKandidat(kandidatId);
+    }
+
     @DeleteMapping("/suchauftrag/{suchauftragId}/kandidat/{kandidatId}")
     public ResponseEntity<Void> deleteLink(@PathVariable UUID suchauftragId, @PathVariable UUID kandidatId) {
         service.deleteLink(suchauftragId, kandidatId);
