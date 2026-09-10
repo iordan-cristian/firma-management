@@ -35,6 +35,7 @@ public class Verknuepfung {
     @Column(name = "main_anteil", precision = 10, scale = 2)
     private BigDecimal mainAnteil;
 
-    @Column(name = "verknuepfung_status", columnDefinition = "TEXT")
-    private String verknuepfungStatus;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "verknuepfung_status")
+    private VerknuepfungStatus verknuepfungStatus;
 }
