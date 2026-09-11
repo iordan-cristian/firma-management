@@ -53,9 +53,9 @@ interface DashboardTab {
             *ngFor="let tab of leftTabs"
             type="button"
             class="tab-btn"
-            [class.active]="tab.id === activeTabId"
+            [class.active]="tab.id === activeLeftTabId"
             [style.background]="tab.color"
-            (click)="selectTab(tab.id)"
+            (click)="selectTab('left', tab.id)"
           >{{ tab.label }}</button>
         </div>
 
@@ -73,24 +73,31 @@ interface DashboardTab {
             *ngFor="let tab of rightTabs"
             type="button"
             class="tab-btn"
-            [class.active]="tab.id === activeTabId"
+            [class.active]="tab.id === activeRightTabId"
             [style.background]="tab.color"
-            (click)="selectTab(tab.id)"
+            (click)="selectTab('right', tab.id)"
           >{{ tab.label }}</button>
         </div>
       </div>
 
-      <div class="content" [ngSwitch]="activeTabId">
-        <app-investoren-bestand *ngSwitchCase="'investoren-bestand'"></app-investoren-bestand>
-        <app-immobilien-bestand *ngSwitchCase="'immobilien-bestand'"></app-immobilien-bestand>
-        <app-kandidaten-perm-bestand *ngSwitchCase="'kandidaten-perm-bestand'"></app-kandidaten-perm-bestand>
-        <app-kandidaten-freelancer-bestand *ngSwitchCase="'kandidaten-freelancer-bestand'"></app-kandidaten-freelancer-bestand>
-        <app-vertrieb-bestand *ngSwitchCase="'vertrieb-bestand'"></app-vertrieb-bestand>
-        <app-investoren-suche *ngSwitchCase="'investoren-suche'"></app-investoren-suche>
-        <app-immobilien-suche *ngSwitchCase="'immobilien-suche'"></app-immobilien-suche>
-        <app-kandidaten-perm-suche *ngSwitchCase="'kandidaten-perm-suche'"></app-kandidaten-perm-suche>
-        <app-kandidaten-freelancer-suche *ngSwitchCase="'kandidaten-freelancer-suche'"></app-kandidaten-freelancer-suche>
-        <app-vertrieb-suche *ngSwitchCase="'vertrieb-suche'"></app-vertrieb-suche>
+      <div class="row content-row">
+        <div class="col-left content-col" *ngIf="viewMode !== 'right'" [ngSwitch]="activeLeftTabId">
+          <app-investoren-bestand *ngSwitchCase="'investoren-bestand'"></app-investoren-bestand>
+          <app-immobilien-bestand *ngSwitchCase="'immobilien-bestand'"></app-immobilien-bestand>
+          <app-kandidaten-perm-bestand *ngSwitchCase="'kandidaten-perm-bestand'"></app-kandidaten-perm-bestand>
+          <app-kandidaten-freelancer-bestand *ngSwitchCase="'kandidaten-freelancer-bestand'"></app-kandidaten-freelancer-bestand>
+          <app-vertrieb-bestand *ngSwitchCase="'vertrieb-bestand'"></app-vertrieb-bestand>
+        </div>
+
+        <div class="col-middle divider"></div>
+
+        <div class="col-right content-col" *ngIf="viewMode !== 'left'" [ngSwitch]="activeRightTabId">
+          <app-investoren-suche *ngSwitchCase="'investoren-suche'"></app-investoren-suche>
+          <app-immobilien-suche *ngSwitchCase="'immobilien-suche'"></app-immobilien-suche>
+          <app-kandidaten-perm-suche *ngSwitchCase="'kandidaten-perm-suche'"></app-kandidaten-perm-suche>
+          <app-kandidaten-freelancer-suche *ngSwitchCase="'kandidaten-freelancer-suche'"></app-kandidaten-freelancer-suche>
+          <app-vertrieb-suche *ngSwitchCase="'vertrieb-suche'"></app-vertrieb-suche>
+        </div>
       </div>
     </div>
   `,
@@ -163,12 +170,15 @@ interface DashboardTab {
       color: #333;
     }
     .toggle-btn:hover { background: #eee; }
-    .content { padding: 24px 0; flex: 1; }
+    .content-row { flex: 1; align-items: stretch; border-bottom: none; }
+    .content-col { padding: 24px 16px; min-width: 0; }
+    .col-middle.divider { align-self: stretch; }
   `]
 })
 export class DashboardComponent {
   viewMode: ViewMode = 'both';
-  activeTabId = 'investoren-bestand';
+  activeLeftTabId = 'investoren-bestand';
+  activeRightTabId = 'investoren-suche';
 
   leftTabs: DashboardTab[] = [
     { id: 'investoren-bestand', label: 'Investoren', color: '#a6c9eb' },
@@ -186,8 +196,12 @@ export class DashboardComponent {
     { id: 'vertrieb-suche', label: 'Vertrieb - Suche $', color: '#e49edd' },
   ];
 
-  selectTab(id: string): void {
-    this.activeTabId = id;
+  selectTab(side: 'left' | 'right', id: string): void {
+    if (side === 'left') {
+      this.activeLeftTabId = id;
+    } else {
+      this.activeRightTabId = id;
+    }
   }
 
   cycleView(): void {
