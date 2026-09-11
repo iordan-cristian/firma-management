@@ -38,4 +38,7 @@ public class Verknuepfung {
     @Enumerated(EnumType.STRING)
     @Column(name = "verknuepfung_status")
     private VerknuepfungStatus verknuepfungStatus;
+
+    @Column(name = "verknuepfung_status_kommentar", columnDefinition = "TEXT")
+    private String verknuepfungStatusKommentar;
 }

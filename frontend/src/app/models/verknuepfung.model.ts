@@ -6,6 +6,7 @@ export interface Verknuepfung {
   gebuehren?: number;
   mainAnteil?: number;
   verknuepfungStatus?: string;
+  verknuepfungStatusKommentar?: string;
 }
 
 export interface VerknuepfungKandidat {
