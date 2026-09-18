@@ -55,6 +55,16 @@ public class VerknuepfungService {
         return repo.findAllByKandidatId(kandidatId);
     }
 
+    public java.util.Optional<Verknuepfung> update(UUID id, Verknuepfung input) {
+        return repo.findById(id).map(existing -> {
+            existing.setGebuehren(input.getGebuehren());
+            existing.setMainAnteil(input.getMainAnteil());
+            existing.setVerknuepfungStatus(input.getVerknuepfungStatus());
+            existing.setVerknuepfungStatusKommentar(input.getVerknuepfungStatusKommentar());
+            return repo.save(existing);
+        });
+    }
+
     @Transactional
     public void deleteLink(UUID suchauftragId, UUID kandidatId) {
         repo.deleteBySuchauftragIdAndKandidatId(suchauftragId, kandidatId);

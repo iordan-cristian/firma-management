@@ -8,23 +8,32 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   template: `
-    <div class="shell">
+    <div class="shell" [class.collapsed]="collapsed">
       <main class="main"><router-outlet></router-outlet></main>
 
-      <aside class="sidenav">
-        <div class="brand">
-          <div class="brand-title">Firma Management</div>
-          <div class="brand-user">{{ auth.username }}</div>
-        </div>
+      <aside class="sidenav" [class.collapsed]="collapsed">
+        <button
+          class="collapse-toggle"
+          type="button"
+          [title]="collapsed ? 'Menü einblenden' : 'Menü ausblenden'"
+          (click)="toggleCollapsed()"
+        >{{ collapsed ? '‹' : '›' }}</button>
 
-        <nav>
-          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
-          <a routerLink="/firmen" routerLinkActive="active">Firmen</a>
-          <a routerLink="/vertraege" routerLinkActive="active">Verträge</a>
-          <a routerLink="/kandidaten" routerLinkActive="active">Kandidaten</a>
-        </nav>
+        <ng-container *ngIf="!collapsed">
+          <div class="brand">
+            <div class="brand-title">Firma Management</div>
+            <div class="brand-user">{{ auth.username }}</div>
+          </div>
 
-        <button class="logout" (click)="logout()">Logout</button>
+          <nav>
+            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+            <a routerLink="/firmen" routerLinkActive="active">Firmen</a>
+            <a routerLink="/vertraege" routerLinkActive="active">Verträge</a>
+            <a routerLink="/kandidaten" routerLinkActive="active">Kandidaten</a>
+          </nav>
+
+          <button class="logout" (click)="logout()">Logout</button>
+        </ng-container>
       </aside>
     </div>
   `,
@@ -33,12 +42,17 @@ import { AuthService } from '../../services/auth.service';
       display: grid;
       grid-template-columns: 1fr 260px;
       min-height: 100vh;
+      transition: grid-template-columns 0.2s ease;
+    }
+    .shell.collapsed {
+      grid-template-columns: 1fr 40px;
     }
     .main {
       padding: 24px 32px;
       overflow: auto;
     }
     .sidenav {
+      position: relative;
       background: #1f2a44;
       color: #f0f2f7;
       padding: 24px 18px;
@@ -47,6 +61,29 @@ import { AuthService } from '../../services/auth.service';
       gap: 16px;
       box-shadow: -2px 0 8px rgba(0,0,0,0.08);
     }
+    .sidenav.collapsed {
+      padding: 24px 0;
+      align-items: center;
+    }
+    .collapse-toggle {
+      position: absolute;
+      top: 20px;
+      left: -14px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: #1f2a44;
+      color: #f0f2f7;
+      font-size: 15px;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 1;
+    }
+    .sidenav.collapsed .collapse-toggle {
+      position: static;
+    }
+    .collapse-toggle:hover { background: #2d3e63; }
     .brand-title { font-size: 16px; font-weight: 700; }
     .brand-user { font-size: 12px; color: #b8bfd1; margin-top: 2px; }
     nav { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
@@ -74,6 +111,12 @@ import { AuthService } from '../../services/auth.service';
 export class ShellComponent {
   auth = inject(AuthService);
   private router = inject(Router);
+
+  collapsed = false;
+
+  toggleCollapsed(): void {
+    this.collapsed = !this.collapsed;
+  }
 
   logout(): void {
     this.auth.logout();

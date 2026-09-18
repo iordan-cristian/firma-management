@@ -34,6 +34,13 @@ public class VerknuepfungController {
         return service.getVerknuepfungenForKandidat(kandidatId);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Verknuepfung> update(@PathVariable UUID id, @RequestBody Verknuepfung v) {
+        return service.update(id, v)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/suchauftrag/{suchauftragId}/kandidat/{kandidatId}")
     public ResponseEntity<Void> deleteLink(@PathVariable UUID suchauftragId, @PathVariable UUID kandidatId) {
         service.deleteLink(suchauftragId, kandidatId);
