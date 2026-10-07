@@ -9,7 +9,7 @@ import { FirmaService } from '../../../services/firma.service';
 import { SuchauftragService } from '../../../services/suchauftrag.service';
 import { Kandidat } from '../../../models/kandidat.model';
 import { Verknuepfung } from '../../../models/verknuepfung.model';
-import { VERKNUEPFUNG_STATUS_OPTIONS } from '../../../models/verknuepfung-status.model';
+import { VERKNUEPFUNG_STATUS_COLORS, VERKNUEPFUNG_STATUS_OPTIONS, VERKNUEPFUNG_STATUS_ORDER, VerknuepfungStatus } from '../../../models/verknuepfung-status.model';
 
 interface KandidatRow {
   kandidat: Kandidat;
@@ -22,6 +22,8 @@ interface KandidatRow {
   meinAnteil: string;
   links: Verknuepfung[];
   sortDate: number;
+  highestStatus: number;
+  highestStatusName?: VerknuepfungStatus;
 }
 
 interface MonthGroup {
@@ -55,6 +57,8 @@ interface MonthGroup {
                 [class.entry-odd]="i % 2 === 1"
                 [class.entry-even]="i % 2 === 0"
                 class="entry-row-1"
+                [class.status-colored]="!!row.highestStatusName"
+                [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.kandidat)"
               >
                 <td><strong>Name: </strong> <span contenteditable="true">{{ row.name }}</span></td>
@@ -66,6 +70,8 @@ interface MonthGroup {
                 [class.entry-odd]="i % 2 === 1"
                 [class.entry-even]="i % 2 === 0"
                 class="entry-row-2"
+                [class.status-colored]="!!row.highestStatusName"
+                [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.kandidat)"
               >
                 <td colspan="2"><strong>Vorgestellt bei: </strong> <span contenteditable="true">{{ row.vorgestelltBei }}</span></td>
@@ -94,7 +100,11 @@ interface MonthGroup {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr *ngFor="let link of row.links">
+                      <tr
+                        *ngFor="let link of row.links"
+                        [class.status-colored]="!!link.verknuepfungStatus"
+                        [style]="statusStyle(link.verknuepfungStatus)"
+                      >
                         <td>{{ firmaName(link.firmaId) }}</td>
                         <td>{{ sucheNach(link.suchauftragId) }}</td>
                         <td contenteditable="true" (blur)="onGebuehrenEdited(row, link, $event)">{{ link.gebuehren ?? '' }}</td>
@@ -143,8 +153,9 @@ interface MonthGroup {
     }
     td strong { font-weight: 700; color: #1f2a44; }
     td span[contenteditable='true'] { cursor: text; border-radius: 2px; }
-    td span[contenteditable='true']:hover { background: #f8f9fd; }
+    td span[contenteditable='true']:hover { background: #f8f9fd; color: #111; }
     td span[contenteditable='true']:focus {
+      color: #111;
       outline: 2px solid #6a8ee0;
       outline-offset: 1px;
       background: #fff;
@@ -154,6 +165,8 @@ interface MonthGroup {
     .entry-even td { background: #fff; }
     .entry-odd td { background: #f7f8fc; }
     .entry-row-1, .entry-row-2 { cursor: pointer; }
+    tr.status-colored > td { background: var(--status-bg); color: var(--status-fg); }
+    tr.status-colored > td strong { color: inherit; }
     .group-row td {
       font-size: 13px;
       font-weight: 700;
@@ -183,8 +196,9 @@ interface MonthGroup {
       word-break: break-word;
     }
     .verknuepfung-table td[contenteditable='true'] { cursor: text; }
-    .verknuepfung-table td[contenteditable='true']:hover { background: #f8f9fd; }
+    .verknuepfung-table td[contenteditable='true']:hover { background: #f8f9fd; color: #111; }
     .verknuepfung-table td[contenteditable='true']:focus {
+      color: #111;
       outline: 2px solid #6a8ee0;
       outline-offset: -2px;
       background: #fff;
@@ -260,8 +274,10 @@ export class KandidatenPermBestandComponent implements OnInit {
 
   toggleExpanded(kandidat: Kandidat): void {
     if (!kandidat.id) return;
-    if (this.expandedKandidatIds.has(kandidat.id)) this.expandedKandidatIds.delete(kandidat.id);
-    else this.expandedKandidatIds.add(kandidat.id);
+    const wasExpanded = this.expandedKandidatIds.has(kandidat.id);
+    // Only one row can be expanded at a time
+    this.expandedKandidatIds.clear();
+    if (!wasExpanded) this.expandedKandidatIds.add(kandidat.id);
   }
 
   isExpanded(kandidat: Kandidat): boolean {
@@ -286,6 +302,9 @@ export class KandidatenPermBestandComponent implements OnInit {
 
   onStatusEdited(row: KandidatRow, link: Verknuepfung, value: string): void {
     link.verknuepfungStatus = value || undefined;
+    this.updateHighestStatus(row);
+    const group = this.groups.find(g => g.rows.includes(row));
+    if (group) this.sortRows(group);
     this.saveLink(row, link);
   }
 
@@ -341,10 +360,14 @@ export class KandidatenPermBestandComponent implements OnInit {
     }
 
     const groups = Array.from(groupsByKey.values()).sort((a, b) => b.key - a.key);
-    for (const group of groups) {
-      group.rows.sort((a, b) => b.sortDate - a.sortDate || a.name.localeCompare(b.name));
-    }
+    groups.forEach(group => this.sortRows(group));
     return groups;
+  }
+
+  /** Lowest highest-status first, then newest Anlagedatum, then name. */
+  private sortRows(group: MonthGroup): void {
+    group.rows.sort((a, b) =>
+      a.highestStatus - b.highestStatus || b.sortDate - a.sortDate || a.name.localeCompare(b.name));
   }
 
   private buildRow(kandidat: Kandidat, links: Verknuepfung[], date: Date | null): KandidatRow {
@@ -359,7 +382,28 @@ export class KandidatenPermBestandComponent implements OnInit {
       meinAnteil: this.formatJoined(links.map(l => l.mainAnteil)),
       links,
       sortDate: date ? date.getTime() : Number.NEGATIVE_INFINITY,
+      ...this.findHighestStatus(links),
     };
+  }
+
+  private updateHighestStatus(row: KandidatRow): void {
+    Object.assign(row, this.findHighestStatus(row.links));
+  }
+
+  /** Highest status among the links; order 0 when no link has a status. */
+  private findHighestStatus(links: Verknuepfung[]): { highestStatus: number; highestStatusName?: VerknuepfungStatus } {
+    let result: { highestStatus: number; highestStatusName?: VerknuepfungStatus } = { highestStatus: 0 };
+    for (const l of links) {
+      const name = l.verknuepfungStatus as VerknuepfungStatus;
+      const order = VERKNUEPFUNG_STATUS_ORDER[name];
+      if (order != null && order > result.highestStatus) result = { highestStatus: order, highestStatusName: name };
+    }
+    return result;
+  }
+
+  statusStyle(status?: string): Record<string, string> | null {
+    const colors = status ? VERKNUEPFUNG_STATUS_COLORS[status as VerknuepfungStatus] : undefined;
+    return colors ? { '--status-bg': colors.background, '--status-fg': colors.color } : null;
   }
 
   private formatName(k: Kandidat): string {
