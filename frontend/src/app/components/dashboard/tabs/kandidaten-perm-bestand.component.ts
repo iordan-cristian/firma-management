@@ -62,10 +62,10 @@ interface MonthGroup {
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.kandidat)"
               >
-                <td><strong>Name: </strong> <span contenteditable="true">{{ row.name }}</span></td>
-                <td><strong>Fachliche Skills: </strong> <span contenteditable="true">{{ row.fachlicherSkill }}</span></td>
-                <td><strong>Gehalt: </strong> <span contenteditable="true">{{ row.gehalt }}</span></td>
-                <td><strong>Wohnort: </strong> <span contenteditable="true">{{ row.wohnort }}</span></td>
+                <td><strong>Name: </strong> <span contenteditable="true" [textContent]="row.name"></span></td>
+                <td><strong>Fachliche Skills: </strong> <span contenteditable="true" [textContent]="row.fachlicherSkill"></span></td>
+                <td><strong>Gehalt: </strong> <span contenteditable="true" [textContent]="row.gehalt"></span></td>
+                <td><strong>Wohnort: </strong> <span contenteditable="true" [textContent]="row.wohnort"></span></td>
               </tr>
               <tr
                 [class.entry-odd]="i % 2 === 1"
@@ -75,9 +75,9 @@ interface MonthGroup {
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.kandidat)"
               >
-                <td colspan="2"><strong>Vorgestellt bei: </strong> <span contenteditable="true">{{ row.vorgestelltBei }}</span></td>
-                <td><strong>Gebühr: </strong> <span contenteditable="true">{{ row.gebuehr }}</span></td>
-                <td><strong>Mein Anteil: </strong> <span contenteditable="true">{{ row.meinAnteil }}</span></td>
+                <td colspan="2"><strong>Vorgestellt bei: </strong> <span contenteditable="true" [textContent]="row.vorgestelltBei"></span></td>
+                <td><strong>Gebühr: </strong> <span contenteditable="true" [textContent]="row.gebuehr"></span></td>
+                <td><strong>Mein Anteil: </strong> <span contenteditable="true" [textContent]="row.meinAnteil"></span></td>
               </tr>
               <tr class="detail-row" *ngIf="isExpanded(row.kandidat)">
                 <td colspan="4">
@@ -108,15 +108,15 @@ interface MonthGroup {
                       >
                         <td>{{ firmaName(link.firmaId) }}</td>
                         <td>{{ sucheNach(link.suchauftragId) }}</td>
-                        <td contenteditable="true" (blur)="onGebuehrenEdited(row, link, $event)">{{ link.gebuehren ?? '' }}</td>
-                        <td contenteditable="true" (blur)="onMainAnteilEdited(row, link, $event)">{{ link.mainAnteil ?? '' }}</td>
+                        <td contenteditable="true" [textContent]="link.gebuehren ?? ''" (blur)="onGebuehrenEdited(row, link, $event)"></td>
+                        <td contenteditable="true" [textContent]="link.mainAnteil ?? ''" (blur)="onMainAnteilEdited(row, link, $event)"></td>
                         <td>
                           <select [ngModel]="link.verknuepfungStatus ?? ''" (ngModelChange)="onStatusEdited(row, link, $event)">
                             <option value="">-</option>
                             <option *ngFor="let opt of statusOptions" [value]="opt">{{ opt }}</option>
                           </select>
                         </td>
-                        <td contenteditable="true" (blur)="onKommentarEdited(row, link, $event)">{{ link.verknuepfungStatusKommentar ?? '' }}</td>
+                        <td contenteditable="true" [textContent]="link.verknuepfungStatusKommentar ?? ''" (blur)="onKommentarEdited(row, link, $event)"></td>
                       </tr>
                       <tr *ngIf="row.links.length === 0">
                         <td colspan="6" class="empty-links">Keine Verknüpfungen vorhanden.</td>

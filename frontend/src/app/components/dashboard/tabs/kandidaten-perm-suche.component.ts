@@ -79,10 +79,10 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.suchauftrag)"
               >
-                <td><strong>Firma: </strong> <span contenteditable="true">{{ row.firma }}</span></td>
-                <td><strong>Ansprechpartner: </strong> <span contenteditable="true">{{ row.ansprechpartner }}</span></td>
-                <td><strong>Suche nach: </strong> <span contenteditable="true">{{ row.sucheNach }}</span></td>
-                <td><strong>Gehalt: </strong> <span contenteditable="true">{{ row.gehalt }}</span></td>
+                <td><strong>Firma: </strong> <span contenteditable="true" [textContent]="row.firma"></span></td>
+                <td><strong>Ansprechpartner: </strong> <span contenteditable="true" [textContent]="row.ansprechpartner"></span></td>
+                <td><strong>Suche nach: </strong> <span contenteditable="true" [textContent]="row.sucheNach"></span></td>
+                <td><strong>Gehalt: </strong> <span contenteditable="true" [textContent]="row.gehalt"></span></td>
               </tr>
               <tr
                 [class.entry-odd]="i % 2 === 1"
@@ -92,9 +92,9 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.suchauftrag)"
               >
-                <td colspan="2"><strong>Kandidaten: </strong> <span contenteditable="true">{{ row.kandidaten }}</span></td>
-                <td><strong>K.O.-Faktoren: </strong> <span contenteditable="true">{{ row.koFaktoren }}</span></td>
-                <td><strong>Standort: </strong> <span contenteditable="true">{{ row.standort }}</span></td>
+                <td><strong>Kandidaten: </strong> <span contenteditable="true" [textContent]="row.kandidaten"></span></td>
+                <td colspan="2"><strong>K.O.-Faktoren: </strong> <span contenteditable="true" [textContent]="row.koFaktoren"></span></td>
+                <td><strong>Standort: </strong> <span contenteditable="true" [textContent]="row.standort"></span></td>
               </tr>
               <tr class="detail-row" *ngIf="isExpanded(row.suchauftrag)">
                 <td colspan="4">
@@ -122,15 +122,15 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                         [style]="statusStyle(k.verknuepfung.verknuepfungStatus)"
                       >
                         <td>{{ kandidatName(k) }}</td>
-                        <td contenteditable="true" (blur)="onGebuehrenEdited(k, $event)">{{ k.verknuepfung.gebuehren ?? '' }}</td>
-                        <td contenteditable="true" (blur)="onMainAnteilEdited(k, $event)">{{ k.verknuepfung.mainAnteil ?? '' }}</td>
+                        <td contenteditable="true" [textContent]="k.verknuepfung.gebuehren ?? ''" (blur)="onGebuehrenEdited(k, $event)"></td>
+                        <td contenteditable="true" [textContent]="k.verknuepfung.mainAnteil ?? ''" (blur)="onMainAnteilEdited(k, $event)"></td>
                         <td>
                           <select [ngModel]="k.verknuepfung.verknuepfungStatus ?? ''" (ngModelChange)="onStatusEdited(row, k, $event)">
                             <option value="">-</option>
                             <option *ngFor="let opt of statusOptions" [value]="opt">{{ opt }}</option>
                           </select>
                         </td>
-                        <td contenteditable="true" (blur)="onKommentarEdited(k, $event)">{{ k.verknuepfung.verknuepfungStatusKommentar ?? '' }}</td>
+                        <td contenteditable="true" [textContent]="k.verknuepfung.verknuepfungStatusKommentar ?? ''" (blur)="onKommentarEdited(k, $event)"></td>
                       </tr>
                       <tr *ngIf="row.links.length === 0">
                         <td colspan="5" class="empty-links">Keine Verknüpfungen vorhanden.</td>
