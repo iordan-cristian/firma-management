@@ -1,5 +1,6 @@
-import { Sprachniveau } from './kandidat.model';
+import { Geschlecht, Sprachniveau, Titel } from './kandidat.model';
 import { AllgemeinerSchwerpunkt } from './allgemeiner-schwerpunkt.model';
+import { Verknuepfung } from './verknuepfung.model';
 export { Sprachniveau };
 
 export type Aktivitaet = 'Investoren' | 'Vertrieb' | 'Imobilien' | 'Personal';
@@ -46,4 +47,23 @@ export interface Suchauftrag {
   anlageDatum?: string;
   gehaltMinimum?: number;
   gehaltMaximum?: number;
+}
+
+export interface SuchauftragUebersichtKandidat {
+  kandidatId: string;
+  geschlecht?: Geschlecht;
+  titel?: Titel;
+  vorname?: string;
+  nachname?: string;
+  verknuepfung: Verknuepfung;
+}
+
+export interface SuchauftragUebersicht {
+  suchauftrag: Suchauftrag;
+  firmaName?: string;
+  ansprechpartnerGeschlecht?: Geschlecht;
+  ansprechpartnerTitel?: Titel;
+  ansprechpartnerVorname?: string;
+  ansprechpartnerNachname?: string;
+  kandidaten: SuchauftragUebersichtKandidat[];
 }

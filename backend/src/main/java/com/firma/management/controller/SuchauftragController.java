@@ -1,5 +1,6 @@
 package com.firma.management.controller;
 
+import com.firma.management.dto.SuchauftragUebersichtResponse;
 import com.firma.management.entity.Status;
 import com.firma.management.entity.Suchauftrag;
 import com.firma.management.service.SuchauftragService;
@@ -28,6 +29,12 @@ public class SuchauftragController {
     public List<Suchauftrag> getAll(@RequestParam(value = "status", required = false) String status) {
         Status statusEnum = (status == null || status.isBlank()) ? null : Status.fromLabel(status);
         return service.getAll(statusEnum);
+    }
+
+    /** Overview for the "Kandidaten (Perm) - Suche" dashboard tab: Suchauftrag + Firma, Ansprechpartner and linked Kandidaten. */
+    @GetMapping("/uebersicht")
+    public List<SuchauftragUebersichtResponse> getUebersicht() {
+        return service.getUebersicht();
     }
 
     @GetMapping("/{id}")
