@@ -17,13 +17,14 @@ import {MatchKandidatService, MatchKandidatResult} from "../../services/match-ka
 import { VerknuepfungService } from '../../services/verknuepfung.service';
 import { VerknuepfungKandidat } from '../../models/verknuepfung.model';
 import { KandidatExportService } from '../../services/kandidat-export.service';
+import { NeueFirmaDialogComponent } from './neue-firma-dialog.component';
 
 type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
 
 @Component({
   selector: 'app-firmen',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NeueFirmaDialogComponent],
   template: `
     <div class="page">
       <div class="page-header">
@@ -162,55 +163,13 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
         <button (click)="onVerknuepfung()">Verknüpfung</button>
       </div>
 
-      <!-- Add Firma Modal -->
-      <div class="modal-backdrop" *ngIf="addFirmaOpen">
-        <div class="modal">
-          <h2>{{ editingFirmaId ? 'Firma bearbeiten' : 'Neue Firma' }}</h2>
-          <label>Name
-            <input [(ngModel)]="draftFirma.name" placeholder="Firmenname" />
-          </label>
-          <label>Standort
-            <input [(ngModel)]="draftFirma.standort" placeholder="Standort" />
-          </label>
-          <label>Postleitzahl
-            <input [(ngModel)]="draftFirma.postleitzahl" placeholder="PLZ" />
-          </label>
-          <label>Adresse
-            <input [(ngModel)]="draftFirma.adresse" placeholder="Straße und Nummer" />
-          </label>
-          <label>E-Mail
-            <div class="input-with-btn">
-              <input type="email" [(ngModel)]="draftFirma.email" placeholder="info@beispiel.de" />
-              <button class="btn-link" (click)="copyToClipboard(draftFirma.email)" [disabled]="!draftFirma.email">📋</button>
-            </div>
-            <span class="field-error" *ngIf="firmaErrors['email']">{{ firmaErrors['email'] }}</span>
-          </label>
-          <label>Telefon
-            <div class="input-with-btn">
-              <input [(ngModel)]="draftFirma.telefon" placeholder="+49 30 1234567" />
-              <button class="btn-link" (click)="copyToClipboard(draftFirma.telefon)" [disabled]="!draftFirma.telefon">📋</button>
-            </div>
-            <span class="field-error" *ngIf="firmaErrors['telefon']">{{ firmaErrors['telefon'] }}</span>
-          </label>
-          <label>Mobil
-            <div class="input-with-btn">
-              <input [(ngModel)]="draftFirma.mobil" placeholder="+49 170 1234567" />
-              <button class="btn-link" (click)="copyToClipboard(draftFirma.mobil)" [disabled]="!draftFirma.mobil">📋</button>
-            </div>
-            <span class="field-error" *ngIf="firmaErrors['mobil']">{{ firmaErrors['mobil'] }}</span>
-          </label>
-          <label>Website
-            <div class="input-with-btn">
-              <input [(ngModel)]="draftFirma.angebotWebsite" placeholder="https://..." />
-              <button class="btn-link" (click)="openLink(draftFirma.angebotWebsite)" [disabled]="!draftFirma.angebotWebsite">↗</button>
-            </div>
-          </label>
-          <div class="modal-actions">
-            <button class="btn-save" (click)="saveFirma()">Speichern</button>
-            <button class="btn-cancel" (click)="closeAddModal()">Abbrechen</button>
-          </div>
-        </div>
-      </div>
+      <!-- Add / Edit Firma Modal -->
+      <app-neue-firma-dialog
+        *ngIf="addFirmaOpen"
+        [firma]="draftFirma"
+        (saved)="onFirmaSaved($event)"
+        (close)="closeAddModal()"
+      ></app-neue-firma-dialog>
 
       <!-- Add Ansprechpartner Modal -->
       <div class="modal-backdrop" *ngIf="addAnsprechpartnerOpen">
@@ -857,9 +816,7 @@ export class FirmenComponent implements OnInit {
 
   // Add / Edit Firma
   addFirmaOpen = false;
-  editingFirmaId: string | null = null;
   draftFirma: Partial<Firma> = {};
-  firmaErrors: Record<string, string> = {};
 
   // Add / Edit Ansprechpartner
   addAnsprechpartnerOpen = false;
@@ -908,7 +865,7 @@ export class FirmenComponent implements OnInit {
   }
 
   // ── Firma ────────────────────────────────────────────────
-  openAddModal(): void { this.editingFirmaId = null; this.draftFirma = {}; this.firmaErrors = {}; this.addFirmaOpen = true; }
+  openAddModal(): void { this.draftFirma = {}; this.addFirmaOpen = true; }
   @HostListener('document:keydown.escape')
   onEscape(): void {
     if (this.addFirmaOpen) this.closeAddModal();
@@ -920,27 +877,14 @@ export class FirmenComponent implements OnInit {
   closeAddModal(): void { this.addFirmaOpen = false; }
 
   openEditFirma(f: Firma): void {
-    this.editingFirmaId = f.id ?? null;
     this.draftFirma = { ...f };
-    this.firmaErrors = {};
     this.addFirmaOpen = true;
   }
 
-  saveFirma(): void {
-    const onError = (err: any) => {
-      if (err.status === 400) this.firmaErrors = err.error ?? {};
-    };
-    if (this.editingFirmaId) {
-      this.firmaService.update(this.editingFirmaId, this.draftFirma as Firma).subscribe({
-        next: updated => { this.firmen = this.firmen.map(f => f.id === updated.id ? updated : f); this.closeAddModal(); },
-        error: onError,
-      });
-    } else {
-      this.firmaService.create(this.draftFirma as Firma).subscribe({
-        next: created => { this.firmen = [...this.firmen, created]; this.closeAddModal(); },
-        error: onError,
-      });
-    }
+  onFirmaSaved(saved: Firma): void {
+    const exists = this.firmen.some(f => f.id === saved.id);
+    this.firmen = exists ? this.firmen.map(f => f.id === saved.id ? saved : f) : [...this.firmen, saved];
+    this.closeAddModal();
   }
 
   // ── Ansprechpartner ──────────────────────────────────────

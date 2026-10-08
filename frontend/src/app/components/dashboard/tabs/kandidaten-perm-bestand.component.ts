@@ -10,6 +10,7 @@ import { SuchauftragService } from '../../../services/suchauftrag.service';
 import { Kandidat } from '../../../models/kandidat.model';
 import { Verknuepfung } from '../../../models/verknuepfung.model';
 import { VERKNUEPFUNG_STATUS_COLORS, VERKNUEPFUNG_STATUS_OPTIONS, VERKNUEPFUNG_STATUS_ORDER, VerknuepfungStatus } from '../../../models/verknuepfung-status.model';
+import { NeueVerknuepfungDialogComponent, VerknuepfungCreatedEvent } from '../../verknuepfungen/neue-verknuepfung-dialog.component';
 
 interface KandidatRow {
   kandidat: Kandidat;
@@ -35,7 +36,7 @@ interface MonthGroup {
 @Component({
   selector: 'app-kandidaten-perm-bestand',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NeueVerknuepfungDialogComponent],
   template: `
     <div class="wrap">
       <p class="hint" *ngIf="loading">Lade Daten...</p>
@@ -121,7 +122,7 @@ interface MonthGroup {
                         <td colspan="6" class="empty-links">Keine Verknüpfungen vorhanden.</td>
                       </tr>
                       <tr>
-                        <td colspan="6"><button type="button" class="new-verknuepfung-btn">+ neue Verknüpfung</button></td>
+                        <td colspan="6"><button type="button" class="new-verknuepfung-btn" (click)="openNeueVerknuepfung(row)">+ neue Verknüpfung</button></td>
                       </tr>
                     </tbody>
                   </table>
@@ -135,6 +136,14 @@ interface MonthGroup {
           </tr>
         </tbody>
       </table>
+
+      <app-neue-verknuepfung-dialog
+        *ngIf="neueVerknuepfungRow"
+        [kandidat]="neueVerknuepfungRow.kandidat"
+        [kandidatName]="neueVerknuepfungRow.name"
+        (created)="onVerknuepfungCreated($event)"
+        (close)="closeNeueVerknuepfung()"
+      ></app-neue-verknuepfung-dialog>
     </div>
   `,
   styles: [`
@@ -237,6 +246,7 @@ export class KandidatenPermBestandComponent implements OnInit {
   groups: MonthGroup[] = [];
   statusOptions = VERKNUEPFUNG_STATUS_OPTIONS;
   saveError: string | null = null;
+  neueVerknuepfungRow: KandidatRow | null = null;
 
   private firmaNameById = new Map<string, string>();
   private sucheNachById = new Map<string, string>();
@@ -282,6 +292,27 @@ export class KandidatenPermBestandComponent implements OnInit {
 
   isExpanded(kandidat: Kandidat): boolean {
     return !!kandidat.id && this.expandedKandidatIds.has(kandidat.id);
+  }
+
+  openNeueVerknuepfung(row: KandidatRow): void {
+    this.neueVerknuepfungRow = row;
+  }
+
+  closeNeueVerknuepfung(): void {
+    this.neueVerknuepfungRow = null;
+  }
+
+  onVerknuepfungCreated({ verknuepfung, firma }: VerknuepfungCreatedEvent): void {
+    const row = this.neueVerknuepfungRow;
+    this.closeNeueVerknuepfung();
+    if (!row) return;
+    // The Firma may have just been created in the dialog
+    if (firma.id) this.firmaNameById.set(firma.id, firma.name ?? '');
+    row.links.push(verknuepfung);
+    this.refreshAggregates(row);
+    this.updateHighestStatus(row);
+    const group = this.groups.find(g => g.rows.includes(row));
+    if (group) this.sortRows(group);
   }
 
   onGebuehrenEdited(row: KandidatRow, link: Verknuepfung, event: Event): void {
