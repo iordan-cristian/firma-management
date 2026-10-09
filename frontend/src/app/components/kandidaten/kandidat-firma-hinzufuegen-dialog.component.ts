@@ -9,19 +9,21 @@ import { Verknuepfung } from '../../models/verknuepfung.model';
 import { FirmaAutocompleteComponent } from '../firmen/firma-autocomplete.component';
 import { NeueFirmaDialogComponent } from '../firmen/neue-firma-dialog.component';
 
-export interface VerknuepfungCreatedEvent {
+export interface FirmaHinzugefuegtEvent {
+  /** The stored link between Kandidat, Firma and optional Suchauftrag. */
   verknuepfung: Verknuepfung;
   firma: Firma;
 }
 
+/** Adds a Firma (and optionally one of its Suchaufträge) to a Kandidat. */
 @Component({
-  selector: 'app-neue-verknuepfung-dialog',
+  selector: 'app-kandidat-firma-hinzufuegen-dialog',
   standalone: true,
   imports: [CommonModule, FirmaAutocompleteComponent, NeueFirmaDialogComponent],
   template: `
     <div class="modal-backdrop">
       <div class="modal">
-        <h2>Neue Verknüpfung für {{ kandidatName }}</h2>
+        <h2>Firma zu {{ kandidatName }} hinzufügen</h2>
 
         <label class="field-label">Firma</label>
         <app-firma-autocomplete
@@ -53,7 +55,7 @@ export interface VerknuepfungCreatedEvent {
         <p class="error" *ngIf="error">{{ error }}</p>
 
         <div class="modal-actions">
-          <button type="button" class="btn-save" [disabled]="!selectedFirma || saving" (click)="verknuepfen()">Verknüpfen</button>
+          <button type="button" class="btn-save" [disabled]="!selectedFirma || saving" (click)="hinzufuegen()">Hinzufügen</button>
           <button type="button" class="btn-cancel" (click)="close.emit()">Abbrechen</button>
         </div>
       </div>
@@ -95,14 +97,14 @@ export interface VerknuepfungCreatedEvent {
     .btn-cancel { background: transparent; border: 1px solid #dfe3ee; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
   `]
 })
-export class NeueVerknuepfungDialogComponent {
+export class KandidatFirmaHinzufuegenDialogComponent {
   private firmaService = inject(FirmaService);
   private verknuepfungService = inject(VerknuepfungService);
 
   @Input() kandidat?: Kandidat;
   /** Display name shown in the title. */
   @Input() kandidatName = '';
-  @Output() created = new EventEmitter<VerknuepfungCreatedEvent>();
+  @Output() hinzugefuegt = new EventEmitter<FirmaHinzugefuegtEvent>();
   @Output() close = new EventEmitter<void>();
 
   selectedFirma: Firma | null = null;
@@ -141,14 +143,14 @@ export class NeueVerknuepfungDialogComponent {
 
   onNeueFirmaSaved(firma: Firma): void {
     this.neueFirmaDraft = null;
-    this.createVerknuepfung(firma, null);
+    this.addFirma(firma, null);
   }
 
-  verknuepfen(): void {
-    if (this.selectedFirma) this.createVerknuepfung(this.selectedFirma, this.selectedSuchauftragId);
+  hinzufuegen(): void {
+    if (this.selectedFirma) this.addFirma(this.selectedFirma, this.selectedSuchauftragId);
   }
 
-  private createVerknuepfung(firma: Firma, suchauftragId: string | null): void {
+  private addFirma(firma: Firma, suchauftragId: string | null): void {
     if (!this.kandidat?.id || !firma.id) return;
     this.saving = true;
     this.error = null;
@@ -159,11 +161,11 @@ export class NeueVerknuepfungDialogComponent {
     }).subscribe({
       next: verknuepfung => {
         this.saving = false;
-        this.created.emit({ verknuepfung, firma });
+        this.hinzugefuegt.emit({ verknuepfung, firma });
       },
       error: err => {
         this.saving = false;
-        this.error = err?.error?.error ?? 'Verknüpfung konnte nicht gespeichert werden.';
+        this.error = err?.error?.error ?? 'Firma konnte nicht hinzugefügt werden.';
       },
     });
   }
