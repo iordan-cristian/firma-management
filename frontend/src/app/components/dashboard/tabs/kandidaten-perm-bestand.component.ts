@@ -10,7 +10,7 @@ import { SuchauftragService } from '../../../services/suchauftrag.service';
 import { Kandidat } from '../../../models/kandidat.model';
 import { Verknuepfung } from '../../../models/verknuepfung.model';
 import { VERKNUEPFUNG_STATUS_COLORS, VERKNUEPFUNG_STATUS_OPTIONS, VERKNUEPFUNG_STATUS_ORDER, VerknuepfungStatus } from '../../../models/verknuepfung-status.model';
-import { KandidatFirmaHinzufuegenDialogComponent, FirmaHinzugefuegtEvent } from '../../kandidaten/kandidat-firma-hinzufuegen-dialog.component';
+import { NeueVerknuepfungFirmaAuswaehlenComponent, FirmaAusgewaehltEvent } from '../../verknuepfungen/neue-verknuepfung-firma-auswaehlen.component';
 
 interface KandidatRow {
   kandidat: Kandidat;
@@ -36,7 +36,7 @@ interface MonthGroup {
 @Component({
   selector: 'app-kandidaten-perm-bestand',
   standalone: true,
-  imports: [CommonModule, FormsModule, KandidatFirmaHinzufuegenDialogComponent],
+  imports: [CommonModule, FormsModule, NeueVerknuepfungFirmaAuswaehlenComponent],
   template: `
     <div class="wrap">
       <p class="hint" *ngIf="loading">Lade Daten...</p>
@@ -122,7 +122,7 @@ interface MonthGroup {
                         <td colspan="6" class="empty-links">Keine Verknüpfungen vorhanden.</td>
                       </tr>
                       <tr>
-                        <td colspan="6"><button type="button" class="firma-hinzufuegen-btn" (click)="openFirmaHinzufuegen(row)">+ Firma hinzufügen</button></td>
+                        <td colspan="6"><button type="button" class="new-verknuepfung-btn" (click)="openNeueVerknuepfung(row)">+ neue Verknüpfung</button></td>
                       </tr>
                     </tbody>
                   </table>
@@ -137,13 +137,13 @@ interface MonthGroup {
         </tbody>
       </table>
 
-      <app-kandidat-firma-hinzufuegen-dialog
-        *ngIf="firmaHinzufuegenRow"
-        [kandidat]="firmaHinzufuegenRow.kandidat"
-        [kandidatName]="firmaHinzufuegenRow.name"
-        (hinzugefuegt)="onFirmaHinzugefuegt($event)"
-        (close)="closeFirmaHinzufuegen()"
-      ></app-kandidat-firma-hinzufuegen-dialog>
+      <app-neue-verknuepfung-firma-auswaehlen
+        *ngIf="neueVerknuepfungRow"
+        [kandidat]="neueVerknuepfungRow.kandidat"
+        [kandidatName]="neueVerknuepfungRow.name"
+        (firmaAusgewaehlt)="onFirmaAusgewaehlt($event)"
+        (close)="closeNeueVerknuepfung()"
+      ></app-neue-verknuepfung-firma-auswaehlen>
     </div>
   `,
   styles: [`
@@ -222,7 +222,7 @@ interface MonthGroup {
       overflow: hidden;
     }
     .empty-links { text-align: center; color: #777; cursor: default; }
-    .firma-hinzufuegen-btn {
+    .new-verknuepfung-btn {
       background: #eef1fa;
       border: 1px solid #c7cfe6;
       color: #1f2a44;
@@ -232,7 +232,7 @@ interface MonthGroup {
       border-radius: 4px;
       cursor: pointer;
     }
-    .firma-hinzufuegen-btn:hover { background: #dde3f5; }
+    .new-verknuepfung-btn:hover { background: #dde3f5; }
     .save-error { margin: 6px 0 0; font-size: 12px; color: #b3261e; }
   `]
 })
@@ -246,7 +246,7 @@ export class KandidatenPermBestandComponent implements OnInit {
   groups: MonthGroup[] = [];
   statusOptions = VERKNUEPFUNG_STATUS_OPTIONS;
   saveError: string | null = null;
-  firmaHinzufuegenRow: KandidatRow | null = null;
+  neueVerknuepfungRow: KandidatRow | null = null;
 
   private firmaNameById = new Map<string, string>();
   private sucheNachById = new Map<string, string>();
@@ -294,17 +294,17 @@ export class KandidatenPermBestandComponent implements OnInit {
     return !!kandidat.id && this.expandedKandidatIds.has(kandidat.id);
   }
 
-  openFirmaHinzufuegen(row: KandidatRow): void {
-    this.firmaHinzufuegenRow = row;
+  openNeueVerknuepfung(row: KandidatRow): void {
+    this.neueVerknuepfungRow = row;
   }
 
-  closeFirmaHinzufuegen(): void {
-    this.firmaHinzufuegenRow = null;
+  closeNeueVerknuepfung(): void {
+    this.neueVerknuepfungRow = null;
   }
 
-  onFirmaHinzugefuegt({ verknuepfung, firma }: FirmaHinzugefuegtEvent): void {
-    const row = this.firmaHinzufuegenRow;
-    this.closeFirmaHinzufuegen();
+  onFirmaAusgewaehlt({ verknuepfung, firma }: FirmaAusgewaehltEvent): void {
+    const row = this.neueVerknuepfungRow;
+    this.closeNeueVerknuepfung();
     if (!row) return;
     // The Firma may have just been created in the dialog
     if (firma.id) this.firmaNameById.set(firma.id, firma.name ?? '');
