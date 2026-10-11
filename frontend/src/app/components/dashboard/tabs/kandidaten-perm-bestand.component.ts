@@ -11,6 +11,7 @@ import { Kandidat } from '../../../models/kandidat.model';
 import { Verknuepfung } from '../../../models/verknuepfung.model';
 import { VERKNUEPFUNG_STATUS_COLORS, VERKNUEPFUNG_STATUS_OPTIONS, VERKNUEPFUNG_STATUS_ORDER, VerknuepfungStatus } from '../../../models/verknuepfung-status.model';
 import { NeueVerknuepfungFirmaAuswaehlenComponent, FirmaAusgewaehltEvent } from '../../verknuepfungen/neue-verknuepfung-firma-auswaehlen.component';
+import { KandidatDialogComponent } from '../../kandidaten/kandidat-dialog.component';
 
 interface KandidatRow {
   kandidat: Kandidat;
@@ -36,7 +37,8 @@ interface MonthGroup {
 @Component({
   selector: 'app-kandidaten-perm-bestand',
   standalone: true,
-  imports: [CommonModule, FormsModule, NeueVerknuepfungFirmaAuswaehlenComponent],
+  imports: [CommonModule, FormsModule, NeueVerknuepfungFirmaAuswaehlenComponent, KandidatDialogComponent],
+  host: { '(document:click)': 'closeMenu()' },
   template: `
     <div class="wrap">
       <p class="hint" *ngIf="loading">Lade Daten...</p>
@@ -61,6 +63,7 @@ interface MonthGroup {
                 [class.status-colored]="!!row.highestStatusName"
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.kandidat)"
+                (contextmenu)="openMenu($event, row.kandidat)"
               >
                 <td><strong>Name: </strong> {{ row.name }}</td>
                 <td><strong>Fachliche Skills: </strong> {{ row.fachlicherSkill }}</td>
@@ -74,6 +77,7 @@ interface MonthGroup {
                 [class.status-colored]="!!row.highestStatusName"
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.kandidat)"
+                (contextmenu)="openMenu($event, row.kandidat)"
               >
                 <td colspan="2"><strong>Vorgestellt bei: </strong> {{ row.vorgestelltBei }}</td>
                 <td><strong>Gebühr: </strong> {{ row.gebuehr }}</td>
@@ -144,6 +148,23 @@ interface MonthGroup {
         (firmaAusgewaehlt)="onFirmaAusgewaehlt($event)"
         (close)="closeNeueVerknuepfung()"
       ></app-neue-verknuepfung-firma-auswaehlen>
+
+      <!-- Custom right-click context menu -->
+      <div class="ctx-menu"
+           *ngIf="menuKandidat"
+           [style.top.px]="menuY"
+           [style.left.px]="menuX"
+           (click)="$event.stopPropagation()">
+        <button (click)="openKandidatDialog()">Kandidat anzeigen</button>
+      </div>
+
+      <app-kandidat-dialog
+        *ngIf="dialogKandidat"
+        [kandidat]="dialogKandidat"
+        (saved)="onKandidatSaved()"
+        (changed)="load()"
+        (close)="closeKandidatDialog()"
+      ></app-kandidat-dialog>
     </div>
   `,
   styles: [`
@@ -226,6 +247,13 @@ interface MonthGroup {
     }
     .new-verknuepfung-btn:hover { background: #dde3f5; }
     .save-error { margin: 6px 0 0; font-size: 12px; color: #b3261e; }
+    .ctx-menu {
+      position: fixed; background: white; border: 1px solid #dfe3ee; border-radius: 6px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15); display: flex; flex-direction: column;
+      min-width: 180px; z-index: 2100; overflow: hidden;
+    }
+    .ctx-menu button { background: white; border: none; text-align: left; padding: 10px 14px; font-size: 14px; cursor: pointer; }
+    .ctx-menu button:hover { background: #eef2fb; }
   `]
 })
 export class KandidatenPermBestandComponent implements OnInit {
@@ -239,6 +267,12 @@ export class KandidatenPermBestandComponent implements OnInit {
   statusOptions = VERKNUEPFUNG_STATUS_OPTIONS;
   saveError: string | null = null;
   neueVerknuepfungRow: KandidatRow | null = null;
+  /** Kandidat whose right-click menu is open. */
+  menuKandidat: Kandidat | null = null;
+  menuX = 0;
+  menuY = 0;
+  /** Kandidat shown in the Kandidat dialog. */
+  dialogKandidat: Kandidat | null = null;
 
   private firmaNameById = new Map<string, string>();
   private sucheNachById = new Map<string, string>();
@@ -247,6 +281,10 @@ export class KandidatenPermBestandComponent implements OnInit {
   private static readonly MONTH_FORMATTER = new Intl.DateTimeFormat('de-DE', { month: 'long', year: 'numeric' });
 
   ngOnInit(): void {
+    this.load();
+  }
+
+  load(): void {
     forkJoin({
       kandidaten: this.kandidatService.getAll(),
       firmen: this.firmaService.getAll(),
@@ -272,6 +310,31 @@ export class KandidatenPermBestandComponent implements OnInit {
         this.loading = false;
       });
     });
+  }
+
+  openMenu(event: MouseEvent, kandidat: Kandidat): void {
+    event.preventDefault();
+    this.menuKandidat = kandidat;
+    this.menuX = event.clientX;
+    this.menuY = event.clientY;
+  }
+
+  closeMenu(): void {
+    this.menuKandidat = null;
+  }
+
+  openKandidatDialog(): void {
+    this.dialogKandidat = this.menuKandidat;
+    this.closeMenu();
+  }
+
+  closeKandidatDialog(): void {
+    this.dialogKandidat = null;
+  }
+
+  onKandidatSaved(): void {
+    this.closeKandidatDialog();
+    this.load();
   }
 
   toggleExpanded(kandidat: Kandidat): void {

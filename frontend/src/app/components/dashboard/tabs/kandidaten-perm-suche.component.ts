@@ -4,10 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { SuchauftragService } from '../../../services/suchauftrag.service';
 import { VerknuepfungService } from '../../../services/verknuepfung.service';
 import { Suchauftrag, SuchauftragUebersicht, SuchauftragUebersichtKandidat } from '../../../models/suchauftrag.model';
-import { Geschlecht, Titel } from '../../../models/kandidat.model';
+import { Geschlecht, Kandidat, Titel } from '../../../models/kandidat.model';
 import { VERKNUEPFUNG_STATUS_COLORS, VERKNUEPFUNG_STATUS_OPTIONS, VERKNUEPFUNG_STATUS_ORDER, VerknuepfungStatus } from '../../../models/verknuepfung-status.model';
 import { Firma } from '../../../models/firma.model';
 import { SuchauftragDialogComponent } from '../../suchauftraege/suchauftrag-dialog.component';
+import { KandidatDialogComponent } from '../../kandidaten/kandidat-dialog.component';
+import { KandidatService } from '../../../services/kandidat.service';
 
 interface SuchauftragRow {
   suchauftrag: Suchauftrag;
@@ -56,7 +58,8 @@ function formatGehalt(s: Suchauftrag): string | undefined {
 @Component({
   selector: 'app-kandidaten-perm-suche',
   standalone: true,
-  imports: [CommonModule, FormsModule, SuchauftragDialogComponent],
+  imports: [CommonModule, FormsModule, SuchauftragDialogComponent, KandidatDialogComponent],
+  host: { '(document:click)': 'closeMenu()' },
   template: `
     <div class="wrap">
       <p class="hint" *ngIf="loading">Lade Daten...</p>
@@ -123,6 +126,7 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                         *ngFor="let k of row.links"
                         [class.status-colored]="!!k.verknuepfung.verknuepfungStatus"
                         [style]="statusStyle(k.verknuepfung.verknuepfungStatus)"
+                        (contextmenu)="openMenu($event, k)"
                       >
                         <td>{{ kandidatName(k) }}</td>
                         <td contenteditable="true" [textContent]="k.verknuepfung.gebuehren ?? ''" (blur)="onGebuehrenEdited(k, $event)"></td>
@@ -163,6 +167,23 @@ function formatGehalt(s: Suchauftrag): string | undefined {
         (verknuepfungenChanged)="dialogChanged = true"
         (close)="closeNeueVerknuepfung()"
       ></app-suchauftrag-dialog>
+
+      <!-- Custom right-click context menu -->
+      <div class="ctx-menu"
+           *ngIf="menuKandidat"
+           [style.top.px]="menuY"
+           [style.left.px]="menuX"
+           (click)="$event.stopPropagation()">
+        <button (click)="openKandidatDialog()">Kandidat anzeigen</button>
+      </div>
+
+      <app-kandidat-dialog
+        *ngIf="dialogKandidat"
+        [kandidat]="dialogKandidat"
+        (saved)="onKandidatSaved()"
+        (changed)="load()"
+        (close)="closeKandidatDialog()"
+      ></app-kandidat-dialog>
     </div>
   `,
   styles: [`
@@ -245,11 +266,19 @@ function formatGehalt(s: Suchauftrag): string | undefined {
     }
     .new-verknuepfung-btn:hover { background: #dde3f5; }
     .save-error { margin: 6px 0 0; font-size: 12px; color: #b3261e; }
+    .ctx-menu {
+      position: fixed; background: white; border: 1px solid #dfe3ee; border-radius: 6px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15); display: flex; flex-direction: column;
+      min-width: 180px; z-index: 2100; overflow: hidden;
+    }
+    .ctx-menu button { background: white; border: none; text-align: left; padding: 10px 14px; font-size: 14px; cursor: pointer; }
+    .ctx-menu button:hover { background: #eef2fb; }
   `]
 })
 export class KandidatenPermSucheComponent implements OnInit {
   private suchauftragService = inject(SuchauftragService);
   private verknuepfungService = inject(VerknuepfungService);
+  private kandidatService = inject(KandidatService);
 
   loading = true;
   groups: MonthGroup[] = [];
@@ -260,6 +289,12 @@ export class KandidatenPermSucheComponent implements OnInit {
   dialogChanged = false;
   /** Firma of the Suchauftrag shown in the dialog. */
   dialogFirma: Firma | null = null;
+  /** Linked Kandidat whose right-click menu is open. */
+  menuKandidat: SuchauftragUebersichtKandidat | null = null;
+  menuX = 0;
+  menuY = 0;
+  /** Kandidat shown in the Kandidat dialog. */
+  dialogKandidat: Kandidat | null = null;
 
   private expandedSuchauftragIds = new Set<string>();
 
@@ -269,7 +304,7 @@ export class KandidatenPermSucheComponent implements OnInit {
     this.load();
   }
 
-  private load(): void {
+  load(): void {
     this.suchauftragService.getUebersicht().subscribe(items => {
       this.groups = this.buildGroups(items);
       this.loading = false;
@@ -299,6 +334,34 @@ export class KandidatenPermSucheComponent implements OnInit {
     this.neueVerknuepfungRow = null;
     this.dialogFirma = null;
     if (this.dialogChanged) this.load();
+  }
+
+  openMenu(event: MouseEvent, k: SuchauftragUebersichtKandidat): void {
+    event.preventDefault();
+    this.menuKandidat = k;
+    this.menuX = event.clientX;
+    this.menuY = event.clientY;
+  }
+
+  closeMenu(): void {
+    this.menuKandidat = null;
+  }
+
+  /** The overview only carries the name, so the full Kandidat is loaded before opening the dialog. */
+  openKandidatDialog(): void {
+    const kandidatId = this.menuKandidat?.kandidatId;
+    this.closeMenu();
+    if (!kandidatId) return;
+    this.kandidatService.getById(kandidatId).subscribe(kandidat => this.dialogKandidat = kandidat);
+  }
+
+  closeKandidatDialog(): void {
+    this.dialogKandidat = null;
+  }
+
+  onKandidatSaved(): void {
+    this.closeKandidatDialog();
+    this.load();
   }
 
   kandidatName(k: SuchauftragUebersichtKandidat): string {
