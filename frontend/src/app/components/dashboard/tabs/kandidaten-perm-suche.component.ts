@@ -82,10 +82,10 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.suchauftrag)"
               >
-                <td><strong>Firma: </strong> <span contenteditable="true" [textContent]="row.firma"></span></td>
-                <td><strong>Ansprechpartner: </strong> <span contenteditable="true" [textContent]="row.ansprechpartner"></span></td>
-                <td><strong>Suche nach: </strong> <span contenteditable="true" [textContent]="row.sucheNach"></span></td>
-                <td><strong>Gehalt: </strong> <span contenteditable="true" [textContent]="row.gehalt"></span></td>
+                <td><strong>Firma: </strong> {{ row.firma }}</td>
+                <td><strong>Ansprechpartner: </strong> {{ row.ansprechpartner }}</td>
+                <td><strong>Suche nach: </strong> {{ row.sucheNach }}</td>
+                <td><strong>Gehalt: </strong> {{ row.gehalt }}</td>
               </tr>
               <tr
                 [class.entry-odd]="i % 2 === 1"
@@ -95,9 +95,9 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.suchauftrag)"
               >
-                <td><strong>Kandidaten: </strong> <span contenteditable="true" [textContent]="row.kandidaten"></span></td>
-                <td colspan="2"><strong>K.O.-Faktoren: </strong> <span contenteditable="true" [textContent]="row.koFaktoren"></span></td>
-                <td><strong>Standort: </strong> <span contenteditable="true" [textContent]="row.standort"></span></td>
+                <td><strong>Kandidaten: </strong> {{ row.kandidaten }}</td>
+                <td colspan="2"><strong>K.O.-Faktoren: </strong> {{ row.koFaktoren }}</td>
+                <td><strong>Standort: </strong> {{ row.standort }}</td>
               </tr>
               <tr class="detail-row" *ngIf="isExpanded(row.suchauftrag)">
                 <td colspan="4">
@@ -180,14 +180,6 @@ function formatGehalt(s: Suchauftrag): string | undefined {
       word-break: break-word;
     }
     td strong { font-weight: 700; color: #1f2a44; }
-    td span[contenteditable='true'] { cursor: text; border-radius: 2px; }
-    td span[contenteditable='true']:hover { background: #f8f9fd; color: #111; }
-    td span[contenteditable='true']:focus {
-      color: #111;
-      outline: 2px solid #6a8ee0;
-      outline-offset: 1px;
-      background: #fff;
-    }
     .entry-row-1 td { border-top: 1px solid #e5e9f3; border-bottom: none; padding-bottom: 2px; }
     .entry-row-2 td { border-top: none; border-bottom: 1px solid #d7ddec; padding-top: 2px; }
     .entry-even td { background: #fff; }

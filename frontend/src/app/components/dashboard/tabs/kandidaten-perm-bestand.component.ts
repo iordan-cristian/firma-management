@@ -62,10 +62,10 @@ interface MonthGroup {
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.kandidat)"
               >
-                <td><strong>Name: </strong> <span contenteditable="true" [textContent]="row.name"></span></td>
-                <td><strong>Fachliche Skills: </strong> <span contenteditable="true" [textContent]="row.fachlicherSkill"></span></td>
-                <td><strong>Gehalt: </strong> <span contenteditable="true" [textContent]="row.gehalt"></span></td>
-                <td><strong>Wohnort: </strong> <span contenteditable="true" [textContent]="row.wohnort"></span></td>
+                <td><strong>Name: </strong> {{ row.name }}</td>
+                <td><strong>Fachliche Skills: </strong> {{ row.fachlicherSkill }}</td>
+                <td><strong>Gehalt: </strong> {{ row.gehalt }}</td>
+                <td><strong>Wohnort: </strong> {{ row.wohnort }}</td>
               </tr>
               <tr
                 [class.entry-odd]="i % 2 === 1"
@@ -75,9 +75,9 @@ interface MonthGroup {
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.kandidat)"
               >
-                <td colspan="2"><strong>Vorgestellt bei: </strong> <span contenteditable="true" [textContent]="row.vorgestelltBei"></span></td>
-                <td><strong>Gebühr: </strong> <span contenteditable="true" [textContent]="row.gebuehr"></span></td>
-                <td><strong>Mein Anteil: </strong> <span contenteditable="true" [textContent]="row.meinAnteil"></span></td>
+                <td colspan="2"><strong>Vorgestellt bei: </strong> {{ row.vorgestelltBei }}</td>
+                <td><strong>Gebühr: </strong> {{ row.gebuehr }}</td>
+                <td><strong>Mein Anteil: </strong> {{ row.meinAnteil }}</td>
               </tr>
               <tr class="detail-row" *ngIf="isExpanded(row.kandidat)">
                 <td colspan="4">
@@ -161,14 +161,6 @@ interface MonthGroup {
       word-break: break-word;
     }
     td strong { font-weight: 700; color: #1f2a44; }
-    td span[contenteditable='true'] { cursor: text; border-radius: 2px; }
-    td span[contenteditable='true']:hover { background: #f8f9fd; color: #111; }
-    td span[contenteditable='true']:focus {
-      color: #111;
-      outline: 2px solid #6a8ee0;
-      outline-offset: 1px;
-      background: #fff;
-    }
     .entry-row-1 td { border-top: 1px solid #e5e9f3; border-bottom: none; padding-bottom: 2px; }
     .entry-row-2 td { border-top: none; border-bottom: 1px solid #d7ddec; padding-top: 2px; }
     .entry-even td { background: #fff; }
