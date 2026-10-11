@@ -2,16 +2,16 @@ import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FirmaService } from '../../services/firma.service';
-import { AnsprechpartnerService } from '../../services/ansprechpartner.service';
 import { VertragService } from '../../services/vertrag.service';
 import { Firma } from '../../models/firma.model';
 import { Ansprechpartner } from '../../models/ansprechpartner.model';
 import { Suchauftrag } from '../../models/suchauftrag.model';
 import { Vertrag } from '../../models/vertrag.model';
-import { Geschlecht, GESCHLECHT_OPTIONS, TITEL_OPTIONS } from '../../models/kandidat.model';
+import { Geschlecht } from '../../models/kandidat.model';
 import { VerknuepfungService } from '../../services/verknuepfung.service';
 import { VerknuepfungKandidat } from '../../models/verknuepfung.model';
 import { NeueFirmaDialogComponent } from './neue-firma-dialog.component';
+import { AnsprechpartnerDialogComponent } from '../Ansprechpartner/ansprechpartner-dialog.component';
 import { SuchauftragDialogComponent, SuchauftragVerknuepfungenChangedEvent } from '../suchauftraege/suchauftrag-dialog.component';
 
 type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
@@ -19,7 +19,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
 @Component({
   selector: 'app-firmen',
   standalone: true,
-  imports: [CommonModule, FormsModule, NeueFirmaDialogComponent, SuchauftragDialogComponent],
+  imports: [CommonModule, FormsModule, NeueFirmaDialogComponent, AnsprechpartnerDialogComponent, SuchauftragDialogComponent],
   template: `
     <div class="page">
       <div class="page-header">
@@ -157,76 +157,13 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
         (close)="closeAddModal()"
       ></app-neue-firma-dialog>
 
-      <!-- Add Ansprechpartner Modal -->
-      <div class="modal-backdrop" *ngIf="addAnsprechpartnerOpen">
-        <div class="modal modal-wide">
-          <h2>{{ editingAnsprechpartnerId ? 'Ansprechpartner bearbeiten' : 'Neuer Ansprechpartner' }}</h2>
-          <div class="section-title">Persönliche Daten</div>
-          <label>Geschlecht
-            <select [(ngModel)]="draftAnsprechpartner.geschlecht">
-              <option [ngValue]="undefined">–</option>
-              <option *ngFor="let o of geschlechtOptions" [value]="o">{{ o }}</option>
-            </select>
-          </label>
-          <label>Titel
-            <select [(ngModel)]="draftAnsprechpartner.titel">
-              <option [ngValue]="undefined">–</option>
-              <option *ngFor="let o of titelOptions" [value]="o">{{ o }}</option>
-            </select>
-          </label>
-          <label>Vorname
-            <input [(ngModel)]="draftAnsprechpartner.vorname" placeholder="Vorname" />
-          </label>
-          <label>Nachname
-            <input [(ngModel)]="draftAnsprechpartner.nachname" placeholder="Nachname" />
-          </label>
-          <label>Position
-            <input [(ngModel)]="draftAnsprechpartner.position" placeholder="Position" />
-          </label>
-          <label>Schwerpunkt
-            <input [(ngModel)]="draftAnsprechpartner.schwerpunkt" placeholder="Schwerpunkt" />
-          </label>
-          <div class="section-title">Kontakt</div>
-          <label>E-Mail
-            <div class="input-with-btn">
-              <input [(ngModel)]="draftAnsprechpartner.email" placeholder="E-Mail" />
-              <button class="btn-link" (click)="copyToClipboard(draftAnsprechpartner.email)" [disabled]="!draftAnsprechpartner.email">📋</button>
-            </div>
-            <span class="field-error" *ngIf="ansprechpartnerErrors['email']">{{ ansprechpartnerErrors['email'] }}</span>
-          </label>
-          <label>Telefon
-            <div class="input-with-btn">
-              <input [(ngModel)]="draftAnsprechpartner.telefonnummer" placeholder="Telefonnummer" />
-              <button class="btn-link" (click)="copyToClipboard(draftAnsprechpartner.telefonnummer)" [disabled]="!draftAnsprechpartner.telefonnummer">📋</button>
-            </div>
-            <span class="field-error" *ngIf="ansprechpartnerErrors['telefonnummer']">{{ ansprechpartnerErrors['telefonnummer'] }}</span>
-          </label>
-          <label>Kontaktinterval
-            <input [(ngModel)]="draftAnsprechpartner.kontaktinterval" placeholder="z.B. wöchentlich" />
-          </label>
-          <div class="section-title">Social Media</div>
-          <label>LinkedIn Profil
-            <div class="input-with-btn">
-              <input [(ngModel)]="draftAnsprechpartner.linkedinProfil" placeholder="LinkedIn-URL" />
-              <button class="btn-link" (click)="openLink(draftAnsprechpartner.linkedinProfil)" [disabled]="!draftAnsprechpartner.linkedinProfil">↗</button>
-            </div>
-          </label>
-          <label>Xing Profil
-            <div class="input-with-btn">
-              <input [(ngModel)]="draftAnsprechpartner.xingProfil" placeholder="Xing-URL" />
-              <button class="btn-link" (click)="openLink(draftAnsprechpartner.xingProfil)" [disabled]="!draftAnsprechpartner.xingProfil">↗</button>
-            </div>
-          </label>
-          <div class="section-title">Informationen</div>
-          <label>Informationen
-            <textarea [(ngModel)]="draftAnsprechpartner.informationen" placeholder="Notizen..." rows="8" style="min-height:160px"></textarea>
-          </label>
-          <div class="modal-actions">
-            <button class="btn-save" (click)="saveAnsprechpartner()">Speichern</button>
-            <button class="btn-cancel" (click)="addAnsprechpartnerOpen = false">Abbrechen</button>
-          </div>
-        </div>
-      </div>
+      <!-- Add / Edit Ansprechpartner -->
+      <app-ansprechpartner-dialog
+        *ngIf="dialogAnsprechpartner"
+        [ansprechpartner]="dialogAnsprechpartner"
+        (saved)="onAnsprechpartnerSaved()"
+        (close)="dialogAnsprechpartner = null"
+      ></app-ansprechpartner-dialog>
 
       <!-- Add / Edit Suchauftrag -->
       <app-suchauftrag-dialog
@@ -323,33 +260,23 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
       box-shadow: 0 8px 32px rgba(0,0,0,0.18); max-height: 90vh; overflow-y: auto;
     }
     .modal h2 { margin: 0 0 20px; color: #1f2a44; font-size: 18px; }
-    .section-title { font-size: 12px; font-weight: 700; color: #3b5bdb; text-transform: uppercase; letter-spacing: 0.05em; margin: 18px 0 10px; border-bottom: 1px solid #e5e9f3; padding-bottom: 4px; }
     .modal label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #555; margin-bottom: 14px; }
     .modal label.checkbox-label { flex-direction: row; align-items: center; gap: 8px; }
-    .modal input:not([type="checkbox"]), .modal select, .modal textarea {
+    .modal input:not([type="checkbox"]) {
       padding: 8px 10px; border: 1px solid #dfe3ee; border-radius: 6px; font-size: 14px; font-family: inherit;
     }
-    .modal input:not([type="checkbox"]):focus, .modal select:focus, .modal textarea:focus {
+    .modal input:not([type="checkbox"]):focus {
       outline: none; border-color: #3b5bdb;
     }
-    .modal textarea { resize: vertical; }
-    .modal.modal-wide { width: 640px; }
     .modal-actions { display: flex; align-items: center; gap: 10px; justify-content: flex-end; margin-top: 8px; }
     .btn-save { background: #3b5bdb; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
     .btn-save:hover { background: #2f4ac7; }
     .btn-save:disabled { background: #a9b4d6; cursor: not-allowed; }
     .btn-cancel { background: transparent; border: 1px solid #dfe3ee; padding: 8px 18px; border-radius: 6px; cursor: pointer; }
-    .input-with-btn { display: flex; gap: 6px; }
-    .input-with-btn input { flex: 1; }
-    .btn-link { padding: 8px 10px; border: 1px solid #dfe3ee; border-radius: 6px; background: #f1f3f8; cursor: pointer; font-size: 14px; line-height: 1; }
-    .btn-link:hover:not(:disabled) { background: #e2e6f0; }
-    .btn-link:disabled { opacity: 0.4; cursor: default; }
-    .field-error { color: #e03131; font-size: 11px; margin-top: 2px; }
   `]
 })
 export class FirmenComponent implements OnInit {
   private firmaService = inject(FirmaService);
-  private ansprechpartnerService = inject(AnsprechpartnerService);
   private vertragService = inject(VertragService);
   private verknuepfungService = inject(VerknuepfungService);
 
@@ -368,18 +295,13 @@ export class FirmenComponent implements OnInit {
   vertragList: Vertrag[] = [];
   verknuepfungenBySuchauftragId: Record<string, VerknuepfungKandidat[]> = {};
 
-  readonly geschlechtOptions = GESCHLECHT_OPTIONS;
-  readonly titelOptions = TITEL_OPTIONS;
-
   // Add / Edit Firma
   addFirmaOpen = false;
   draftFirma: Partial<Firma> = {};
 
   // Add / Edit Ansprechpartner
-  addAnsprechpartnerOpen = false;
-  editingAnsprechpartnerId: string | null = null;
-  draftAnsprechpartner: Partial<Ansprechpartner> = {};
-  ansprechpartnerErrors: Record<string, string> = {};
+  /** Open Ansprechpartner dialog: null = closed, otherwise the (new or edited) Ansprechpartner. */
+  dialogAnsprechpartner: Partial<Ansprechpartner> | null = null;
 
   // Add / Edit Suchauftrag
   /** Open Suchauftrag dialog: null = closed, {} = new Suchauftrag, otherwise the Suchauftrag being edited. */
@@ -397,20 +319,11 @@ export class FirmenComponent implements OnInit {
   }
 
 
-  openLink(url?: string): void {
-    if (url) window.open(url, '_blank', 'noopener,noreferrer');
-  }
-
-  copyToClipboard(value?: string): void {
-    if (value) navigator.clipboard.writeText(value);
-  }
-
   // ── Firma ────────────────────────────────────────────────
   openAddModal(): void { this.draftFirma = {}; this.addFirmaOpen = true; }
   @HostListener('document:keydown.escape')
   onEscape(): void {
     if (this.addFirmaOpen) this.closeAddModal();
-    else if (this.addAnsprechpartnerOpen) this.addAnsprechpartnerOpen = false;
     else if (this.addVertragOpen) this.addVertragOpen = false;
   }
 
@@ -429,36 +342,16 @@ export class FirmenComponent implements OnInit {
 
   // ── Ansprechpartner ──────────────────────────────────────
   openAddAnsprechpartner(): void {
-    this.editingAnsprechpartnerId = null;
-    this.draftAnsprechpartner = { firmaId: this.expandedFirma!.id };
-    this.ansprechpartnerErrors = {};
-    this.addAnsprechpartnerOpen = true;
+    this.dialogAnsprechpartner = { firmaId: this.expandedFirma!.id };
   }
 
   openEditAnsprechpartner(a: Ansprechpartner): void {
-    this.editingAnsprechpartnerId = a.id ?? null;
-    this.draftAnsprechpartner = { ...a };
-    this.ansprechpartnerErrors = {};
-    this.addAnsprechpartnerOpen = true;
+    this.dialogAnsprechpartner = a;
   }
 
-  saveAnsprechpartner(): void {
-    const refresh = () =>
-      this.firmaService.getAnsprechpartnerForFirma(this.expandedFirma!.id!).subscribe(list => (this.ansprechpartnerList = list));
-    const onError = (err: any) => {
-      if (err.status === 400) this.ansprechpartnerErrors = err.error ?? {};
-    };
-    if (this.editingAnsprechpartnerId) {
-      this.ansprechpartnerService.update(this.editingAnsprechpartnerId, this.draftAnsprechpartner as Ansprechpartner).subscribe({
-        next: () => { refresh(); this.addAnsprechpartnerOpen = false; this.editingAnsprechpartnerId = null; },
-        error: onError,
-      });
-    } else {
-      this.ansprechpartnerService.create(this.draftAnsprechpartner as Ansprechpartner).subscribe({
-        next: () => { refresh(); this.addAnsprechpartnerOpen = false; },
-        error: onError,
-      });
-    }
+  onAnsprechpartnerSaved(): void {
+    this.dialogAnsprechpartner = null;
+    this.firmaService.getAnsprechpartnerForFirma(this.expandedFirma!.id!).subscribe(list => (this.ansprechpartnerList = list));
   }
 
   // ── Suchauftrag ──────────────────────────────────────────

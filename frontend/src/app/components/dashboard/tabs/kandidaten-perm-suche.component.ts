@@ -10,6 +10,11 @@ import { Firma } from '../../../models/firma.model';
 import { SuchauftragDialogComponent } from '../../suchauftraege/suchauftrag-dialog.component';
 import { KandidatDialogComponent } from '../../kandidaten/kandidat-dialog.component';
 import { KandidatService } from '../../../services/kandidat.service';
+import { FirmaService } from '../../../services/firma.service';
+import { AnsprechpartnerService } from '../../../services/ansprechpartner.service';
+import { Ansprechpartner } from '../../../models/ansprechpartner.model';
+import { NeueFirmaDialogComponent } from '../../firmen/neue-firma-dialog.component';
+import { AnsprechpartnerDialogComponent } from '../../Ansprechpartner/ansprechpartner-dialog.component';
 
 interface SuchauftragRow {
   suchauftrag: Suchauftrag;
@@ -58,7 +63,7 @@ function formatGehalt(s: Suchauftrag): string | undefined {
 @Component({
   selector: 'app-kandidaten-perm-suche',
   standalone: true,
-  imports: [CommonModule, FormsModule, SuchauftragDialogComponent, KandidatDialogComponent],
+  imports: [CommonModule, FormsModule, SuchauftragDialogComponent, KandidatDialogComponent, NeueFirmaDialogComponent, AnsprechpartnerDialogComponent],
   host: { '(document:click)': 'closeMenu()' },
   template: `
     <div class="wrap">
@@ -84,6 +89,7 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                 [class.status-colored]="!!row.highestStatusName"
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.suchauftrag)"
+                (contextmenu)="openRowMenu($event, row)"
               >
                 <td><strong>Firma: </strong> {{ row.firma }}</td>
                 <td><strong>Ansprechpartner: </strong> {{ row.ansprechpartner }}</td>
@@ -97,6 +103,7 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                 [class.status-colored]="!!row.highestStatusName"
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.suchauftrag)"
+                (contextmenu)="openRowMenu($event, row)"
               >
                 <td><strong>Kandidaten: </strong> {{ row.kandidaten }}</td>
                 <td colspan="2"><strong>K.O.-Faktoren: </strong> {{ row.koFaktoren }}</td>
@@ -159,16 +166,26 @@ function formatGehalt(s: Suchauftrag): string | undefined {
       </table>
 
       <app-suchauftrag-dialog
-        *ngIf="neueVerknuepfungRow && dialogFirma"
+        *ngIf="dialogSuchauftragRow && dialogFirma"
         [firma]="dialogFirma"
-        [suchauftrag]="neueVerknuepfungRow.suchauftrag"
-        [autoMatch]="true"
+        [suchauftrag]="dialogSuchauftragRow.suchauftrag"
+        [autoMatch]="dialogAutoMatch"
         (saved)="dialogChanged = true"
         (verknuepfungenChanged)="dialogChanged = true"
-        (close)="closeNeueVerknuepfung()"
+        (close)="closeSuchauftragDialog()"
       ></app-suchauftrag-dialog>
 
-      <!-- Custom right-click context menu -->
+      <!-- Custom right-click context menus -->
+      <div class="ctx-menu"
+           *ngIf="menuRow"
+           [style.top.px]="menuY"
+           [style.left.px]="menuX"
+           (click)="$event.stopPropagation()">
+        <button (click)="openSuchauftragDialog()">Suchauftrag anzeigen</button>
+        <button (click)="openAnsprechpartnerDialog()">Ansprechpartner anzeigen</button>
+        <button (click)="openFirmaDialog()">Firma anzeigen</button>
+      </div>
+
       <div class="ctx-menu"
            *ngIf="menuKandidat"
            [style.top.px]="menuY"
@@ -176,6 +193,20 @@ function formatGehalt(s: Suchauftrag): string | undefined {
            (click)="$event.stopPropagation()">
         <button (click)="openKandidatDialog()">Kandidat anzeigen</button>
       </div>
+
+      <app-ansprechpartner-dialog
+        *ngIf="dialogAnsprechpartner"
+        [ansprechpartner]="dialogAnsprechpartner"
+        (saved)="onStammdatenSaved()"
+        (close)="dialogAnsprechpartner = null"
+      ></app-ansprechpartner-dialog>
+
+      <app-neue-firma-dialog
+        *ngIf="dialogStammFirma"
+        [firma]="dialogStammFirma"
+        (saved)="onStammdatenSaved()"
+        (close)="dialogStammFirma = null"
+      ></app-neue-firma-dialog>
 
       <app-kandidat-dialog
         *ngIf="dialogKandidat"
@@ -279,22 +310,33 @@ export class KandidatenPermSucheComponent implements OnInit {
   private suchauftragService = inject(SuchauftragService);
   private verknuepfungService = inject(VerknuepfungService);
   private kandidatService = inject(KandidatService);
+  private firmaService = inject(FirmaService);
+  private ansprechpartnerService = inject(AnsprechpartnerService);
 
   loading = true;
   groups: MonthGroup[] = [];
   statusOptions = VERKNUEPFUNG_STATUS_OPTIONS;
   saveError: string | null = null;
-  neueVerknuepfungRow: SuchauftragRow | null = null;
+  /** Row whose Suchauftrag is shown in the Suchauftrag dialog. */
+  dialogSuchauftragRow: SuchauftragRow | null = null;
+  /** Whether the Suchauftrag dialog opens with the matched Kandidaten (used for "+ neue Verknüpfung"). */
+  dialogAutoMatch = false;
   /** Set when the Suchauftrag dialog stored something; the overview is reloaded on close. */
   dialogChanged = false;
   /** Firma of the Suchauftrag shown in the dialog. */
   dialogFirma: Firma | null = null;
+  /** Suchauftrag row whose right-click menu is open. */
+  menuRow: SuchauftragRow | null = null;
   /** Linked Kandidat whose right-click menu is open. */
   menuKandidat: SuchauftragUebersichtKandidat | null = null;
   menuX = 0;
   menuY = 0;
   /** Kandidat shown in the Kandidat dialog. */
   dialogKandidat: Kandidat | null = null;
+  /** Ansprechpartner shown in the Ansprechpartner dialog. */
+  dialogAnsprechpartner: Ansprechpartner | null = null;
+  /** Firma shown in the Firma dialog (dialogFirma is only the reference passed to the Suchauftrag dialog). */
+  dialogStammFirma: Firma | null = null;
 
   private expandedSuchauftragIds = new Set<string>();
 
@@ -325,26 +367,68 @@ export class KandidatenPermSucheComponent implements OnInit {
 
   /** Opens the Suchauftrag with the matched Kandidaten; Verknüpfungen are added via right-click on a Kandidat. */
   openNeueVerknuepfung(row: SuchauftragRow): void {
-    this.dialogChanged = false;
-    this.dialogFirma = { id: row.firmaId, name: row.firma };
-    this.neueVerknuepfungRow = row;
+    this.showSuchauftrag(row, true);
   }
 
-  closeNeueVerknuepfung(): void {
-    this.neueVerknuepfungRow = null;
+  private showSuchauftrag(row: SuchauftragRow, autoMatch: boolean): void {
+    this.dialogChanged = false;
+    this.dialogAutoMatch = autoMatch;
+    this.dialogFirma = { id: row.firmaId, name: row.firma };
+    this.dialogSuchauftragRow = row;
+  }
+
+  closeSuchauftragDialog(): void {
+    this.dialogSuchauftragRow = null;
     this.dialogFirma = null;
     if (this.dialogChanged) this.load();
   }
 
+  openRowMenu(event: MouseEvent, row: SuchauftragRow): void {
+    event.preventDefault();
+    this.menuKandidat = null;
+    this.menuRow = row;
+    this.menuX = event.clientX;
+    this.menuY = event.clientY;
+  }
+
   openMenu(event: MouseEvent, k: SuchauftragUebersichtKandidat): void {
     event.preventDefault();
+    this.menuRow = null;
     this.menuKandidat = k;
     this.menuX = event.clientX;
     this.menuY = event.clientY;
   }
 
   closeMenu(): void {
+    this.menuRow = null;
     this.menuKandidat = null;
+  }
+
+  openSuchauftragDialog(): void {
+    const row = this.menuRow;
+    this.closeMenu();
+    if (row) this.showSuchauftrag(row, false);
+  }
+
+  openAnsprechpartnerDialog(): void {
+    const ansprechpartnerId = this.menuRow?.suchauftrag.ansprechpartnerId;
+    this.closeMenu();
+    if (!ansprechpartnerId) return;
+    this.ansprechpartnerService.getById(ansprechpartnerId).subscribe(a => this.dialogAnsprechpartner = a);
+  }
+
+  openFirmaDialog(): void {
+    const firmaId = this.menuRow?.firmaId;
+    this.closeMenu();
+    if (!firmaId) return;
+    this.firmaService.getById(firmaId).subscribe(f => this.dialogStammFirma = f);
+  }
+
+  /** Firma or Ansprechpartner names are shown in the overview, so it is reloaded after saving. */
+  onStammdatenSaved(): void {
+    this.dialogAnsprechpartner = null;
+    this.dialogStammFirma = null;
+    this.load();
   }
 
   /** The overview only carries the name, so the full Kandidat is loaded before opening the dialog. */
