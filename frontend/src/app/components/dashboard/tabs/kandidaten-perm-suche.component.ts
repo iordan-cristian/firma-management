@@ -6,9 +6,12 @@ import { VerknuepfungService } from '../../../services/verknuepfung.service';
 import { Suchauftrag, SuchauftragUebersicht, SuchauftragUebersichtKandidat } from '../../../models/suchauftrag.model';
 import { Geschlecht, Titel } from '../../../models/kandidat.model';
 import { VERKNUEPFUNG_STATUS_COLORS, VERKNUEPFUNG_STATUS_OPTIONS, VERKNUEPFUNG_STATUS_ORDER, VerknuepfungStatus } from '../../../models/verknuepfung-status.model';
+import { Firma } from '../../../models/firma.model';
+import { SuchauftragDialogComponent } from '../../suchauftraege/suchauftrag-dialog.component';
 
 interface SuchauftragRow {
   suchauftrag: Suchauftrag;
+  firmaId?: string;
   firma: string;
   ansprechpartner: string;
   sucheNach: string;
@@ -53,7 +56,7 @@ function formatGehalt(s: Suchauftrag): string | undefined {
 @Component({
   selector: 'app-kandidaten-perm-suche',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SuchauftragDialogComponent],
   template: `
     <div class="wrap">
       <p class="hint" *ngIf="loading">Lade Daten...</p>
@@ -135,6 +138,9 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                       <tr *ngIf="row.links.length === 0">
                         <td colspan="5" class="empty-links">Keine Verknüpfungen vorhanden.</td>
                       </tr>
+                      <tr>
+                        <td colspan="5"><button type="button" class="new-verknuepfung-btn" (click)="openNeueVerknuepfung(row)">+ neue Verknüpfung</button></td>
+                      </tr>
                     </tbody>
                   </table>
                   <p class="save-error" *ngIf="saveError">{{ saveError }}</p>
@@ -147,6 +153,16 @@ function formatGehalt(s: Suchauftrag): string | undefined {
           </tr>
         </tbody>
       </table>
+
+      <app-suchauftrag-dialog
+        *ngIf="neueVerknuepfungRow && dialogFirma"
+        [firma]="dialogFirma"
+        [suchauftrag]="neueVerknuepfungRow.suchauftrag"
+        [autoMatch]="true"
+        (saved)="dialogChanged = true"
+        (verknuepfungenChanged)="dialogChanged = true"
+        (close)="closeNeueVerknuepfung()"
+      ></app-suchauftrag-dialog>
     </div>
   `,
   styles: [`
@@ -225,6 +241,17 @@ function formatGehalt(s: Suchauftrag): string | undefined {
       overflow: hidden;
     }
     .empty-links { text-align: center; color: #777; cursor: default; }
+    .new-verknuepfung-btn {
+      background: #eef1fa;
+      border: 1px solid #c7cfe6;
+      color: #1f2a44;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .new-verknuepfung-btn:hover { background: #dde3f5; }
     .save-error { margin: 6px 0 0; font-size: 12px; color: #b3261e; }
   `]
 })
@@ -236,12 +263,21 @@ export class KandidatenPermSucheComponent implements OnInit {
   groups: MonthGroup[] = [];
   statusOptions = VERKNUEPFUNG_STATUS_OPTIONS;
   saveError: string | null = null;
+  neueVerknuepfungRow: SuchauftragRow | null = null;
+  /** Set when the Suchauftrag dialog stored something; the overview is reloaded on close. */
+  dialogChanged = false;
+  /** Firma of the Suchauftrag shown in the dialog. */
+  dialogFirma: Firma | null = null;
 
   private expandedSuchauftragIds = new Set<string>();
 
   private static readonly MONTH_FORMATTER = new Intl.DateTimeFormat('de-DE', { month: 'long', year: 'numeric' });
 
   ngOnInit(): void {
+    this.load();
+  }
+
+  private load(): void {
     this.suchauftragService.getUebersicht().subscribe(items => {
       this.groups = this.buildGroups(items);
       this.loading = false;
@@ -258,6 +294,19 @@ export class KandidatenPermSucheComponent implements OnInit {
 
   isExpanded(suchauftrag: Suchauftrag): boolean {
     return !!suchauftrag.id && this.expandedSuchauftragIds.has(suchauftrag.id);
+  }
+
+  /** Opens the Suchauftrag with the matched Kandidaten; Verknüpfungen are added via right-click on a Kandidat. */
+  openNeueVerknuepfung(row: SuchauftragRow): void {
+    this.dialogChanged = false;
+    this.dialogFirma = { id: row.firmaId, name: row.firma };
+    this.neueVerknuepfungRow = row;
+  }
+
+  closeNeueVerknuepfung(): void {
+    this.neueVerknuepfungRow = null;
+    this.dialogFirma = null;
+    if (this.dialogChanged) this.load();
   }
 
   kandidatName(k: SuchauftragUebersichtKandidat): string {
@@ -337,12 +386,13 @@ export class KandidatenPermSucheComponent implements OnInit {
     const s = item.suchauftrag;
     return {
       suchauftrag: s,
+      firmaId: item.firmaId,
       firma: item.firmaName?.trim() || '-',
       ansprechpartner: this.formatName(item.ansprechpartnerGeschlecht, item.ansprechpartnerTitel,
         item.ansprechpartnerVorname, item.ansprechpartnerNachname),
       sucheNach: s.sucheNach?.trim() || '-',
       gehalt: formatGehalt(s) ?? '-',
-      kandidaten: item.kandidaten.map(k => this.formatName(k.geschlecht, k.titel, k.vorname, k.nachname)).join(', ') || '-',
+      kandidaten: this.formatKandidaten(item.kandidaten),
       koFaktoren: this.formatKoFaktoren(s),
       standort: s.ort?.trim() || '-',
       links: item.kandidaten,
@@ -370,6 +420,10 @@ export class KandidatenPermSucheComponent implements OnInit {
   private formatName(geschlecht?: Geschlecht, titel?: Titel, vorname?: string, nachname?: string): string {
     const anrede = geschlecht === 'männlich' ? 'Herr' : geschlecht === 'weiblich' ? 'Frau' : '';
     return [anrede, titel, vorname, nachname].filter(Boolean).join(' ') || '-';
+  }
+
+  private formatKandidaten(kandidaten: SuchauftragUebersichtKandidat[]): string {
+    return kandidaten.map(k => this.formatName(k.geschlecht, k.titel, k.vorname, k.nachname)).join(', ') || '-';
   }
 
   private formatKoFaktoren(s: Suchauftrag): string {

@@ -14,6 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class SuchauftragUebersichtResponse {
     private Suchauftrag suchauftrag;
+    private UUID firmaId;
     private String firmaName;
     private Geschlecht ansprechpartnerGeschlecht;
     private Titel ansprechpartnerTitel;

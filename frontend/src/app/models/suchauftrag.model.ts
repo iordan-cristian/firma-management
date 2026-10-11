@@ -60,6 +60,7 @@ export interface SuchauftragUebersichtKandidat {
 
 export interface SuchauftragUebersicht {
   suchauftrag: Suchauftrag;
+  firmaId?: string;
   firmaName?: string;
   ansprechpartnerGeschlecht?: Geschlecht;
   ansprechpartnerTitel?: Titel;

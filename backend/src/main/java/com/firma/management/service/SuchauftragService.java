@@ -75,6 +75,7 @@ public class SuchauftragService {
                             .toList();
             return new SuchauftragUebersichtResponse(
                     s,
+                    ap != null ? ap.getFirmaId() : null,
                     ap != null ? firmaNameById.get(ap.getFirmaId()) : null,
                     ap != null ? ap.getGeschlecht() : null,
                     ap != null ? ap.getTitel() : null,
