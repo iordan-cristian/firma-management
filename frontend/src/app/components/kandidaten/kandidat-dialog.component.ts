@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Input, OnInit, Output, inject } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { KandidatService } from '../../services/kandidat.service';
@@ -190,7 +190,8 @@ import {
 
           <div class="section-title">Berufserfahrung</div>
           <label>Allgemeiner Schwerpunkt *
-            <select [(ngModel)]="draft.allgemeinerSchwerpunkt">
+            <select [(ngModel)]="draft.allgemeinerSchwerpunkt" data-field="allgemeinerSchwerpunkt"
+                    [class.invalid]="saveAttempted && !draft.allgemeinerSchwerpunkt">
               <option [ngValue]="undefined">–</option>
               <option *ngFor="let o of schwerpunktOptions" [value]="o">{{ o }}</option>
             </select>
@@ -241,14 +242,14 @@ import {
           <div class="section-title">Kontakt Informationen</div>
           <label>E-Mail
             <div class="input-with-btn">
-              <input [(ngModel)]="draft.email" placeholder="E-Mail Adresse" />
+              <input [(ngModel)]="draft.email" placeholder="E-Mail Adresse" data-field="email" [class.invalid]="!!kandidatErrors['email']" />
               <button class="btn-link" (click)="copyToClipboard(draft.email)" [disabled]="!draft.email">📋</button>
             </div>
             <span class="field-error" *ngIf="kandidatErrors['email']">{{ kandidatErrors['email'] }}</span>
           </label>
           <label>Telefon
             <div class="input-with-btn">
-              <input [(ngModel)]="draft.telefon" placeholder="z.B. +49 30 1234567" />
+              <input [(ngModel)]="draft.telefon" placeholder="z.B. +49 30 1234567" data-field="telefon" [class.invalid]="!!kandidatErrors['telefon']" />
               <button class="btn-link" (click)="copyToClipboard(draft.telefon)" [disabled]="!draft.telefon">📋</button>
             </div>
             <span class="field-error" *ngIf="kandidatErrors['telefon']">{{ kandidatErrors['telefon'] }}</span>
@@ -313,7 +314,7 @@ import {
           </div>
           <span class="import-status" *ngIf="exportStatus">{{ exportStatus }}</span>
           <button class="btn-match" *ngIf="editingId" [disabled]="kandidatKOError" (click)="openMatchSuchauftrag()">Match Suchauftrag</button>
-          <button class="btn-save" [disabled]="!draft.allgemeinerSchwerpunkt" (click)="saveKandidat()">Speichern</button>
+          <button class="btn-save" (click)="saveKandidat()">Speichern</button>
           <button class="btn-cancel" (click)="closeAddModal()">Abbrechen</button>
         </div>
       </div>
@@ -580,6 +581,7 @@ import {
     .btn-link:disabled { opacity: 0.4; cursor: default; }
     .date-picker-hidden { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
     .field-error { color: #e03131; font-size: 11px; margin-top: 2px; }
+    input.invalid, select.invalid { border-color: #e03131; }
     .input-suffix-wrapper { display: flex; align-items: stretch; border: 1px solid #dfe3ee; border-radius: 6px; overflow: hidden; }
     .input-suffix-wrapper:focus-within { border-color: #3b5bdb; }
     .input-suffix-wrapper input { flex: 1; border: none; outline: none; background: transparent; min-width: 0; }
@@ -638,6 +640,7 @@ export class KandidatDialogComponent implements OnInit {
   private xlsxImportService = inject(XlsxImportService);
   private exportService = inject(KandidatExportService);
   private matchService = inject(MatchSuchauftragService);
+  private host = inject(ElementRef<HTMLElement>);
 
   /** Kandidat to edit; without an id (or omitted) a new Kandidat is created. */
   @Input() kandidat: Partial<Kandidat> | null = null;
@@ -659,6 +662,8 @@ export class KandidatDialogComponent implements OnInit {
   editingId: string | null = null;
   draft: Partial<Kandidat> = {};
   kandidatErrors: Record<string, string> = {};
+  /** Set on the first click on Speichern; required fields are only highlighted afterwards. */
+  saveAttempted = false;
 
   dokumente: KandidatDokument[] = [];
   stagedDokumente: StagedDokument[] = [];
@@ -818,6 +823,11 @@ export class KandidatDialogComponent implements OnInit {
   }
 
   saveKandidat(): void {
+    this.saveAttempted = true;
+    if (!this.draft.allgemeinerSchwerpunkt) {
+      this.focusField('allgemeinerSchwerpunkt');
+      return;
+    }
     this.normalizeDsgvoDatum();
     [this.draft.gehaltMinimum, this.draft.gehaltMaximum] = this.parseGehalt(this.draft.gehalt, 'kandidat');
     const payload: Kandidat = {
@@ -825,7 +835,10 @@ export class KandidatDialogComponent implements OnInit {
       dsgvoBestaetigungsDatum: this.toBackendDsgvoDatum(this.draft.dsgvoBestaetigungsDatum),
     } as Kandidat;
     const onError = (err: any) => {
-      if (err.status === 400) this.kandidatErrors = err.error ?? {};
+      if (err.status !== 400) return;
+      this.kandidatErrors = err.error ?? {};
+      const firstInvalid = ['email', 'telefon'].find(field => this.kandidatErrors[field]);
+      if (firstInvalid) this.focusField(firstInvalid);
     };
     if (this.editingId) {
       this.service.update(this.editingId, payload).subscribe({
@@ -840,6 +853,16 @@ export class KandidatDialogComponent implements OnInit {
         error: onError,
       });
     }
+  }
+
+  /** Scrolls the modal to the field marked data-field="<name>" and focuses it. */
+  private focusField(name: string): void {
+    // Wait for the error message / invalid class to render first
+    setTimeout(() => {
+      const el = this.host.nativeElement.querySelector(`[data-field="${name}"]`) as HTMLElement | null;
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el?.focus({ preventScroll: true });
+    });
   }
 
   private uploadStagedDokumente(kandidatId: string, onDone: () => void): void {

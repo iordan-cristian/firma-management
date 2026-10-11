@@ -41,6 +41,9 @@ interface MonthGroup {
   host: { '(document:click)': 'closeMenu()' },
   template: `
     <div class="wrap">
+      <div class="toolbar">
+        <button type="button" class="btn-add" (click)="openNeuerKandidat()">+ Kandidat</button>
+      </div>
       <p class="hint" *ngIf="loading">Lade Daten...</p>
 
       <table *ngIf="!loading">
@@ -171,6 +174,10 @@ interface MonthGroup {
     :host { display: block; height: 100%; }
     .wrap { display: flex; flex-direction: column; height: 100%; }
     .hint { font-size: 13px; color: #555; margin: 0; }
+    .toolbar { flex: none; display: flex; justify-content: flex-end; padding: 0 0 8px; }
+    .btn-add { background: #3b5bdb; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+    .btn-add:hover { background: #2f4ac7; }
+    .wrap > table { flex: 1 1 auto; height: auto; }
     table { width: 100%; height: 100%; table-layout: fixed; border-collapse: collapse; background: white; }
     td {
       padding: 6px 10px;
@@ -271,8 +278,8 @@ export class KandidatenPermBestandComponent implements OnInit {
   menuKandidat: Kandidat | null = null;
   menuX = 0;
   menuY = 0;
-  /** Kandidat shown in the Kandidat dialog. */
-  dialogKandidat: Kandidat | null = null;
+  /** Open Kandidat dialog: null = closed, {} = new Kandidat, otherwise the Kandidat being shown. */
+  dialogKandidat: Partial<Kandidat> | null = null;
 
   private firmaNameById = new Map<string, string>();
   private sucheNachById = new Map<string, string>();
@@ -326,6 +333,10 @@ export class KandidatenPermBestandComponent implements OnInit {
   openKandidatDialog(): void {
     this.dialogKandidat = this.menuKandidat;
     this.closeMenu();
+  }
+
+  openNeuerKandidat(): void {
+    this.dialogKandidat = {};
   }
 
   closeKandidatDialog(): void {
