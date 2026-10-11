@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FirmaService } from '../../services/firma.service';
@@ -96,6 +96,11 @@ export class NeueFirmaDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.draftFirma = { ...this.firma };
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.close.emit();
   }
 
   openLink(url?: string): void {

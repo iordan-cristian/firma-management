@@ -323,8 +323,7 @@ export class FirmenComponent implements OnInit {
   openAddModal(): void { this.draftFirma = {}; this.addFirmaOpen = true; }
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    if (this.addFirmaOpen) this.closeAddModal();
-    else if (this.addVertragOpen) this.addVertragOpen = false;
+    if (this.addVertragOpen) this.addVertragOpen = false;
   }
 
   closeAddModal(): void { this.addFirmaOpen = false; }
