@@ -26,8 +26,9 @@ export class XlsxImportService {
     // --- PLZ and Ort are in the same row ---
     const plzOrtRow = this.findRow(rows, 'PLZ');
     if (plzOrtRow) {
-      const plz = this.nextCellAfterLabel(plzOrtRow, 'PLZ');
-      const ort = this.nextCellAfterLabel(plzOrtRow, 'Ort');
+      // Exact match: a contains-match for "Ort" would hit "Antwort:" first
+      const plz = this.nextCellAfterExactLabel(plzOrtRow, 'PLZ');
+      const ort = this.nextCellAfterExactLabel(plzOrtRow, 'Ort');
       const plzNum = parseInt(plz ?? '', 10);
       if (!isNaN(plzNum)) result.postleitzahl = plzNum;
       if (ort) result.ort = ort;
@@ -117,6 +118,14 @@ export class XlsxImportService {
       }
     }
     return null;
+  }
+
+  /** Like nextCellAfterLabel, but the label cell must equal the label (ignoring case, whitespace and a trailing ":"). */
+  private nextCellAfterExactLabel(row: string[], label: string): string | null {
+    const lw = label.toLowerCase();
+    const i = row.findIndex(cell => cell.trim().replace(/:$/, '').trim().toLowerCase() === lw);
+    if (i === -1) return null;
+    return row.slice(i + 1).map(c => c.trim()).find(Boolean) ?? null;
   }
 
   private findNextCellInRow(rows: string[][], label: string): string | null {
