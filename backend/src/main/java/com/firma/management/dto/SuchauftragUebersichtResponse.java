@@ -7,6 +7,7 @@ import com.firma.management.entity.Verknuepfung;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +22,14 @@ public class SuchauftragUebersichtResponse {
     private String ansprechpartnerVorname;
     private String ansprechpartnerNachname;
     private List<KandidatLink> kandidaten;
+
+    /** Used by the JPQL constructor expression in SuchauftragRepository.findUebersicht(). */
+    public SuchauftragUebersichtResponse(Suchauftrag suchauftrag, UUID firmaId, String firmaName,
+                                         Geschlecht ansprechpartnerGeschlecht, Titel ansprechpartnerTitel,
+                                         String ansprechpartnerVorname, String ansprechpartnerNachname) {
+        this(suchauftrag, firmaId, firmaName, ansprechpartnerGeschlecht, ansprechpartnerTitel,
+                ansprechpartnerVorname, ansprechpartnerNachname, new ArrayList<>());
+    }
 
     @Data
     @AllArgsConstructor
