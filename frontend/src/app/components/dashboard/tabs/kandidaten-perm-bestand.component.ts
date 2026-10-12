@@ -41,9 +41,6 @@ interface MonthGroup {
   host: { '(document:click)': 'closeMenu()' },
   template: `
     <div class="wrap">
-      <div class="toolbar">
-        <button type="button" class="btn-add" (click)="openNeuerKandidat()">+ Kandidat</button>
-      </div>
       <p class="hint" *ngIf="loading">Lade Daten...</p>
 
       <table *ngIf="!loading">
@@ -174,9 +171,6 @@ interface MonthGroup {
     :host { display: block; height: 100%; }
     .wrap { display: flex; flex-direction: column; height: 100%; }
     .hint { font-size: 13px; color: #555; margin: 0; }
-    .toolbar { flex: none; display: flex; justify-content: flex-end; padding: 0 0 8px; }
-    .btn-add { background: #3b5bdb; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer; white-space: nowrap; }
-    .btn-add:hover { background: #2f4ac7; }
     .wrap > table { flex: 1 1 auto; height: auto; }
     table { width: 100%; height: 100%; table-layout: fixed; border-collapse: collapse; background: white; }
     td {

@@ -193,11 +193,19 @@ export class XlsxImportService {
     // Take only the part before any parenthesis
     const beforeParen = raw.split('(')[0];
     // Remove € and German thousands dots, then normalize dashes
-    return beforeParen
+    const normalized = beforeParen
       .replace(/€/g, '')
       .replace(/\./g, '')
       .replace(/\s*[-–]\s*/g, '-')
       .trim();
+    // Gehalt is stored in thousands of euros (e.g. 90000 → 90)
+    return normalized
+      .split('-')
+      .map(part => {
+        const n = Number(part.trim());
+        return part.trim() && !isNaN(n) && n >= 1000 ? String(n / 1000) : part;
+      })
+      .join('-');
   }
 
   private splitQ7Block(block: string): [string, string] {

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { InvestorenBestandComponent } from './tabs/investoren-bestand.component';
 import { ImmobilienBestandComponent } from './tabs/immobilien-bestand.component';
@@ -40,6 +40,12 @@ interface DashboardTab {
       <div class="row header-row">
         <div class="col-left" *ngIf="viewMode !== 'right'">
           <h2 class="category-title">Bestand</h2>
+          <button
+            *ngIf="activeLeftTabId === 'kandidaten-perm-bestand'"
+            type="button"
+            class="header-action"
+            (click)="permBestand?.openNeuerKandidat()"
+          >Kandidat anlegen</button>
         </div>
         <div class="col-middle"></div>
         <div class="col-right" *ngIf="viewMode !== 'left'">
@@ -113,6 +119,22 @@ interface DashboardTab {
       background: #fff;
     }
     .header-row { min-height: 44px; }
+    .header-row .col-left, .header-row .col-right { position: relative; }
+    .header-action {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #3b5bdb;
+      color: white;
+      border: none;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .header-action:hover { background: #2f4ac7; }
     .col-left, .col-right {
       flex: 1 1 0;
       min-width: 0;
@@ -176,6 +198,8 @@ interface DashboardTab {
   `]
 })
 export class DashboardComponent {
+  @ViewChild(KandidatenPermBestandComponent) permBestand?: KandidatenPermBestandComponent;
+
   viewMode: ViewMode = 'both';
   activeLeftTabId = 'investoren-bestand';
   activeRightTabId = 'investoren-suche';

@@ -17,7 +17,7 @@ import { KandidatSucheComponent } from './kandidat-suche.component';
           <input type="checkbox" [(ngModel)]="onlyAbgelaufeneDsgvo" />
           Abgelaufene DSGVO-Bestätigung
         </label>
-        <button class="btn-add" (click)="openAddModal()">+ Kandidat</button>
+        <button class="btn-add" (click)="openAddModal()">Kandidat anlegen</button>
       </app-kandidat-suche>
 
       <p class="hint">{{ kandidaten.length }} Kandidat(en) gefunden</p>
