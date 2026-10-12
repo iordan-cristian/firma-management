@@ -121,7 +121,7 @@ import {
             </label>
             <label>Gehalt
               <div class="input-suffix-wrapper">
-                <input [(ngModel)]="draft.gehalt" (input)="filterGehalt($event)" placeholder="z.B. 60000 oder 55000-70000" />
+                <input [(ngModel)]="draft.gehalt" (input)="filterGehalt($event)" placeholder="z.B. 60 oder 55-70" />
                 <span class="input-suffix">(Tausend €)</span>
               </div>
             </label>
@@ -371,7 +371,7 @@ import {
                 </span>
               </span>
               <div class="input-suffix-wrapper">
-                <input [(ngModel)]="draft.gehalt" (input)="filterGehalt($event)" placeholder="z.B. 60000 oder 55000-70000" />
+                <input [(ngModel)]="draft.gehalt" (input)="filterGehalt($event)" placeholder="z.B. 60 oder 55-70" />
                 <span class="input-suffix">(Tausend €)</span>
               </div>
               <span class="field-error" *ngIf="koError(draft.gehalt, draft.gehaltKOKriterium)">Gehalt ist als KO-Kriterium markiert und darf nicht leer sein.</span>
