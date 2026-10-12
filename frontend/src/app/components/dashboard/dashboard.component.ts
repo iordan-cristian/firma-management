@@ -50,6 +50,12 @@ interface DashboardTab {
         <div class="col-middle"></div>
         <div class="col-right" *ngIf="viewMode !== 'left'">
           <h2 class="category-title">Suchaufträge</h2>
+          <button
+            *ngIf="activeRightTabId === 'kandidaten-perm-suche'"
+            type="button"
+            class="header-action"
+            (click)="permSuche?.openSuchauftragAnlegen()"
+          >Suchauftrag anlegen</button>
         </div>
       </div>
 
@@ -199,6 +205,7 @@ interface DashboardTab {
 })
 export class DashboardComponent {
   @ViewChild(KandidatenPermBestandComponent) permBestand?: KandidatenPermBestandComponent;
+  @ViewChild(KandidatenPermSucheComponent) permSuche?: KandidatenPermSucheComponent;
 
   viewMode: ViewMode = 'both';
   activeLeftTabId = 'investoren-bestand';

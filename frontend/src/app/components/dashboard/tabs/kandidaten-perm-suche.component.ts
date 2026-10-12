@@ -15,6 +15,7 @@ import { AnsprechpartnerService } from '../../../services/ansprechpartner.servic
 import { Ansprechpartner } from '../../../models/ansprechpartner.model';
 import { NeueFirmaDialogComponent } from '../../firmen/neue-firma-dialog.component';
 import { AnsprechpartnerDialogComponent } from '../../Ansprechpartner/ansprechpartner-dialog.component';
+import { ChoseFirmaAndAnsprechpartnerForSuchauftragComponent } from '../../suchauftraege/chose-firma-and-ansprechpartner-for-suchauftrag.component';
 
 interface SuchauftragRow {
   suchauftrag: Suchauftrag;
@@ -63,7 +64,7 @@ function formatGehalt(s: Suchauftrag): string | undefined {
 @Component({
   selector: 'app-kandidaten-perm-suche',
   standalone: true,
-  imports: [CommonModule, FormsModule, SuchauftragDialogComponent, KandidatDialogComponent, NeueFirmaDialogComponent, AnsprechpartnerDialogComponent],
+  imports: [CommonModule, FormsModule, SuchauftragDialogComponent, KandidatDialogComponent, NeueFirmaDialogComponent, AnsprechpartnerDialogComponent, ChoseFirmaAndAnsprechpartnerForSuchauftragComponent],
   host: { '(document:click)': 'closeMenu()' },
   template: `
     <div class="wrap">
@@ -215,6 +216,12 @@ function formatGehalt(s: Suchauftrag): string | undefined {
         (changed)="load()"
         (close)="closeKandidatDialog()"
       ></app-kandidat-dialog>
+
+      <app-chose-firma-and-ansprechpartner-for-suchauftrag
+        *ngIf="suchauftragAnlegenOpen"
+        (saved)="dialogChanged = true"
+        (close)="onSuchauftragAnlegenClosed()"
+      ></app-chose-firma-and-ansprechpartner-for-suchauftrag>
     </div>
   `,
   styles: [`
@@ -337,6 +344,8 @@ export class KandidatenPermSucheComponent implements OnInit {
   dialogAnsprechpartner: Ansprechpartner | null = null;
   /** Firma shown in the Firma dialog (dialogFirma is only the reference passed to the Suchauftrag dialog). */
   dialogStammFirma: Firma | null = null;
+  /** Whether the "Suchauftrag anlegen" mask (Firma + Ansprechpartner selection) is open. */
+  suchauftragAnlegenOpen = false;
 
   private expandedSuchauftragIds = new Set<string>();
 
@@ -375,6 +384,16 @@ export class KandidatenPermSucheComponent implements OnInit {
     this.dialogAutoMatch = autoMatch;
     this.dialogFirma = { id: row.firmaId, name: row.firma };
     this.dialogSuchauftragRow = row;
+  }
+
+  openSuchauftragAnlegen(): void {
+    this.dialogChanged = false;
+    this.suchauftragAnlegenOpen = true;
+  }
+
+  onSuchauftragAnlegenClosed(): void {
+    this.suchauftragAnlegenOpen = false;
+    if (this.dialogChanged) this.load();
   }
 
   closeSuchauftragDialog(): void {

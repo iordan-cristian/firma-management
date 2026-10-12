@@ -518,6 +518,8 @@ export class SuchauftragDialogComponent implements OnInit {
   @Input({ required: true }) firma!: Firma;
   /** Suchauftrag to edit; omit to create a new one. */
   @Input() suchauftrag?: Suchauftrag;
+  /** Ansprechpartner preselected for a new Suchauftrag. */
+  @Input() ansprechpartnerId?: string;
   /** Run MatchKandidat for the given Suchauftrag right away and show the matched Kandidaten. */
   @Input() autoMatch = false;
   /** Emits every time the Suchauftrag was stored (Speichern, and before matching). */
@@ -575,7 +577,7 @@ export class SuchauftragDialogComponent implements OnInit {
         this.runMatch(s.id);
       }
     } else {
-      this.draftSuchauftrag = { aktivitaet: 'Personal', status: 'in Arbeit', allgemeinerSchwerpunktKOKriterium: true };
+      this.draftSuchauftrag = { ansprechpartnerId: this.ansprechpartnerId, aktivitaet: 'Personal', status: 'in Arbeit', allgemeinerSchwerpunktKOKriterium: true };
       const now = new Date();
       const m = String(now.getMonth() + 1).padStart(2, '0');
       const d = String(now.getDate()).padStart(2, '0');
