@@ -12,8 +12,9 @@ import { Firma } from '../../models/firma.model';
 import { Ansprechpartner } from '../../models/ansprechpartner.model';
 import { SCHWERPUNKT_OPTIONS } from '../../models/allgemeiner-schwerpunkt.model';
 import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
-import { Kandidat, Geschlecht, GESCHLECHT_OPTIONS, TITEL_OPTIONS, SPRACHNIVEAU_OPTIONS, FUEHRERSCHEIN_OPTIONS } from '../../models/kandidat.model';
+import { Kandidat, GESCHLECHT_OPTIONS, TITEL_OPTIONS, SPRACHNIVEAU_OPTIONS, FUEHRERSCHEIN_OPTIONS } from '../../models/kandidat.model';
 import { VerknuepfungKandidat } from '../../models/verknuepfung.model';
+import { MatchedKandidatenPanelComponent } from './matched-kandidaten-panel.component';
 
 export interface SuchauftragVerknuepfungenChangedEvent {
   suchauftragId: string;
@@ -27,7 +28,7 @@ export interface SuchauftragVerknuepfungenChangedEvent {
 @Component({
   selector: 'app-suchauftrag-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatchedKandidatenPanelComponent],
   template: `
     <div class="modal-backdrop">
       <div [class]="(matchedKandidatenOpen || kandidatDetailOpen) ? 'modal-duo' : ''">
@@ -239,37 +240,16 @@ export interface SuchauftragVerknuepfungenChangedEvent {
           </div>
         </div>
 
-        <!-- Matched Kandidaten panel -->
-        <div class="modal modal-match" *ngIf="matchedKandidatenOpen">
-          <div class="match-header">
-            <h2>Matched Kandidaten</h2>
-            <button class="close" (click)="matchedKandidatenOpen = false; kandidatDetailOpen = false">✕</button>
-          </div>
-          <p class="hint" *ngIf="matchedKandidaten.length" [title]="matchKriterienExplained">{{ matchKriterienExplained }}</p>
-          <div *ngIf="!matchedKandidaten.length" class="empty">Keine Treffer gefunden.</div>
-          <div class="match-list">
-            <div class="match-card" *ngFor="let r of matchedKandidaten"
-                 (dblclick)="openKandidatDetail(r.kandidat)"
-                 (contextmenu)="openMatchMenu($event, r.kandidat)"
-                 [class.match-card-selected]="selectedKandidat?.id === r.kandidat.id">
-              <div class="card-title">
-                {{ anrede(r.kandidat.geschlecht) }} {{ r.kandidat.titel }} {{ r.kandidat.vorname }} {{ r.kandidat.nachname }}
-                <span class="match-score">{{ r.score }} / {{ matchMaxScore }}</span>
-              </div>
-              <div class="card-divider">Score Erklärung</div>
-              <div class="card-row card-row-success" *ngIf="r.satisfiedKriterien"><span>Erfüllt:</span> {{ r.satisfiedKriterien }}</div>
-              <div class="card-row card-row-danger" *ngIf="r.unsatisfiedKriterien"><span>Nicht erfüllt:</span> {{ r.unsatisfiedKriterien }}</div>
-              <div class="card-divider">Kandidatendaten</div>
-              <div class="card-row" *ngIf="r.kandidat.allgemeinerSchwerpunkt"><span>Schwerpunkt:</span> {{ r.kandidat.allgemeinerSchwerpunkt }}</div>
-              <div class="card-row" *ngIf="r.kandidat.ort"><span>Ort:</span> {{ r.kandidat.ort }}</div>
-              <div class="card-row" *ngIf="r.kandidat.fachlicherSkill"><span>Fachlicher Skill:</span> {{ r.kandidat.fachlicherSkill }}</div>
-              <div class="card-row" *ngIf="gehaltDisplay(r.kandidat.gehaltMinimum, r.kandidat.gehaltMaximum) as g"><span>Gehalt:</span> {{ g }} <span>Tausend €</span> </div>
-              <div class="card-row" *ngIf="r.kandidat.berufserfahrung"><span>Berufserfahrung:</span> {{ r.kandidat.berufserfahrung }}</div>
-              <div class="card-row" *ngIf="r.kandidat.branchenkenntnisse"><span>Branchenkenntnisse:</span> {{ r.kandidat.branchenkenntnisse }}</div>
-              <div class="card-row" *ngIf="r.kandidat.zertifikate"><span>Zertifikate:</span> {{ r.kandidat.zertifikate }}</div>
-            </div>
-          </div>
-        </div>
+        <app-matched-kandidaten-panel
+          *ngIf="matchedKandidatenOpen"
+          [results]="matchedKandidaten"
+          [kriterienExplained]="matchKriterienExplained"
+          [maxScore]="matchMaxScore"
+          [selectedKandidatId]="selectedKandidat?.id"
+          (kandidatOpened)="openKandidatDetail($event)"
+          (verknuepfung)="onVerknuepfung($event)"
+          (close)="matchedKandidatenOpen = false; kandidatDetailOpen = false"
+        ></app-matched-kandidaten-panel>
 
         <!-- Full Kandidat detail panel -->
         <div class="modal modal-kandidat-detail" *ngIf="kandidatDetailOpen">
@@ -402,27 +382,8 @@ export interface SuchauftragVerknuepfungenChangedEvent {
         </div>
       </div>
     </div>
-
-    <!-- Match Kandidat context menu -->
-    <div class="ctx-menu"
-         *ngIf="matchMenuOpen"
-         [style.top.px]="matchMenuY"
-         [style.left.px]="matchMenuX"
-         (click)="$event.stopPropagation()">
-      <button (click)="onVerknuepfung()">Verknüpfung</button>
-    </div>
   `,
   styles: [`
-    .hint { color: #777; margin: 0 0 16px; font-size: 13px; white-space: pre-line; }
-    .empty { color: #999; text-align: center; padding: 18px; }
-    .card-title { font-weight: 600; margin-bottom: 8px; color: #1f2a44; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .match-score { font-size: 12px; font-weight: 700; color: #3b5bdb; background: #eef1fb; border-radius: 10px; padding: 2px 8px; }
-    .card-row { font-size: 13px; margin: 4px 0; color: #333; }
-    .card-row span:first-child { color: #777; margin-right: 4px; }
-    .card-row-success, .card-row-success span:first-child { color: #1e7d32; }
-    .card-row-danger, .card-row-danger span:first-child { color: #c92a2a; }
-    .card-row-success, .card-row-danger { white-space: pre-line; }
-    .card-info { margin-top: 8px; font-size: 12px; color: #555; white-space: pre-wrap; }
     .close { background: transparent; border: 1px solid #dfe3ee; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; }
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.4);
@@ -486,24 +447,11 @@ export interface SuchauftragVerknuepfungenChangedEvent {
     .modal-duo { display: flex; gap: 20px; align-items: stretch; }
     .modal-suchauftrag { display: flex; flex-direction: column; overflow: hidden; }
     .modal-form-content { overflow-y: auto; flex: 1; }
-    .modal-match { width: 400px; flex-shrink: 0; display: flex; flex-direction: column; }
     .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .match-header h2 { margin: 0; color: #1f2a44; font-size: 18px; }
-    .match-list { display: flex; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto; }
-    .match-card { background: #f8f9ff; border: 1px solid #e5e9f3; border-radius: 8px; padding: 12px; cursor: pointer; }
-    .match-card:hover { border-color: #3b5bdb; }
-    .match-card-selected { border-color: #3b5bdb; background: #eef2fb; }
     .modal-kandidat-detail { width: 540px; flex-shrink: 0; display: flex; flex-direction: column; }
     .k-section { font-size: 12px; font-weight: 700; color: #3b5bdb; text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0 8px; border-bottom: 1px solid #e5e9f3; padding-bottom: 4px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-    .ctx-menu {
-      position: fixed; background: white; border: 1px solid #dfe3ee; border-radius: 6px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.15); display: flex; flex-direction: column;
-      min-width: 180px; z-index: 2100; overflow: hidden;
-    }
-    .ctx-menu button { background: white; border: none; text-align: left; padding: 10px 14px; font-size: 14px; cursor: pointer; }
-    .ctx-menu button:hover { background: #eef2fb; }
   `]
 })
 export class SuchauftragDialogComponent implements OnInit {
@@ -545,10 +493,6 @@ export class SuchauftragDialogComponent implements OnInit {
   matchedKandidaten: MatchKandidatResult[] = [];
   matchKriterienExplained = '';
   matchMaxScore = 0;
-  matchMenuOpen = false;
-  matchMenuX = 0;
-  matchMenuY = 0;
-  selectedMatchKandidat: Kandidat | null = null;
 
   kandidatDetailOpen = false;
   selectedKandidat: Kandidat | null = null;
@@ -587,7 +531,6 @@ export class SuchauftragDialogComponent implements OnInit {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    this.matchMenuOpen = false;
     if (this.kandidatExportMenuOpen && !(event.target as HTMLElement).closest('.dropdown')) {
       this.kandidatExportMenuOpen = false;
     }
@@ -662,18 +605,8 @@ export class SuchauftragDialogComponent implements OnInit {
     });
   }
 
-  openMatchMenu(event: MouseEvent, kandidat: Kandidat): void {
-    event.preventDefault();
-    this.selectedMatchKandidat = kandidat;
-    this.matchMenuX = event.clientX;
-    this.matchMenuY = event.clientY;
-    this.matchMenuOpen = true;
-  }
-
-  onVerknuepfung(): void {
-    this.matchMenuOpen = false;
-    const kandidat = this.selectedMatchKandidat;
-    if (!kandidat?.id || !this.draftSuchauftrag.id || !this.firma.id) return;
+  onVerknuepfung(kandidat: Kandidat): void {
+    if (!kandidat.id || !this.draftSuchauftrag.id || !this.firma.id) return;
     const kandidatId = kandidat.id;
     if (this.draftSuchauftragVerknuepfungen.some(v => v.kandidatId === kandidatId)) return;
 
@@ -770,12 +703,6 @@ export class SuchauftragDialogComponent implements OnInit {
   }
 
   // ── Helpers ──────────────────────────────────────────────
-  anrede(geschlecht?: Geschlecht): string {
-    if (geschlecht === 'männlich') return 'Herr';
-    if (geschlecht === 'weiblich') return 'Frau';
-    return '';
-  }
-
   gehaltDisplay(min?: number, max?: number): string | null {
     if (min != null && max != null) return `${min}-${max}`;
     if (min != null) return `${min}`;
