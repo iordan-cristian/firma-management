@@ -474,10 +474,12 @@ export class KandidatenPermBestandComponent implements OnInit {
   private buildGroups(results: { kandidat: Kandidat; links: Verknuepfung[] }[]): MonthGroup[] {
     const groupsByKey = new Map<number, MonthGroup>();
 
+    const today = new Date();
     for (const { kandidat, links } of results) {
-      const date = this.parseDate(kandidat.anlageDatum);
-      const key = date ? date.getFullYear() * 12 + date.getMonth() : Number.NEGATIVE_INFINITY;
-      const label = date ? KandidatenPermBestandComponent.MONTH_FORMATTER.format(date) : 'Ohne Anlagedatum';
+      // Kandidaten stay in the current month until their process is finished
+      const groupDate = this.parseDate(kandidat.prozessBeendetAm) ?? today;
+      const key = groupDate.getFullYear() * 12 + groupDate.getMonth();
+      const label = KandidatenPermBestandComponent.MONTH_FORMATTER.format(groupDate);
 
       let group = groupsByKey.get(key);
       if (!group) {
@@ -485,7 +487,7 @@ export class KandidatenPermBestandComponent implements OnInit {
         groupsByKey.set(key, group);
       }
 
-      group.rows.push(this.buildRow(kandidat, links, date));
+      group.rows.push(this.buildRow(kandidat, links, this.parseDate(kandidat.anlageDatum)));
     }
 
     const groups = Array.from(groupsByKey.values()).sort((a, b) => b.key - a.key);

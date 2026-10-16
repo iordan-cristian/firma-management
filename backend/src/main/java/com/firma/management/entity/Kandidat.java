@@ -36,6 +36,12 @@ public class Kandidat {
     @Column(name = "anlage_datum")
     private LocalDate anlageDatum;
 
+    /** Set when all Verknüpfungen are Abgesagt or one is fully paid (see VerknuepfungService). */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Column(name = "prozess_beendet_am")
+    private LocalDate prozessBeendetAm;
+
     @Enumerated(EnumType.STRING)
     private Geschlecht geschlecht;
 

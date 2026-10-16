@@ -3,11 +3,13 @@ package com.firma.management.service;
 import com.firma.management.dto.VerknuepfungKandidatResponse;
 import com.firma.management.entity.Kandidat;
 import com.firma.management.entity.Verknuepfung;
+import com.firma.management.entity.VerknuepfungStatus;
 import com.firma.management.repository.KandidatRepository;
 import com.firma.management.repository.VerknuepfungRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -30,7 +32,9 @@ public class VerknuepfungService {
             throw new IllegalArgumentException("Verknüpfung existiert bereits.");
         }
         v.setId(null);
-        return repo.save(v);
+        Verknuepfung saved = repo.save(v);
+        updateProzessBeendetAm(saved.getKandidatId());
+        return saved;
     }
 
     public List<VerknuepfungKandidatResponse> getKandidatenForSuchauftrag(UUID suchauftragId) {
@@ -61,12 +65,38 @@ public class VerknuepfungService {
             existing.setMainAnteil(input.getMainAnteil());
             existing.setVerknuepfungStatus(input.getVerknuepfungStatus());
             existing.setVerknuepfungStatusKommentar(input.getVerknuepfungStatusKommentar());
-            return repo.save(existing);
+            Verknuepfung saved = repo.save(existing);
+            updateProzessBeendetAm(saved.getKandidatId());
+            return saved;
         });
     }
 
     @Transactional
     public void deleteLink(UUID suchauftragId, UUID kandidatId) {
         repo.deleteBySuchauftragIdAndKandidatId(suchauftragId, kandidatId);
+        // Deleting an open Verknüpfung can leave only Abgesagt ones
+        updateProzessBeendetAm(kandidatId);
+    }
+
+    /**
+     * Sets the Kandidat's prozessBeendetAm to today once its process is finished.
+     * An already set date is kept (reopening a process is not handled here).
+     */
+    private void updateProzessBeendetAm(UUID kandidatId) {
+        if (kandidatId == null) return;
+        kandidatRepo.findById(kandidatId)
+                .filter(k -> k.getProzessBeendetAm() == null)
+                .filter(k -> isProzessBeendet(repo.findAllByKandidatId(kandidatId)))
+                .ifPresent(k -> {
+                    k.setProzessBeendetAm(LocalDate.now());
+                    kandidatRepo.save(k);
+                });
+    }
+
+    /** Finished = one Verknüpfung fully paid, or at least one Verknüpfung and all of them Abgesagt. */
+    static boolean isProzessBeendet(List<Verknuepfung> links) {
+        if (links.isEmpty()) return false;
+        return links.stream().anyMatch(l -> l.getVerknuepfungStatus() == VerknuepfungStatus.PROZESS_RECHNUNG_VOLLSTAENDIG_BEZAHLT)
+                || links.stream().allMatch(l -> l.getVerknuepfungStatus() == VerknuepfungStatus.ABGESAGT);
     }
 }
