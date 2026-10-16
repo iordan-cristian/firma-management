@@ -320,6 +320,13 @@ export class KandidatenPermBestandComponent implements OnInit {
           )
         );
 
+      // forkJoin([]) completes without emitting, so the empty case is handled here
+      if (withLinks$.length === 0) {
+        this.groups = [];
+        this.loading = false;
+        return;
+      }
+
       forkJoin(withLinks$).subscribe(results => {
         this.groups = this.buildGroups(results);
         this.loading = false;
