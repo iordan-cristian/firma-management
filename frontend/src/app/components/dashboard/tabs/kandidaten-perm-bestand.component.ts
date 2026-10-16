@@ -1,19 +1,27 @@
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { KandidatService } from '../../../services/kandidat.service';
-import { VerknuepfungService } from '../../../services/verknuepfung.service';
-import { FirmaService } from '../../../services/firma.service';
-import { SuchauftragService } from '../../../services/suchauftrag.service';
-import { DataChangedKandidatenPermService } from '../../../services/data-changed-kandidaten-perm.service';
-import { Kandidat } from '../../../models/kandidat.model';
-import { Verknuepfung } from '../../../models/verknuepfung.model';
-import { VERKNUEPFUNG_STATUS_COLORS, VERKNUEPFUNG_STATUS_OPTIONS, VERKNUEPFUNG_STATUS_ORDER, VerknuepfungStatus } from '../../../models/verknuepfung-status.model';
-import { NeueVerknuepfungFirmaAuswaehlenComponent, FirmaAusgewaehltEvent } from '../../verknuepfungen/neue-verknuepfung-firma-auswaehlen.component';
-import { KandidatDialogComponent } from '../../kandidaten/kandidat-dialog.component';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {forkJoin} from 'rxjs';
+import {map} from 'rxjs/operators';
+import {KandidatService} from '../../../services/kandidat.service';
+import {VerknuepfungService} from '../../../services/verknuepfung.service';
+import {FirmaService} from '../../../services/firma.service';
+import {SuchauftragService} from '../../../services/suchauftrag.service';
+import {DataChangedKandidatenPermService} from '../../../services/data-changed-kandidaten-perm.service';
+import {Kandidat} from '../../../models/kandidat.model';
+import {Verknuepfung} from '../../../models/verknuepfung.model';
+import {
+  findHighestStatus,
+  VERKNUEPFUNG_STATUS_COLORS,
+  VERKNUEPFUNG_STATUS_OPTIONS,
+  VerknuepfungStatus
+} from '../../../models/verknuepfung-status.model';
+import {
+  FirmaAusgewaehltEvent,
+  NeueVerknuepfungFirmaAuswaehlenComponent
+} from '../../verknuepfungen/neue-verknuepfung-firma-auswaehlen.component';
+import {KandidatDialogComponent} from '../../kandidaten/kandidat-dialog.component';
 
 interface KandidatRow {
   kandidat: Kandidat;
@@ -504,15 +512,9 @@ export class KandidatenPermBestandComponent implements OnInit {
     Object.assign(row, this.findHighestStatus(row.links));
   }
 
-  /** Highest status among the links; order 0 when no link has a status. */
+  /** Highest status among the links (see findHighestStatus in the status model). */
   private findHighestStatus(links: Verknuepfung[]): { highestStatus: number; highestStatusName?: VerknuepfungStatus } {
-    let result: { highestStatus: number; highestStatusName?: VerknuepfungStatus } = { highestStatus: 0 };
-    for (const l of links) {
-      const name = l.verknuepfungStatus as VerknuepfungStatus;
-      const order = VERKNUEPFUNG_STATUS_ORDER[name];
-      if (order != null && order > result.highestStatus) result = { highestStatus: order, highestStatusName: name };
-    }
-    return result;
+    return findHighestStatus(links.map(l => l.verknuepfungStatus));
   }
 
   statusStyle(status?: string): Record<string, string> | null {

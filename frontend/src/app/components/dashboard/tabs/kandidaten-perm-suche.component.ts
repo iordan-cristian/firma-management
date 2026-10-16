@@ -6,7 +6,7 @@ import { SuchauftragService } from '../../../services/suchauftrag.service';
 import { VerknuepfungService } from '../../../services/verknuepfung.service';
 import { Suchauftrag, SuchauftragUebersicht, SuchauftragUebersichtKandidat } from '../../../models/suchauftrag.model';
 import { Geschlecht, Kandidat, Titel } from '../../../models/kandidat.model';
-import { VERKNUEPFUNG_STATUS_COLORS, VERKNUEPFUNG_STATUS_OPTIONS, VERKNUEPFUNG_STATUS_ORDER, VerknuepfungStatus } from '../../../models/verknuepfung-status.model';
+import { VERKNUEPFUNG_STATUS_COLORS, VERKNUEPFUNG_STATUS_OPTIONS, VerknuepfungStatus, findHighestStatus } from '../../../models/verknuepfung-status.model';
 import { Firma } from '../../../models/firma.model';
 import { SuchauftragDialogComponent } from '../../suchauftraege/suchauftrag-dialog.component';
 import { KandidatDialogComponent } from '../../kandidaten/kandidat-dialog.component';
@@ -576,15 +576,9 @@ export class KandidatenPermSucheComponent implements OnInit {
     };
   }
 
-  /** Highest status among the linked Kandidaten; order 0 when none has a status. */
+  /** Highest status among the linked Kandidaten (see findHighestStatus in the status model). */
   private findHighestStatus(kandidaten: SuchauftragUebersichtKandidat[]): { highestStatus: number; highestStatusName?: VerknuepfungStatus } {
-    let result: { highestStatus: number; highestStatusName?: VerknuepfungStatus } = { highestStatus: 0 };
-    for (const k of kandidaten) {
-      const name = k.verknuepfung.verknuepfungStatus as VerknuepfungStatus;
-      const order = VERKNUEPFUNG_STATUS_ORDER[name];
-      if (order != null && order > result.highestStatus) result = { highestStatus: order, highestStatusName: name };
-    }
-    return result;
+    return findHighestStatus(kandidaten.map(k => k.verknuepfung.verknuepfungStatus));
   }
 
   statusStyle(status?: string): Record<string, string> | null {

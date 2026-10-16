@@ -20,6 +20,23 @@ export const VERKNUEPFUNG_STATUS_ORDER: Record<VerknuepfungStatus, number> = {
   'Prozess Rechnung vollständig bezahlt': 60,
 };
 
+/**
+ * Highest status among the given ones; order 0 when none has a status.
+ * Vorgestellt wins over Abgesagt, so a Kandidat that is still presented somewhere stays Vorgestellt.
+ */
+export function findHighestStatus(statuses: (string | undefined)[]): { highestStatus: number; highestStatusName?: VerknuepfungStatus } {
+  let result: { highestStatus: number; highestStatusName?: VerknuepfungStatus } = { highestStatus: 0 };
+  for (const status of statuses) {
+    const name = status as VerknuepfungStatus;
+    const order = VERKNUEPFUNG_STATUS_ORDER[name];
+    if (order != null && order > result.highestStatus) result = { highestStatus: order, highestStatusName: name };
+  }
+  if (result.highestStatusName === 'Abgesagt' && statuses.includes('Vorgestellt')) {
+    return { highestStatus: VERKNUEPFUNG_STATUS_ORDER['Vorgestellt'], highestStatusName: 'Vorgestellt' };
+  }
+  return result;
+}
+
 /** Statuses in ascending order (1 → 60). */
 export const VERKNUEPFUNG_STATUS_OPTIONS: VerknuepfungStatus[] =
   (Object.keys(VERKNUEPFUNG_STATUS_ORDER) as VerknuepfungStatus[])
