@@ -478,10 +478,10 @@ export class KandidatenPermBestandComponent implements OnInit {
     return groups;
   }
 
-  /** Lowest highest-status first, then newest Anlagedatum, then name. */
+  /** Highest highest-status first, then oldest Anlagedatum, then name. */
   private sortRows(group: MonthGroup): void {
     group.rows.sort((a, b) =>
-      a.highestStatus - b.highestStatus || b.sortDate - a.sortDate || a.name.localeCompare(b.name));
+      b.highestStatus - a.highestStatus || a.sortDate - b.sortDate || a.name.localeCompare(b.name));
   }
 
   private buildRow(kandidat: Kandidat, links: Verknuepfung[], date: Date | null): KandidatRow {

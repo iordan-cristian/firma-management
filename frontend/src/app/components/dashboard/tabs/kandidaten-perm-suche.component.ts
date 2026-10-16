@@ -551,10 +551,10 @@ export class KandidatenPermSucheComponent implements OnInit {
     return groups;
   }
 
-  /** Lowest highest-status first, then newest Anlagedatum, then Suche nach. */
+  /** Highest highest-status first, then oldest Anlagedatum, then Suche nach. */
   private sortRows(group: MonthGroup): void {
     group.rows.sort((a, b) =>
-      a.highestStatus - b.highestStatus || b.sortDate - a.sortDate || a.sucheNach.localeCompare(b.sucheNach));
+      b.highestStatus - a.highestStatus || a.sortDate - b.sortDate || a.sucheNach.localeCompare(b.sucheNach));
   }
 
   private buildRow(item: SuchauftragUebersicht, date: Date | null): SuchauftragRow {

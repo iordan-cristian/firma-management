@@ -29,7 +29,7 @@ export const VERKNUEPFUNG_STATUS_OPTIONS: VerknuepfungStatus[] =
 export const VERKNUEPFUNG_STATUS_COLORS: Record<VerknuepfungStatus, { background: string; color: string }> = {
   'Selbstbeworben': { background: '#ffff00', color: '#111' },
   'No-Go': { background: '#ffff00', color: '#111' },
-  'Vorgestellt': { background: '#ffff00', color: '#111' },
+  'Vorgestellt': { background: '#ffc000', color: '#111' },
   'Abgesagt': { background: '#ff4030', color: '#111' },
   'Prozess Start': { background: '#c1f0c8', color: '#111' },
   'Prozess laufend': { background: '#84e291', color: '#111' },
