@@ -14,6 +14,7 @@ import { SCHWERPUNKT_OPTIONS } from '../../models/allgemeiner-schwerpunkt.model'
 import { Suchauftrag, AKTIVITAET_OPTIONS, STATUS_OPTIONS } from '../../models/suchauftrag.model';
 import { Kandidat, GESCHLECHT_OPTIONS, TITEL_OPTIONS, SPRACHNIVEAU_OPTIONS, FUEHRERSCHEIN_OPTIONS } from '../../models/kandidat.model';
 import { VerknuepfungKandidat } from '../../models/verknuepfung.model';
+import { VerknuepfungStatus } from '../../models/verknuepfung-status.model';
 import { MatchedKandidatenPanelComponent } from './matched-kandidaten-panel.component';
 
 export interface SuchauftragVerknuepfungenChangedEvent {
@@ -614,6 +615,7 @@ export class SuchauftragDialogComponent implements OnInit {
       kandidatId,
       suchauftragId: this.draftSuchauftrag.id,
       firmaId: this.firma.id,
+      verknuepfungStatus: 'Vorgestellt' satisfies VerknuepfungStatus,
     }).subscribe(() => {
       const link: VerknuepfungKandidat = { kandidatId, vorname: kandidat.vorname, nachname: kandidat.nachname, position: kandidat.aktuellePosition };
       this.setVerknuepfungen([...this.draftSuchauftragVerknuepfungen, link]);
