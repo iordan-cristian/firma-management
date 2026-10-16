@@ -34,7 +34,10 @@ export interface SuchauftragVerknuepfungenChangedEvent {
     <div class="modal-backdrop">
       <div [class]="(matchedKandidatenOpen || kandidatDetailOpen) ? 'modal-duo' : ''">
         <div class="modal modal-suchauftrag">
-          <h2>{{ editingSuchauftragId ? 'Suchauftrag der ' + firma.name + ' bearbeiten' : 'Neuer Suchauftrag für ' + firma.name }}</h2>
+          <div class="match-header">
+            <h2>{{ editingSuchauftragId ? 'Suchauftrag der ' + firma.name + ' bearbeiten' : 'Neuer Suchauftrag für ' + firma.name }}</h2>
+            <button class="close" (click)="close.emit()">✕</button>
+          </div>
           <div class="modal-form-content">
             <ng-container *ngIf="draftSuchauftragVerknuepfungen.length">
               <div class="section-title">Verknüpfungen</div>
@@ -448,7 +451,7 @@ export interface SuchauftragVerknuepfungenChangedEvent {
     .modal-duo { display: flex; gap: 20px; align-items: stretch; }
     .modal-suchauftrag { display: flex; flex-direction: column; overflow: hidden; }
     .modal-form-content { overflow-y: auto; flex: 1; }
-    .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .match-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
     .match-header h2 { margin: 0; color: #1f2a44; font-size: 18px; }
     .modal-kandidat-detail { width: 540px; flex-shrink: 0; display: flex; flex-direction: column; }
     .k-section { font-size: 12px; font-weight: 700; color: #3b5bdb; text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0 8px; border-bottom: 1px solid #e5e9f3; padding-bottom: 4px; }
