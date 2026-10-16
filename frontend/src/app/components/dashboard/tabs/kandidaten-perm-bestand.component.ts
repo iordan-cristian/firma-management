@@ -26,6 +26,8 @@ import {KandidatDialogComponent} from '../../kandidaten/kandidat-dialog.componen
 interface KandidatRow {
   kandidat: Kandidat;
   name: string;
+  erstkontakt: string;
+  dsgvoBestaetigung: string;
   fachlicherSkill: string;
   gehalt: string;
   wohnort: string;
@@ -55,15 +57,17 @@ interface MonthGroup {
 
       <table *ngIf="!loading">
         <colgroup>
-          <col style="width: 30%;" />
-          <col style="width: 25%;" />
-          <col style="width: 22%;" />
-          <col style="width: 23%;" />
+          <col style="width: 20%;" />
+          <col style="width: 11%;" />
+          <col style="width: 13%;" />
+          <col style="width: 19%;" />
+          <col style="width: 17%;" />
+          <col style="width: 20%;" />
         </colgroup>
         <tbody>
           <ng-container *ngFor="let group of groups">
             <tr class="group-row">
-              <td colspan="4">{{ group.label }}</td>
+              <td colspan="6">{{ group.label }}</td>
             </tr>
             <ng-container *ngFor="let row of group.rows; let i = index">
               <tr
@@ -76,6 +80,8 @@ interface MonthGroup {
                 (contextmenu)="openMenu($event, row.kandidat)"
               >
                 <td><strong>Name: </strong> {{ row.name }}</td>
+                <td><strong>Erstkontakt: </strong> {{ row.erstkontakt }}</td>
+                <td><strong>DSGVO Bestätigung: </strong> {{ row.dsgvoBestaetigung }}</td>
                 <td><strong>Fachliche Skills: </strong> {{ row.fachlicherSkill }}</td>
                 <td><strong>Gehalt: </strong> {{ row.gehalt }}</td>
                 <td><strong>Wohnort: </strong> {{ row.wohnort }}</td>
@@ -89,12 +95,12 @@ interface MonthGroup {
                 (dblclick)="toggleExpanded(row.kandidat)"
                 (contextmenu)="openMenu($event, row.kandidat)"
               >
-                <td colspan="2"><strong>Vorgestellt bei: </strong> {{ row.vorgestelltBei }}</td>
+                <td colspan="4"><strong>Vorgestellt bei: </strong> {{ row.vorgestelltBei }}</td>
                 <td><strong>Gebühr: </strong> {{ row.gebuehr }}</td>
                 <td><strong>Mein Anteil: </strong> {{ row.meinAnteil }}</td>
               </tr>
               <tr class="detail-row" *ngIf="isExpanded(row.kandidat)">
-                <td colspan="4">
+                <td colspan="6">
                   <table class="verknuepfung-table">
                     <colgroup>
                       <col style="width: 14%;" />
@@ -146,7 +152,7 @@ interface MonthGroup {
             </ng-container>
           </ng-container>
           <tr *ngIf="groups.length === 0">
-            <td colspan="4" class="empty">Keine Kandidaten vorhanden.</td>
+            <td colspan="6" class="empty">Keine Kandidaten vorhanden.</td>
           </tr>
         </tbody>
       </table>
@@ -292,6 +298,7 @@ export class KandidatenPermBestandComponent implements OnInit {
   private expandedKandidatIds = new Set<string>();
 
   private static readonly MONTH_FORMATTER = new Intl.DateTimeFormat('de-DE', { month: 'long', year: 'numeric' });
+  private static readonly DATE_FORMATTER = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
   ngOnInit(): void {
     this.load();
@@ -496,6 +503,8 @@ export class KandidatenPermBestandComponent implements OnInit {
     return {
       kandidat,
       name: this.formatName(kandidat),
+      erstkontakt: this.formatDate(date),
+      dsgvoBestaetigung: this.formatDate(this.parseDate(kandidat.dsgvoBestaetigungsDatum)),
       fachlicherSkill: kandidat.fachlicherSkill?.replace(/_/g, ' ').trim() || '-',
       gehalt: this.formatGehalt(kandidat),
       wohnort: this.formatWohnort(kandidat),
@@ -562,9 +571,13 @@ export class KandidatenPermBestandComponent implements OnInit {
     return parts.length ? parts.join(' / ') : '-';
   }
 
+  private formatDate(date: Date | null): string {
+    return date ? KandidatenPermBestandComponent.DATE_FORMATTER.format(date) : '-';
+  }
+
   private parseDate(value?: string): Date | null {
     if (!value) return null;
-    // Backend serializes anlageDatum as "dd/MM/yyyy" (see Kandidat.java @JsonFormat).
+    // Backend serializes dates (anlageDatum, dsgvoBestaetigungsDatum) as "dd/MM/yyyy" (see Kandidat.java @JsonFormat).
     const [d, m, y] = value.split('/').map(Number);
     if (!y || !m || !d) return null;
     return new Date(y, m - 1, d);
