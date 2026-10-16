@@ -1,4 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -7,6 +8,7 @@ import { KandidatService } from '../../../services/kandidat.service';
 import { VerknuepfungService } from '../../../services/verknuepfung.service';
 import { FirmaService } from '../../../services/firma.service';
 import { SuchauftragService } from '../../../services/suchauftrag.service';
+import { DataChangedKandidatenPermService } from '../../../services/data-changed-kandidaten-perm.service';
 import { Kandidat } from '../../../models/kandidat.model';
 import { Verknuepfung } from '../../../models/verknuepfung.model';
 import { VERKNUEPFUNG_STATUS_COLORS, VERKNUEPFUNG_STATUS_OPTIONS, VERKNUEPFUNG_STATUS_ORDER, VerknuepfungStatus } from '../../../models/verknuepfung-status.model';
@@ -162,7 +164,7 @@ interface MonthGroup {
         *ngIf="dialogKandidat"
         [kandidat]="dialogKandidat"
         (saved)="onKandidatSaved()"
-        (changed)="load()"
+        (changed)="reloadAndNotify()"
         (close)="closeKandidatDialog()"
       ></app-kandidat-dialog>
     </div>
@@ -171,8 +173,8 @@ interface MonthGroup {
     :host { display: block; height: 100%; }
     .wrap { display: flex; flex-direction: column; height: 100%; }
     .hint { font-size: 13px; color: #555; margin: 0; }
-    .wrap > table { flex: 1 1 auto; height: auto; }
-    table { width: 100%; height: 100%; table-layout: fixed; border-collapse: collapse; background: white; }
+    .wrap > table { flex: 0 0 auto; height: auto; }
+    table { width: 100%; table-layout: fixed; border-collapse: collapse; background: white; }
     td {
       padding: 6px 10px;
       font-size: 13px;
@@ -262,6 +264,8 @@ export class KandidatenPermBestandComponent implements OnInit {
   private verknuepfungService = inject(VerknuepfungService);
   private firmaService = inject(FirmaService);
   private suchauftragService = inject(SuchauftragService);
+  private dataChangedKandidatenPermService = inject(DataChangedKandidatenPermService);
+  private destroyRef = inject(DestroyRef);
 
   loading = true;
   groups: MonthGroup[] = [];
@@ -283,6 +287,16 @@ export class KandidatenPermBestandComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    // Reload when another Kandidaten (Perm) tab (e.g. the Suche) changed data
+    this.dataChangedKandidatenPermService.changedByOthers(this)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.load());
+  }
+
+  /** Reloads this tab and tells the other Kandidaten (Perm) tabs that data changed. */
+  reloadAndNotify(): void {
+    this.load();
+    this.dataChangedKandidatenPermService.notify(this);
   }
 
   load(): void {
@@ -339,7 +353,7 @@ export class KandidatenPermBestandComponent implements OnInit {
 
   onKandidatSaved(): void {
     this.closeKandidatDialog();
-    this.load();
+    this.reloadAndNotify();
   }
 
   toggleExpanded(kandidat: Kandidat): void {
@@ -373,6 +387,7 @@ export class KandidatenPermBestandComponent implements OnInit {
     this.updateHighestStatus(row);
     const group = this.groups.find(g => g.rows.includes(row));
     if (group) this.sortRows(group);
+    this.dataChangedKandidatenPermService.notify(this);
   }
 
   onGebuehrenEdited(row: KandidatRow, link: Verknuepfung, event: Event): void {
@@ -414,6 +429,7 @@ export class KandidatenPermBestandComponent implements OnInit {
       next: updated => {
         Object.assign(link, updated);
         this.refreshAggregates(row);
+        this.dataChangedKandidatenPermService.notify(this);
       },
       error: () => { this.saveError = 'Speichern fehlgeschlagen.'; },
     });

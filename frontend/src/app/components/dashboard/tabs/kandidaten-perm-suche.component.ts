@@ -1,4 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SuchauftragService } from '../../../services/suchauftrag.service';
@@ -12,6 +13,7 @@ import { KandidatDialogComponent } from '../../kandidaten/kandidat-dialog.compon
 import { KandidatService } from '../../../services/kandidat.service';
 import { FirmaService } from '../../../services/firma.service';
 import { AnsprechpartnerService } from '../../../services/ansprechpartner.service';
+import { DataChangedKandidatenPermService } from '../../../services/data-changed-kandidaten-perm.service';
 import { Ansprechpartner } from '../../../models/ansprechpartner.model';
 import { NeueFirmaDialogComponent } from '../../firmen/neue-firma-dialog.component';
 import { AnsprechpartnerDialogComponent } from '../../Ansprechpartner/ansprechpartner-dialog.component';
@@ -213,7 +215,7 @@ function formatGehalt(s: Suchauftrag): string | undefined {
         *ngIf="dialogKandidat"
         [kandidat]="dialogKandidat"
         (saved)="onKandidatSaved()"
-        (changed)="load()"
+        (changed)="reloadAndNotify()"
         (close)="closeKandidatDialog()"
       ></app-kandidat-dialog>
 
@@ -319,6 +321,8 @@ export class KandidatenPermSucheComponent implements OnInit {
   private kandidatService = inject(KandidatService);
   private firmaService = inject(FirmaService);
   private ansprechpartnerService = inject(AnsprechpartnerService);
+  private dataChangedKandidatenPermService = inject(DataChangedKandidatenPermService);
+  private destroyRef = inject(DestroyRef);
 
   loading = true;
   groups: MonthGroup[] = [];
@@ -353,6 +357,10 @@ export class KandidatenPermSucheComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    // Reload when another Kandidaten (Perm) tab (e.g. the Bestand) changed data
+    this.dataChangedKandidatenPermService.changedByOthers(this)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.load());
   }
 
   load(): void {
@@ -360,6 +368,12 @@ export class KandidatenPermSucheComponent implements OnInit {
       this.groups = this.buildGroups(items);
       this.loading = false;
     });
+  }
+
+  /** Reloads this tab and tells the other Kandidaten (Perm) tabs that data changed. */
+  reloadAndNotify(): void {
+    this.load();
+    this.dataChangedKandidatenPermService.notify(this);
   }
 
   toggleExpanded(suchauftrag: Suchauftrag): void {
@@ -393,13 +407,13 @@ export class KandidatenPermSucheComponent implements OnInit {
 
   onSuchauftragAnlegenClosed(): void {
     this.suchauftragAnlegenOpen = false;
-    if (this.dialogChanged) this.load();
+    if (this.dialogChanged) this.reloadAndNotify();
   }
 
   closeSuchauftragDialog(): void {
     this.dialogSuchauftragRow = null;
     this.dialogFirma = null;
-    if (this.dialogChanged) this.load();
+    if (this.dialogChanged) this.reloadAndNotify();
   }
 
   openRowMenu(event: MouseEvent, row: SuchauftragRow): void {
@@ -447,7 +461,7 @@ export class KandidatenPermSucheComponent implements OnInit {
   onStammdatenSaved(): void {
     this.dialogAnsprechpartner = null;
     this.dialogStammFirma = null;
-    this.load();
+    this.reloadAndNotify();
   }
 
   /** The overview only carries the name, so the full Kandidat is loaded before opening the dialog. */
@@ -464,7 +478,7 @@ export class KandidatenPermSucheComponent implements OnInit {
 
   onKandidatSaved(): void {
     this.closeKandidatDialog();
-    this.load();
+    this.reloadAndNotify();
   }
 
   kandidatName(k: SuchauftragUebersichtKandidat): string {
@@ -507,7 +521,10 @@ export class KandidatenPermSucheComponent implements OnInit {
     if (!link.id) return;
     this.saveError = null;
     this.verknuepfungService.update(link.id, link).subscribe({
-      next: updated => Object.assign(link, updated),
+      next: updated => {
+        Object.assign(link, updated);
+        this.dataChangedKandidatenPermService.notify(this);
+      },
       error: () => { this.saveError = 'Speichern fehlgeschlagen.'; },
     });
   }
