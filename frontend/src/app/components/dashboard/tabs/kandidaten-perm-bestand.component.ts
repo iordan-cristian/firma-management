@@ -86,7 +86,7 @@ interface MonthGroup {
               >
                 <td>
                   <strong>Name: </strong> {{ row.name }}
-                  <button type="button" class="open-kandidat-btn" title="Kandidat anzeigen"
+                  <button type="button" class="open-btn" title="Kandidat anzeigen"
                           (click)="openKandidatDialog(row.kandidat)" (dblclick)="$event.stopPropagation()">↗</button>
                 </td>
                 <td><strong>Erstkontakt: </strong> {{ row.erstkontakt }}</td>
@@ -327,7 +327,7 @@ interface MonthGroup {
       cursor: pointer;
     }
     .new-verknuepfung-btn:hover { background: #dde3f5; }
-    .open-kandidat-btn {
+    .open-btn {
       margin-left: 4px;
       padding: 0 3px;
       border: 1px solid currentColor;
@@ -340,7 +340,7 @@ interface MonthGroup {
       cursor: pointer;
       opacity: 0.6;
     }
-    .open-kandidat-btn:hover { opacity: 1; }
+    .open-btn:hover { opacity: 1; }
     .archiv-heading { margin: 12px 0 6px; font-size: 12px; font-weight: 700; color: #1f2a44; }
     .save-error { margin: 6px 0 0; font-size: 12px; color: #b3261e; }
     .ctx-menu {

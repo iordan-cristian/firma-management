@@ -71,7 +71,6 @@ function formatGehalt(s: Suchauftrag): string | undefined {
   selector: 'app-kandidaten-perm-suche',
   standalone: true,
   imports: [CommonModule, FormsModule, SuchauftragDialogComponent, KandidatDialogComponent, NeueFirmaDialogComponent, AnsprechpartnerDialogComponent, ChoseFirmaAndAnsprechpartnerForSuchauftragComponent],
-  host: { '(document:click)': 'closeMenu()' },
   template: `
     <div class="wrap">
       <p class="hint" *ngIf="loading">Lade Daten...</p>
@@ -96,11 +95,22 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                 [class.status-colored]="!!row.highestStatusName"
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.suchauftrag)"
-                (contextmenu)="openRowMenu($event, row)"
               >
-                <td><strong>Firma: </strong> {{ row.firma }}</td>
-                <td><strong>Ansprechpartner: </strong> {{ row.ansprechpartner }}</td>
-                <td><strong>Suche nach: </strong> {{ row.sucheNach }}</td>
+                <td>
+                  <strong>Firma: </strong> {{ row.firma }}
+                  <button *ngIf="row.firmaId" type="button" class="open-btn" title="Firma anzeigen"
+                          (click)="openFirmaDialog(row)" (dblclick)="$event.stopPropagation()">↗</button>
+                </td>
+                <td>
+                  <strong>Ansprechpartner: </strong> {{ row.ansprechpartner }}
+                  <button *ngIf="row.suchauftrag.ansprechpartnerId" type="button" class="open-btn" title="Ansprechpartner anzeigen"
+                          (click)="openAnsprechpartnerDialog(row)" (dblclick)="$event.stopPropagation()">↗</button>
+                </td>
+                <td>
+                  <strong>Suche nach: </strong> {{ row.sucheNach }}
+                  <button type="button" class="open-btn" title="Suchauftrag anzeigen"
+                          (click)="openSuchauftragDialog(row)" (dblclick)="$event.stopPropagation()">↗</button>
+                </td>
                 <td><strong>Gehalt: </strong> {{ row.gehalt }}</td>
               </tr>
               <tr
@@ -111,7 +121,6 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                 [class.status-colored]="!!row.highestStatusName"
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.suchauftrag)"
-                (contextmenu)="openRowMenu($event, row)"
               >
                 <td><strong>Kandidaten: </strong> {{ row.kandidaten }}</td>
                 <td colspan="2"><strong>K.O.-Faktoren: </strong> {{ row.koFaktoren }}</td>
@@ -125,7 +134,6 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                 [class.status-colored]="!!row.highestStatusName"
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.suchauftrag)"
-                (contextmenu)="openRowMenu($event, row)"
               >
                 <td colspan="4"><strong>Ehemalige Kandidaten: </strong> {{ row.ehemaligeKandidaten }}</td>
               </tr>
@@ -156,7 +164,7 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                       >
                         <td>
                           {{ kandidatName(k) }}
-                          <button type="button" class="open-kandidat-btn" title="Kandidat anzeigen" (click)="openKandidatDialog(k)">↗</button>
+                          <button type="button" class="open-btn" title="Kandidat anzeigen" (click)="openKandidatDialog(k)">↗</button>
                         </td>
                         <td contenteditable="true" [textContent]="k.verknuepfung.gebuehren ?? ''" (blur)="onGebuehrenEdited(k, $event)"></td>
                         <td contenteditable="true" [textContent]="k.verknuepfung.mainAnteil ?? ''" (blur)="onMainAnteilEdited(k, $event)"></td>
@@ -205,7 +213,7 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                         >
                           <td>
                             {{ kandidatName(k) }}
-                            <button type="button" class="open-kandidat-btn" title="Kandidat anzeigen" (click)="openKandidatDialog(k)">↗</button>
+                            <button type="button" class="open-btn" title="Kandidat anzeigen" (click)="openKandidatDialog(k)">↗</button>
                           </td>
                           <td>{{ k.verknuepfung.gebuehren ?? '' }}</td>
                           <td>{{ k.verknuepfung.mainAnteil ?? '' }}</td>
@@ -236,17 +244,6 @@ function formatGehalt(s: Suchauftrag): string | undefined {
         (verknuepfungenChanged)="dialogChanged = true"
         (close)="closeSuchauftragDialog()"
       ></app-suchauftrag-dialog>
-
-      <!-- Custom right-click context menu -->
-      <div class="ctx-menu"
-           *ngIf="menuRow"
-           [style.top.px]="menuY"
-           [style.left.px]="menuX"
-           (click)="$event.stopPropagation()">
-        <button (click)="openSuchauftragDialog()">Suchauftrag anzeigen</button>
-        <button (click)="openAnsprechpartnerDialog()">Ansprechpartner anzeigen</button>
-        <button (click)="openFirmaDialog()">Firma anzeigen</button>
-      </div>
 
       <app-ansprechpartner-dialog
         *ngIf="dialogAnsprechpartner"
@@ -358,7 +355,7 @@ function formatGehalt(s: Suchauftrag): string | undefined {
       cursor: pointer;
     }
     .new-verknuepfung-btn:hover { background: #dde3f5; }
-    .open-kandidat-btn {
+    .open-btn {
       margin-left: 4px;
       padding: 0 3px;
       border: 1px solid currentColor;
@@ -371,16 +368,9 @@ function formatGehalt(s: Suchauftrag): string | undefined {
       cursor: pointer;
       opacity: 0.6;
     }
-    .open-kandidat-btn:hover { opacity: 1; }
+    .open-btn:hover { opacity: 1; }
     .archiv-heading { margin: 12px 0 6px; font-size: 12px; font-weight: 700; color: #1f2a44; }
     .save-error { margin: 6px 0 0; font-size: 12px; color: #b3261e; }
-    .ctx-menu {
-      position: fixed; background: white; border: 1px solid #dfe3ee; border-radius: 6px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.15); display: flex; flex-direction: column;
-      min-width: 180px; z-index: 2100; overflow: hidden;
-    }
-    .ctx-menu button { background: white; border: none; text-align: left; padding: 10px 14px; font-size: 14px; cursor: pointer; }
-    .ctx-menu button:hover { background: #eef2fb; }
   `]
 })
 export class KandidatenPermSucheComponent implements OnInit {
@@ -404,10 +394,6 @@ export class KandidatenPermSucheComponent implements OnInit {
   dialogChanged = false;
   /** Firma of the Suchauftrag shown in the dialog. */
   dialogFirma: Firma | null = null;
-  /** Suchauftrag row whose right-click menu is open. */
-  menuRow: SuchauftragRow | null = null;
-  menuX = 0;
-  menuY = 0;
   /** Kandidat shown in the Kandidat dialog. */
   dialogKandidat: Kandidat | null = null;
   /** Ansprechpartner shown in the Ansprechpartner dialog. */
@@ -483,35 +469,19 @@ export class KandidatenPermSucheComponent implements OnInit {
     if (this.dialogChanged) this.reloadAndNotify();
   }
 
-  openRowMenu(event: MouseEvent, row: SuchauftragRow): void {
-    event.preventDefault();
-    this.menuRow = row;
-    this.menuX = event.clientX;
-    this.menuY = event.clientY;
+  openSuchauftragDialog(row: SuchauftragRow): void {
+    this.showSuchauftrag(row, false);
   }
 
-  closeMenu(): void {
-    this.menuRow = null;
-  }
-
-  openSuchauftragDialog(): void {
-    const row = this.menuRow;
-    this.closeMenu();
-    if (row) this.showSuchauftrag(row, false);
-  }
-
-  openAnsprechpartnerDialog(): void {
-    const ansprechpartnerId = this.menuRow?.suchauftrag.ansprechpartnerId;
-    this.closeMenu();
+  openAnsprechpartnerDialog(row: SuchauftragRow): void {
+    const ansprechpartnerId = row.suchauftrag.ansprechpartnerId;
     if (!ansprechpartnerId) return;
     this.ansprechpartnerService.getById(ansprechpartnerId).subscribe(a => this.dialogAnsprechpartner = a);
   }
 
-  openFirmaDialog(): void {
-    const firmaId = this.menuRow?.firmaId;
-    this.closeMenu();
-    if (!firmaId) return;
-    this.firmaService.getById(firmaId).subscribe(f => this.dialogStammFirma = f);
+  openFirmaDialog(row: SuchauftragRow): void {
+    if (!row.firmaId) return;
+    this.firmaService.getById(row.firmaId).subscribe(f => this.dialogStammFirma = f);
   }
 
   /** Firma or Ansprechpartner names are shown in the overview, so it is reloaded after saving. */
@@ -523,7 +493,6 @@ export class KandidatenPermSucheComponent implements OnInit {
 
   /** The overview only carries the name, so the full Kandidat is loaded before opening the dialog. */
   openKandidatDialog(k: SuchauftragUebersichtKandidat): void {
-    this.closeMenu();
     if (!k.kandidatId) return;
     this.kandidatService.getById(k.kandidatId).subscribe(kandidat => this.dialogKandidat = kandidat);
   }
