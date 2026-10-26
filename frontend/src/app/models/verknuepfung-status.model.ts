@@ -37,6 +37,12 @@ export function findHighestStatus(statuses: (string | undefined)[]): { highestSt
   return result;
 }
 
+/** Finished = one Verknüpfung fully paid, or at least one Verknüpfung and all of them Abgesagt. */
+export function isProzessBeendet(statuses: (string | undefined)[]): boolean {
+  if (statuses.length === 0) return false;
+  return statuses.includes('Prozess Rechnung vollständig bezahlt') || statuses.every(s => s === 'Abgesagt');
+}
+
 /** Statuses in ascending order (1 → 60). */
 export const VERKNUEPFUNG_STATUS_OPTIONS: VerknuepfungStatus[] =
   (Object.keys(VERKNUEPFUNG_STATUS_ORDER) as VerknuepfungStatus[])

@@ -34,6 +34,13 @@ public class VerknuepfungController {
         return service.getVerknuepfungenForKandidat(kandidatId);
     }
 
+    @PostMapping("/kandidat/{kandidatId}/reaktivieren")
+    public ResponseEntity<Void> reaktivieren(@PathVariable UUID kandidatId) {
+        return service.reaktivieren(kandidatId)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Verknuepfung> update(@PathVariable UUID id, @RequestBody Verknuepfung v) {
         return service.update(id, v)

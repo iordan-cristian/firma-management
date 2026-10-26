@@ -6,13 +6,15 @@ import {forkJoin} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {KandidatService} from '../../../services/kandidat.service';
 import {VerknuepfungService} from '../../../services/verknuepfung.service';
+import {VerknuepfungArchiviertService} from '../../../services/verknuepfung-archiviert.service';
 import {FirmaService} from '../../../services/firma.service';
 import {SuchauftragService} from '../../../services/suchauftrag.service';
 import {DataChangedKandidatenPermService} from '../../../services/data-changed-kandidaten-perm.service';
 import {Kandidat} from '../../../models/kandidat.model';
-import {Verknuepfung} from '../../../models/verknuepfung.model';
+import {Verknuepfung, VerknuepfungArchiviert} from '../../../models/verknuepfung.model';
 import {
   findHighestStatus,
+  isProzessBeendet,
   VERKNUEPFUNG_STATUS_COLORS,
   VERKNUEPFUNG_STATUS_OPTIONS,
   VerknuepfungStatus
@@ -35,6 +37,9 @@ interface KandidatRow {
   gebuehr: string;
   meinAnteil: string;
   links: Verknuepfung[];
+  /** Archived by "Reaktivieren"; shown read-only, not counted for sorting or color. */
+  archivedLinks: VerknuepfungArchiviert[];
+  ehemaligVorgestelltBei: string;
   sortDate: number;
   highestStatus: number;
   highestStatusName?: VerknuepfungStatus;
@@ -77,7 +82,7 @@ interface MonthGroup {
                 [class.status-colored]="!!row.highestStatusName"
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.kandidat)"
-                (contextmenu)="openMenu($event, row.kandidat)"
+                (contextmenu)="openMenu($event, row.kandidat, group)"
               >
                 <td><strong>Name: </strong> {{ row.name }}</td>
                 <td><strong>Erstkontakt: </strong> {{ row.erstkontakt }}</td>
@@ -90,14 +95,27 @@ interface MonthGroup {
                 [class.entry-odd]="i % 2 === 1"
                 [class.entry-even]="i % 2 === 0"
                 class="entry-row-2"
+                [class.has-archiv]="row.archivedLinks.length > 0"
                 [class.status-colored]="!!row.highestStatusName"
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.kandidat)"
-                (contextmenu)="openMenu($event, row.kandidat)"
+                (contextmenu)="openMenu($event, row.kandidat, group)"
               >
                 <td colspan="4"><strong>Vorgestellt bei: </strong> {{ row.vorgestelltBei }}</td>
                 <td><strong>Gebühr: </strong> {{ row.gebuehr }}</td>
                 <td><strong>Mein Anteil: </strong> {{ row.meinAnteil }}</td>
+              </tr>
+              <tr
+                *ngIf="row.archivedLinks.length > 0"
+                [class.entry-odd]="i % 2 === 1"
+                [class.entry-even]="i % 2 === 0"
+                class="entry-row-3"
+                [class.status-colored]="!!row.highestStatusName"
+                [style]="statusStyle(row.highestStatusName)"
+                (dblclick)="toggleExpanded(row.kandidat)"
+                (contextmenu)="openMenu($event, row.kandidat, group)"
+              >
+                <td colspan="6"><strong>Ehemalig vorgestellt bei: </strong> {{ row.ehemaligVorgestelltBei }}</td>
               </tr>
               <tr class="detail-row" *ngIf="isExpanded(row.kandidat)">
                 <td colspan="6">
@@ -146,6 +164,46 @@ interface MonthGroup {
                       </tr>
                     </tbody>
                   </table>
+                  <ng-container *ngIf="row.archivedLinks.length > 0">
+                    <p class="archiv-heading">Ehemalige Verknüpfungen</p>
+                    <table class="verknuepfung-table">
+                      <colgroup>
+                        <col style="width: 13%;" />
+                        <col style="width: 15%;" />
+                        <col style="width: 8%;" />
+                        <col style="width: 8%;" />
+                        <col style="width: 10%;" />
+                        <col style="width: 36%;" />
+                        <col style="width: 10%;" />
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th>Firma</th>
+                          <th>Suche nach</th>
+                          <th>Gebühren</th>
+                          <th>Mein Anteil</th>
+                          <th>Status</th>
+                          <th>Kommentar</th>
+                          <th>Archiviert am</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          *ngFor="let link of row.archivedLinks"
+                          [class.status-colored]="!!link.verknuepfungStatus"
+                          [style]="statusStyle(link.verknuepfungStatus)"
+                        >
+                          <td>{{ firmaName(link.firmaId) }}</td>
+                          <td>{{ sucheNach(link.suchauftragId) }}</td>
+                          <td>{{ link.gebuehren ?? '' }}</td>
+                          <td>{{ link.mainAnteil ?? '' }}</td>
+                          <td>{{ link.verknuepfungStatus ?? '-' }}</td>
+                          <td>{{ link.verknuepfungStatusKommentar ?? '' }}</td>
+                          <td>{{ formatArchiviertAm(link) }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </ng-container>
                   <p class="save-error" *ngIf="saveError">{{ saveError }}</p>
                 </td>
               </tr>
@@ -172,6 +230,7 @@ interface MonthGroup {
            [style.left.px]="menuX"
            (click)="$event.stopPropagation()">
         <button (click)="openKandidatDialog()">Kandidat anzeigen</button>
+        <button *ngIf="menuReaktivierbar" (click)="reaktivieren()">Reaktivieren</button>
       </div>
 
       <app-kandidat-dialog
@@ -201,9 +260,11 @@ interface MonthGroup {
     td strong { font-weight: 700; color: #1f2a44; }
     .entry-row-1 td { border-top: 1px solid #e5e9f3; border-bottom: none; padding-bottom: 2px; }
     .entry-row-2 td { border-top: none; border-bottom: 1px solid #d7ddec; padding-top: 2px; }
+    .entry-row-2.has-archiv td { border-bottom: none; padding-bottom: 2px; }
+    .entry-row-3 td { border-top: none; border-bottom: 1px solid #d7ddec; padding-top: 2px; }
     .entry-even td { background: #fff; }
     .entry-odd td { background: #f7f8fc; }
-    .entry-row-1, .entry-row-2 { cursor: pointer; }
+    .entry-row-1, .entry-row-2, .entry-row-3 { cursor: pointer; }
     tr.status-colored > td { background: var(--status-bg); color: var(--status-fg); }
     tr.status-colored > td strong { color: inherit; }
     .group-row td {
@@ -263,6 +324,7 @@ interface MonthGroup {
       cursor: pointer;
     }
     .new-verknuepfung-btn:hover { background: #dde3f5; }
+    .archiv-heading { margin: 12px 0 6px; font-size: 12px; font-weight: 700; color: #1f2a44; }
     .save-error { margin: 6px 0 0; font-size: 12px; color: #b3261e; }
     .ctx-menu {
       position: fixed; background: white; border: 1px solid #dfe3ee; border-radius: 6px;
@@ -276,6 +338,7 @@ interface MonthGroup {
 export class KandidatenPermBestandComponent implements OnInit {
   private kandidatService = inject(KandidatService);
   private verknuepfungService = inject(VerknuepfungService);
+  private verknuepfungArchiviertService = inject(VerknuepfungArchiviertService);
   private firmaService = inject(FirmaService);
   private suchauftragService = inject(SuchauftragService);
   private dataChangedKandidatenPermService = inject(DataChangedKandidatenPermService);
@@ -288,6 +351,8 @@ export class KandidatenPermBestandComponent implements OnInit {
   neueVerknuepfungRow: KandidatRow | null = null;
   /** Kandidat whose right-click menu is open. */
   menuKandidat: Kandidat | null = null;
+  /** Only Kandidaten from a past month can be reactivated. */
+  menuReaktivierbar = false;
   menuX = 0;
   menuY = 0;
   /** Open Kandidat dialog: null = closed, {} = new Kandidat, otherwise the Kandidat being shown. */
@@ -330,8 +395,11 @@ export class KandidatenPermBestandComponent implements OnInit {
       const withLinks$ = kandidaten
         .filter(k => !!k.id)
         .map(k =>
-          this.verknuepfungService.getVerknuepfungenForKandidat(k.id as string).pipe(
-            map(links => ({ kandidat: k, links }))
+          forkJoin({
+            links: this.verknuepfungService.getVerknuepfungenForKandidat(k.id as string),
+            archivedLinks: this.verknuepfungArchiviertService.get(k.id as string),
+          }).pipe(
+            map(({ links, archivedLinks }) => ({ kandidat: k, links, archivedLinks }))
           )
         );
 
@@ -349,9 +417,11 @@ export class KandidatenPermBestandComponent implements OnInit {
     });
   }
 
-  openMenu(event: MouseEvent, kandidat: Kandidat): void {
+  openMenu(event: MouseEvent, kandidat: Kandidat, group: MonthGroup): void {
     event.preventDefault();
     this.menuKandidat = kandidat;
+    const today = new Date();
+    this.menuReaktivierbar = group.key < today.getFullYear() * 12 + today.getMonth();
     this.menuX = event.clientX;
     this.menuY = event.clientY;
   }
@@ -363,6 +433,18 @@ export class KandidatenPermBestandComponent implements OnInit {
   openKandidatDialog(): void {
     this.dialogKandidat = this.menuKandidat;
     this.closeMenu();
+  }
+
+  /** Archives all Verknüpfungen of the Kandidat and brings it back to the current month. */
+  reaktivieren(): void {
+    const kandidatId = this.menuKandidat?.id;
+    this.closeMenu();
+    if (!kandidatId) return;
+    this.saveError = null;
+    this.verknuepfungService.reaktivieren(kandidatId).subscribe({
+      next: () => this.reloadAndNotify(),
+      error: () => { this.saveError = 'Reaktivieren fehlgeschlagen.'; },
+    });
   }
 
   openNeuerKandidat(): void {
@@ -471,13 +553,19 @@ export class KandidatenPermBestandComponent implements OnInit {
     return suchauftragId ? this.sucheNachById.get(suchauftragId) || '-' : '-';
   }
 
-  private buildGroups(results: { kandidat: Kandidat; links: Verknuepfung[] }[]): MonthGroup[] {
+  formatArchiviertAm(link: VerknuepfungArchiviert): string {
+    return this.formatDate(this.parseDate(link.archiviertAm));
+  }
+
+  private buildGroups(
+    results: { kandidat: Kandidat; links: Verknuepfung[]; archivedLinks: VerknuepfungArchiviert[] }[],
+  ): MonthGroup[] {
     const groupsByKey = new Map<number, MonthGroup>();
 
     const today = new Date();
-    for (const { kandidat, links } of results) {
+    for (const { kandidat, links, archivedLinks } of results) {
       // Kandidaten stay in the current month until their process is finished
-      const groupDate = this.parseDate(kandidat.prozessBeendetAm) ?? today;
+      const groupDate = this.findProzessBeendetAm(links) ?? today;
       const key = groupDate.getFullYear() * 12 + groupDate.getMonth();
       const label = KandidatenPermBestandComponent.MONTH_FORMATTER.format(groupDate);
 
@@ -487,12 +575,25 @@ export class KandidatenPermBestandComponent implements OnInit {
         groupsByKey.set(key, group);
       }
 
-      group.rows.push(this.buildRow(kandidat, links, this.parseDate(kandidat.anlageDatum)));
+      group.rows.push(this.buildRow(kandidat, links, archivedLinks, this.parseDate(kandidat.anlageDatum)));
     }
 
     const groups = Array.from(groupsByKey.values()).sort((a, b) => b.key - a.key);
     groups.forEach(group => this.sortRows(group));
     return groups;
+  }
+
+  /**
+   * Date the process was finished: the last status change of the fully paid Verknüpfung(en),
+   * or of all Verknüpfungen when all are Abgesagt. Null while the process is still open.
+   */
+  private findProzessBeendetAm(links: Verknuepfung[]): Date | null {
+    if (!isProzessBeendet(links.map(l => l.verknuepfungStatus))) return null;
+    const bezahlt = links.filter(l => l.verknuepfungStatus === 'Prozess Rechnung vollständig bezahlt');
+    const dates = (bezahlt.length ? bezahlt : links)
+      .map(l => this.parseDate(l.statusGeaendertAm))
+      .filter((d): d is Date => d !== null);
+    return dates.length ? new Date(Math.max(...dates.map(d => d.getTime()))) : null;
   }
 
   /** Highest highest-status first, then oldest Anlagedatum, then name. */
@@ -501,7 +602,7 @@ export class KandidatenPermBestandComponent implements OnInit {
       b.highestStatus - a.highestStatus || a.sortDate - b.sortDate || a.name.localeCompare(b.name));
   }
 
-  private buildRow(kandidat: Kandidat, links: Verknuepfung[], date: Date | null): KandidatRow {
+  private buildRow(kandidat: Kandidat, links: Verknuepfung[], archivedLinks: VerknuepfungArchiviert[], date: Date | null): KandidatRow {
     return {
       kandidat,
       name: this.formatName(kandidat),
@@ -514,6 +615,8 @@ export class KandidatenPermBestandComponent implements OnInit {
       gebuehr: this.formatJoined(links.map(l => l.gebuehren)),
       meinAnteil: this.formatJoined(links.map(l => l.mainAnteil)),
       links,
+      archivedLinks,
+      ehemaligVorgestelltBei: this.formatVorgestelltBei(archivedLinks),
       sortDate: date ? date.getTime() : Number.NEGATIVE_INFINITY,
       ...this.findHighestStatus(links),
     };

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SuchauftragService } from '../../../services/suchauftrag.service';
 import { VerknuepfungService } from '../../../services/verknuepfung.service';
+import { VerknuepfungArchiviert } from '../../../models/verknuepfung.model';
 import { Suchauftrag, SuchauftragUebersicht, SuchauftragUebersichtKandidat } from '../../../models/suchauftrag.model';
 import { Geschlecht, Kandidat, Titel } from '../../../models/kandidat.model';
 import { VERKNUEPFUNG_STATUS_COLORS, VERKNUEPFUNG_STATUS_OPTIONS, VerknuepfungStatus, findHighestStatus } from '../../../models/verknuepfung-status.model';
@@ -30,6 +31,9 @@ interface SuchauftragRow {
   koFaktoren: string;
   standort: string;
   links: SuchauftragUebersichtKandidat[];
+  /** Archived by "Reaktivieren"; shown read-only, not counted for sorting or color. */
+  archivedLinks: SuchauftragUebersichtKandidat<VerknuepfungArchiviert>[];
+  ehemaligeKandidaten: string;
   sortDate: number;
   highestStatus: number;
   highestStatusName?: VerknuepfungStatus;
@@ -103,6 +107,7 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                 [class.entry-odd]="i % 2 === 1"
                 [class.entry-even]="i % 2 === 0"
                 class="entry-row-2"
+                [class.has-archiv]="row.archivedLinks.length > 0"
                 [class.status-colored]="!!row.highestStatusName"
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.suchauftrag)"
@@ -111,6 +116,18 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                 <td><strong>Kandidaten: </strong> {{ row.kandidaten }}</td>
                 <td colspan="2"><strong>K.O.-Faktoren: </strong> {{ row.koFaktoren }}</td>
                 <td><strong>Standort: </strong> {{ row.standort }}</td>
+              </tr>
+              <tr
+                *ngIf="row.archivedLinks.length > 0"
+                [class.entry-odd]="i % 2 === 1"
+                [class.entry-even]="i % 2 === 0"
+                class="entry-row-3"
+                [class.status-colored]="!!row.highestStatusName"
+                [style]="statusStyle(row.highestStatusName)"
+                (dblclick)="toggleExpanded(row.suchauftrag)"
+                (contextmenu)="openRowMenu($event, row)"
+              >
+                <td colspan="4"><strong>Ehemalige Kandidaten: </strong> {{ row.ehemaligeKandidaten }}</td>
               </tr>
               <tr class="detail-row" *ngIf="isExpanded(row.suchauftrag)">
                 <td colspan="4">
@@ -157,6 +174,44 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                       </tr>
                     </tbody>
                   </table>
+                  <ng-container *ngIf="row.archivedLinks.length > 0">
+                    <p class="archiv-heading">Ehemalige Verknüpfungen</p>
+                    <table class="verknuepfung-table">
+                      <colgroup>
+                        <col style="width: 22%;" />
+                        <col style="width: 9%;" />
+                        <col style="width: 9%;" />
+                        <col style="width: 13%;" />
+                        <col style="width: 35%;" />
+                        <col style="width: 12%;" />
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th>Kandidat</th>
+                          <th>Gebühren</th>
+                          <th>Mein Anteil</th>
+                          <th>Status</th>
+                          <th>Kommentar</th>
+                          <th>Archiviert am</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          *ngFor="let k of row.archivedLinks"
+                          [class.status-colored]="!!k.verknuepfung.verknuepfungStatus"
+                          [style]="statusStyle(k.verknuepfung.verknuepfungStatus)"
+                          (contextmenu)="openMenu($event, k)"
+                        >
+                          <td>{{ kandidatName(k) }}</td>
+                          <td>{{ k.verknuepfung.gebuehren ?? '' }}</td>
+                          <td>{{ k.verknuepfung.mainAnteil ?? '' }}</td>
+                          <td>{{ k.verknuepfung.verknuepfungStatus ?? '-' }}</td>
+                          <td>{{ k.verknuepfung.verknuepfungStatusKommentar ?? '' }}</td>
+                          <td>{{ formatArchiviertAm(k.verknuepfung) }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </ng-container>
                   <p class="save-error" *ngIf="saveError">{{ saveError }}</p>
                 </td>
               </tr>
@@ -243,9 +298,11 @@ function formatGehalt(s: Suchauftrag): string | undefined {
     td strong { font-weight: 700; color: #1f2a44; }
     .entry-row-1 td { border-top: 1px solid #e5e9f3; border-bottom: none; padding-bottom: 2px; }
     .entry-row-2 td { border-top: none; border-bottom: 1px solid #d7ddec; padding-top: 2px; }
+    .entry-row-2.has-archiv td { border-bottom: none; padding-bottom: 2px; }
+    .entry-row-3 td { border-top: none; border-bottom: 1px solid #d7ddec; padding-top: 2px; }
     .entry-even td { background: #fff; }
     .entry-odd td { background: #f7f8fc; }
-    .entry-row-1, .entry-row-2 { cursor: pointer; }
+    .entry-row-1, .entry-row-2, .entry-row-3 { cursor: pointer; }
     tr.status-colored > td { background: var(--status-bg); color: var(--status-fg); }
     tr.status-colored > td strong { color: inherit; }
     .group-row td {
@@ -305,6 +362,7 @@ function formatGehalt(s: Suchauftrag): string | undefined {
       cursor: pointer;
     }
     .new-verknuepfung-btn:hover { background: #dde3f5; }
+    .archiv-heading { margin: 12px 0 6px; font-size: 12px; font-weight: 700; color: #1f2a44; }
     .save-error { margin: 6px 0 0; font-size: 12px; color: #b3261e; }
     .ctx-menu {
       position: fixed; background: white; border: 1px solid #dfe3ee; border-radius: 6px;
@@ -354,6 +412,7 @@ export class KandidatenPermSucheComponent implements OnInit {
   private expandedSuchauftragIds = new Set<string>();
 
   private static readonly MONTH_FORMATTER = new Intl.DateTimeFormat('de-DE', { month: 'long', year: 'numeric' });
+  private static readonly DATE_FORMATTER = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
   ngOnInit(): void {
     this.load();
@@ -571,6 +630,8 @@ export class KandidatenPermSucheComponent implements OnInit {
       koFaktoren: this.formatKoFaktoren(s),
       standort: s.ort?.trim() || '-',
       links: item.kandidaten,
+      archivedLinks: item.ehemaligeKandidaten ?? [],
+      ehemaligeKandidaten: this.formatKandidaten(item.ehemaligeKandidaten ?? []),
       sortDate: date ? date.getTime() : Number.NEGATIVE_INFINITY,
       ...this.findHighestStatus(item.kandidaten),
     };
@@ -589,6 +650,11 @@ export class KandidatenPermSucheComponent implements OnInit {
   private formatName(geschlecht?: Geschlecht, titel?: Titel, vorname?: string, nachname?: string): string {
     const anrede = geschlecht === 'männlich' ? 'Herr' : geschlecht === 'weiblich' ? 'Frau' : '';
     return [anrede, titel, vorname, nachname].filter(Boolean).join(' ') || '-';
+  }
+
+  formatArchiviertAm(link: VerknuepfungArchiviert): string {
+    const date = this.parseDate(link.archiviertAm);
+    return date ? KandidatenPermSucheComponent.DATE_FORMATTER.format(date) : '-';
   }
 
   private formatKandidaten(kandidaten: SuchauftragUebersichtKandidat[]): string {

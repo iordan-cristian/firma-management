@@ -3,8 +3,9 @@ package com.firma.management.service;
 import com.firma.management.dto.VerknuepfungKandidatResponse;
 import com.firma.management.entity.Kandidat;
 import com.firma.management.entity.Verknuepfung;
-import com.firma.management.entity.VerknuepfungStatus;
+import com.firma.management.entity.VerknuepfungArchiviert;
 import com.firma.management.repository.KandidatRepository;
+import com.firma.management.repository.VerknuepfungArchiviertRepository;
 import com.firma.management.repository.VerknuepfungRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,10 +20,13 @@ import java.util.function.Function;
 public class VerknuepfungService {
 
     private final VerknuepfungRepository repo;
+    private final VerknuepfungArchiviertRepository archivRepo;
     private final KandidatRepository kandidatRepo;
 
-    public VerknuepfungService(VerknuepfungRepository repo, KandidatRepository kandidatRepo) {
+    public VerknuepfungService(VerknuepfungRepository repo, VerknuepfungArchiviertRepository archivRepo,
+                               KandidatRepository kandidatRepo) {
         this.repo = repo;
+        this.archivRepo = archivRepo;
         this.kandidatRepo = kandidatRepo;
     }
 
@@ -32,9 +36,8 @@ public class VerknuepfungService {
             throw new IllegalArgumentException("Verknüpfung existiert bereits.");
         }
         v.setId(null);
-        Verknuepfung saved = repo.save(v);
-        updateProzessBeendetAm(saved.getKandidatId());
-        return saved;
+        v.setStatusGeaendertAm(LocalDate.now());
+        return repo.save(v);
     }
 
     public List<VerknuepfungKandidatResponse> getKandidatenForSuchauftrag(UUID suchauftragId) {
@@ -63,40 +66,32 @@ public class VerknuepfungService {
         return repo.findById(id).map(existing -> {
             existing.setGebuehren(input.getGebuehren());
             existing.setMainAnteil(input.getMainAnteil());
+            // The Bestand derives "Prozess beendet am" from this date
+            if (existing.getVerknuepfungStatus() != input.getVerknuepfungStatus()) {
+                existing.setStatusGeaendertAm(LocalDate.now());
+            }
             existing.setVerknuepfungStatus(input.getVerknuepfungStatus());
             existing.setVerknuepfungStatusKommentar(input.getVerknuepfungStatusKommentar());
-            Verknuepfung saved = repo.save(existing);
-            updateProzessBeendetAm(saved.getKandidatId());
-            return saved;
+            return repo.save(existing);
         });
     }
 
     @Transactional
     public void deleteLink(UUID suchauftragId, UUID kandidatId) {
         repo.deleteBySuchauftragIdAndKandidatId(suchauftragId, kandidatId);
-        // Deleting an open Verknüpfung can leave only Abgesagt ones
-        updateProzessBeendetAm(kandidatId);
     }
 
     /**
-     * Sets the Kandidat's prozessBeendetAm to today once its process is finished.
-     * An already set date is kept (reopening a process is not handled here).
+     * Moves all Verknüpfungen of the Kandidat to verknuepfung_archiviert. Without Verknüpfungen
+     * its process is open again, so it shows up "clean" in the current month.
      */
-    private void updateProzessBeendetAm(UUID kandidatId) {
-        if (kandidatId == null) return;
-        kandidatRepo.findById(kandidatId)
-                .filter(k -> k.getProzessBeendetAm() == null)
-                .filter(k -> isProzessBeendet(repo.findAllByKandidatId(kandidatId)))
-                .ifPresent(k -> {
-                    k.setProzessBeendetAm(LocalDate.now());
-                    kandidatRepo.save(k);
-                });
-    }
-
-    /** Finished = one Verknüpfung fully paid, or at least one Verknüpfung and all of them Abgesagt. */
-    static boolean isProzessBeendet(List<Verknuepfung> links) {
-        if (links.isEmpty()) return false;
-        return links.stream().anyMatch(l -> l.getVerknuepfungStatus() == VerknuepfungStatus.PROZESS_RECHNUNG_VOLLSTAENDIG_BEZAHLT)
-                || links.stream().allMatch(l -> l.getVerknuepfungStatus() == VerknuepfungStatus.ABGESAGT);
+    @Transactional
+    public boolean reaktivieren(UUID kandidatId) {
+        if (!kandidatRepo.existsById(kandidatId)) return false;
+        List<Verknuepfung> links = repo.findAllByKandidatId(kandidatId);
+        LocalDate heute = LocalDate.now();
+        archivRepo.saveAll(links.stream().map(l -> VerknuepfungArchiviert.of(l, heute)).toList());
+        repo.deleteAll(links);
+        return true;
     }
 }

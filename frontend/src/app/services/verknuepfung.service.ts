@@ -17,6 +17,9 @@ export class VerknuepfungService {
   getVerknuepfungenForKandidat(kandidatId: string): Observable<Verknuepfung[]> {
     return this.http.get<Verknuepfung[]>(`${this.baseUrl}/kandidat/${kandidatId}`);
   }
+  reaktivieren(kandidatId: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/kandidat/${kandidatId}/reaktivieren`, null);
+  }
   deleteLink(suchauftragId: string, kandidatId: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/suchauftrag/${suchauftragId}/kandidat/${kandidatId}`);
   }

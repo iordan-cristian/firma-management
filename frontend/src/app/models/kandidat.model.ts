@@ -15,8 +15,6 @@ export interface Kandidat {
   id?: string;
   dsgvoBestaetigungsDatum?: string;
   anlageDatum?: string;
-  /** Read-only, set by the backend once all Verknüpfungen are Abgesagt or one is fully paid. */
-  prozessBeendetAm?: string;
   geschlecht?: Geschlecht;
   titel?: Titel;
   vorname?: string;

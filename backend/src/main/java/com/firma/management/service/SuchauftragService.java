@@ -7,8 +7,10 @@ import com.firma.management.entity.Status;
 import com.firma.management.entity.Suchauftrag;
 import com.firma.management.entity.Titel;
 import com.firma.management.entity.Verknuepfung;
+import com.firma.management.entity.VerknuepfungArchiviert;
 import com.firma.management.repository.AnsprechpartnerRepository;
 import com.firma.management.repository.SuchauftragRepository;
+import com.firma.management.repository.VerknuepfungArchiviertRepository;
 import com.firma.management.repository.VerknuepfungRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,31 +29,50 @@ public class SuchauftragService {
     private final SuchauftragRepository repo;
     private final AnsprechpartnerRepository ansprechpartnerRepo;
     private final VerknuepfungRepository verknuepfungRepo;
+    private final VerknuepfungArchiviertRepository verknuepfungArchiviertRepo;
 
     public SuchauftragService(SuchauftragRepository repo, AnsprechpartnerRepository ansprechpartnerRepo,
-                              VerknuepfungRepository verknuepfungRepo) {
+                              VerknuepfungRepository verknuepfungRepo,
+                              VerknuepfungArchiviertRepository verknuepfungArchiviertRepo) {
         this.repo = repo;
         this.ansprechpartnerRepo = ansprechpartnerRepo;
         this.verknuepfungRepo = verknuepfungRepo;
+        this.verknuepfungArchiviertRepo = verknuepfungArchiviertRepo;
     }
 
-    /** All Suchaufträge with Firma, Ansprechpartner and linked Kandidaten (incl. Verknüpfung status), in two queries. */
+    /**
+     * All Suchaufträge with Firma, Ansprechpartner and linked Kandidaten (incl. Verknüpfung status),
+     * current and archived, in three queries.
+     */
     @Transactional(readOnly = true)
     public List<SuchauftragUebersichtResponse> getUebersicht() {
-        Map<UUID, List<SuchauftragUebersichtResponse.KandidatLink>> linksBySuchauftrag =
-                verknuepfungRepo.findSuchauftragLinksMitKandidat().stream()
-                        .collect(Collectors.groupingBy(
-                                row -> ((Verknuepfung) row[0]).getSuchauftragId(),
-                                Collectors.mapping(row -> {
-                                    Verknuepfung v = (Verknuepfung) row[0];
-                                    return new SuchauftragUebersichtResponse.KandidatLink(v.getKandidatId(),
-                                            (Geschlecht) row[1], (Titel) row[2], (String) row[3], (String) row[4], v);
-                                }, Collectors.toList())));
+        Map<UUID, List<SuchauftragUebersichtResponse.KandidatLink<Verknuepfung>>> linksBySuchauftrag =
+                groupBySuchauftrag(verknuepfungRepo.findSuchauftragLinksMitKandidat(),
+                        Verknuepfung::getSuchauftragId, Verknuepfung::getKandidatId);
+        Map<UUID, List<SuchauftragUebersichtResponse.KandidatLink<VerknuepfungArchiviert>>> archivedLinksBySuchauftrag =
+                groupBySuchauftrag(verknuepfungArchiviertRepo.findSuchauftragLinksMitKandidat(),
+                        VerknuepfungArchiviert::getSuchauftragId, VerknuepfungArchiviert::getKandidatId);
 
         List<SuchauftragUebersichtResponse> result = repo.findUebersicht();
-        result.forEach(r -> r.setKandidaten(
-                linksBySuchauftrag.getOrDefault(r.getSuchauftrag().getId(), List.of())));
+        result.forEach(r -> {
+            UUID id = r.getSuchauftrag().getId();
+            r.setKandidaten(linksBySuchauftrag.getOrDefault(id, List.of()));
+            r.setEhemaligeKandidaten(archivedLinksBySuchauftrag.getOrDefault(id, List.of()));
+        });
         return result;
+    }
+
+    /** Groups rows of [link, Geschlecht, Titel, vorname, nachname] by the link's Suchauftrag. */
+    @SuppressWarnings("unchecked")
+    private static <V> Map<UUID, List<SuchauftragUebersichtResponse.KandidatLink<V>>> groupBySuchauftrag(
+            List<Object[]> rows, Function<V, UUID> suchauftragId, Function<V, UUID> kandidatId) {
+        return rows.stream().collect(Collectors.groupingBy(
+                row -> suchauftragId.apply((V) row[0]),
+                Collectors.mapping(row -> {
+                    V v = (V) row[0];
+                    return new SuchauftragUebersichtResponse.KandidatLink<>(kandidatId.apply(v),
+                            (Geschlecht) row[1], (Titel) row[2], (String) row[3], (String) row[4], v);
+                }, Collectors.toList())));
     }
 
     public List<Suchauftrag> getAll(Status statusFilter) {

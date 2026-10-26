@@ -1,9 +1,12 @@
 package com.firma.management.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -41,4 +44,10 @@ public class Verknuepfung {
 
     @Column(name = "verknuepfung_status_kommentar", columnDefinition = "TEXT")
     private String verknuepfungStatusKommentar;
+
+    /** Set by VerknuepfungService whenever verknuepfungStatus changes. */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Column(name = "status_geaendert_am")
+    private LocalDate statusGeaendertAm;
 }
