@@ -153,9 +153,11 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                         *ngFor="let k of row.links"
                         [class.status-colored]="!!k.verknuepfung.verknuepfungStatus"
                         [style]="statusStyle(k.verknuepfung.verknuepfungStatus)"
-                        (contextmenu)="openMenu($event, k)"
                       >
-                        <td>{{ kandidatName(k) }}</td>
+                        <td>
+                          {{ kandidatName(k) }}
+                          <button type="button" class="open-kandidat-btn" title="Kandidat anzeigen" (click)="openKandidatDialog(k)">↗</button>
+                        </td>
                         <td contenteditable="true" [textContent]="k.verknuepfung.gebuehren ?? ''" (blur)="onGebuehrenEdited(k, $event)"></td>
                         <td contenteditable="true" [textContent]="k.verknuepfung.mainAnteil ?? ''" (blur)="onMainAnteilEdited(k, $event)"></td>
                         <td>
@@ -200,9 +202,11 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                           *ngFor="let k of row.archivedLinks"
                           [class.status-colored]="!!k.verknuepfung.verknuepfungStatus"
                           [style]="statusStyle(k.verknuepfung.verknuepfungStatus)"
-                          (contextmenu)="openMenu($event, k)"
                         >
-                          <td>{{ kandidatName(k) }}</td>
+                          <td>
+                            {{ kandidatName(k) }}
+                            <button type="button" class="open-kandidat-btn" title="Kandidat anzeigen" (click)="openKandidatDialog(k)">↗</button>
+                          </td>
                           <td>{{ k.verknuepfung.gebuehren ?? '' }}</td>
                           <td>{{ k.verknuepfung.mainAnteil ?? '' }}</td>
                           <td>{{ k.verknuepfung.verknuepfungStatus ?? '-' }}</td>
@@ -233,7 +237,7 @@ function formatGehalt(s: Suchauftrag): string | undefined {
         (close)="closeSuchauftragDialog()"
       ></app-suchauftrag-dialog>
 
-      <!-- Custom right-click context menus -->
+      <!-- Custom right-click context menu -->
       <div class="ctx-menu"
            *ngIf="menuRow"
            [style.top.px]="menuY"
@@ -242,14 +246,6 @@ function formatGehalt(s: Suchauftrag): string | undefined {
         <button (click)="openSuchauftragDialog()">Suchauftrag anzeigen</button>
         <button (click)="openAnsprechpartnerDialog()">Ansprechpartner anzeigen</button>
         <button (click)="openFirmaDialog()">Firma anzeigen</button>
-      </div>
-
-      <div class="ctx-menu"
-           *ngIf="menuKandidat"
-           [style.top.px]="menuY"
-           [style.left.px]="menuX"
-           (click)="$event.stopPropagation()">
-        <button (click)="openKandidatDialog()">Kandidat anzeigen</button>
       </div>
 
       <app-ansprechpartner-dialog
@@ -362,6 +358,20 @@ function formatGehalt(s: Suchauftrag): string | undefined {
       cursor: pointer;
     }
     .new-verknuepfung-btn:hover { background: #dde3f5; }
+    .open-kandidat-btn {
+      margin-left: 4px;
+      padding: 0 3px;
+      border: 1px solid currentColor;
+      border-radius: 4px;
+      background: transparent;
+      color: inherit;
+      font-size: 10px;
+      line-height: 14px;
+      vertical-align: middle;
+      cursor: pointer;
+      opacity: 0.6;
+    }
+    .open-kandidat-btn:hover { opacity: 1; }
     .archiv-heading { margin: 12px 0 6px; font-size: 12px; font-weight: 700; color: #1f2a44; }
     .save-error { margin: 6px 0 0; font-size: 12px; color: #b3261e; }
     .ctx-menu {
@@ -396,8 +406,6 @@ export class KandidatenPermSucheComponent implements OnInit {
   dialogFirma: Firma | null = null;
   /** Suchauftrag row whose right-click menu is open. */
   menuRow: SuchauftragRow | null = null;
-  /** Linked Kandidat whose right-click menu is open. */
-  menuKandidat: SuchauftragUebersichtKandidat | null = null;
   menuX = 0;
   menuY = 0;
   /** Kandidat shown in the Kandidat dialog. */
@@ -477,23 +485,13 @@ export class KandidatenPermSucheComponent implements OnInit {
 
   openRowMenu(event: MouseEvent, row: SuchauftragRow): void {
     event.preventDefault();
-    this.menuKandidat = null;
     this.menuRow = row;
-    this.menuX = event.clientX;
-    this.menuY = event.clientY;
-  }
-
-  openMenu(event: MouseEvent, k: SuchauftragUebersichtKandidat): void {
-    event.preventDefault();
-    this.menuRow = null;
-    this.menuKandidat = k;
     this.menuX = event.clientX;
     this.menuY = event.clientY;
   }
 
   closeMenu(): void {
     this.menuRow = null;
-    this.menuKandidat = null;
   }
 
   openSuchauftragDialog(): void {
@@ -524,11 +522,10 @@ export class KandidatenPermSucheComponent implements OnInit {
   }
 
   /** The overview only carries the name, so the full Kandidat is loaded before opening the dialog. */
-  openKandidatDialog(): void {
-    const kandidatId = this.menuKandidat?.kandidatId;
+  openKandidatDialog(k: SuchauftragUebersichtKandidat): void {
     this.closeMenu();
-    if (!kandidatId) return;
-    this.kandidatService.getById(kandidatId).subscribe(kandidat => this.dialogKandidat = kandidat);
+    if (!k.kandidatId) return;
+    this.kandidatService.getById(k.kandidatId).subscribe(kandidat => this.dialogKandidat = kandidat);
   }
 
   closeKandidatDialog(): void {

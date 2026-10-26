@@ -84,7 +84,11 @@ interface MonthGroup {
                 (dblclick)="toggleExpanded(row.kandidat)"
                 (contextmenu)="openMenu($event, row.kandidat, group)"
               >
-                <td><strong>Name: </strong> {{ row.name }}</td>
+                <td>
+                  <strong>Name: </strong> {{ row.name }}
+                  <button type="button" class="open-kandidat-btn" title="Kandidat anzeigen"
+                          (click)="openKandidatDialog(row.kandidat)" (dblclick)="$event.stopPropagation()">↗</button>
+                </td>
                 <td><strong>Erstkontakt: </strong> {{ row.erstkontakt }}</td>
                 <td><strong>DSGVO Bestätigung: </strong> {{ row.dsgvoBestaetigung }}</td>
                 <td><strong>Fachliche Skills: </strong> {{ row.fachlicherSkill }}</td>
@@ -223,14 +227,13 @@ interface MonthGroup {
         (close)="closeNeueVerknuepfung()"
       ></app-neue-verknuepfung-firma-auswaehlen>
 
-      <!-- Custom right-click context menu -->
+      <!-- Custom right-click context menu (only for Kandidaten from a past month) -->
       <div class="ctx-menu"
            *ngIf="menuKandidat"
            [style.top.px]="menuY"
            [style.left.px]="menuX"
            (click)="$event.stopPropagation()">
-        <button (click)="openKandidatDialog()">Kandidat anzeigen</button>
-        <button *ngIf="menuReaktivierbar" (click)="reaktivieren()">Reaktivieren</button>
+        <button (click)="reaktivieren()">Reaktivieren</button>
       </div>
 
       <app-kandidat-dialog
@@ -324,6 +327,20 @@ interface MonthGroup {
       cursor: pointer;
     }
     .new-verknuepfung-btn:hover { background: #dde3f5; }
+    .open-kandidat-btn {
+      margin-left: 4px;
+      padding: 0 3px;
+      border: 1px solid currentColor;
+      border-radius: 4px;
+      background: transparent;
+      color: inherit;
+      font-size: 10px;
+      line-height: 14px;
+      vertical-align: middle;
+      cursor: pointer;
+      opacity: 0.6;
+    }
+    .open-kandidat-btn:hover { opacity: 1; }
     .archiv-heading { margin: 12px 0 6px; font-size: 12px; font-weight: 700; color: #1f2a44; }
     .save-error { margin: 6px 0 0; font-size: 12px; color: #b3261e; }
     .ctx-menu {
@@ -351,8 +368,6 @@ export class KandidatenPermBestandComponent implements OnInit {
   neueVerknuepfungRow: KandidatRow | null = null;
   /** Kandidat whose right-click menu is open. */
   menuKandidat: Kandidat | null = null;
-  /** Only Kandidaten from a past month can be reactivated. */
-  menuReaktivierbar = false;
   menuX = 0;
   menuY = 0;
   /** Open Kandidat dialog: null = closed, {} = new Kandidat, otherwise the Kandidat being shown. */
@@ -419,9 +434,13 @@ export class KandidatenPermBestandComponent implements OnInit {
 
   openMenu(event: MouseEvent, kandidat: Kandidat, group: MonthGroup): void {
     event.preventDefault();
-    this.menuKandidat = kandidat;
     const today = new Date();
-    this.menuReaktivierbar = group.key < today.getFullYear() * 12 + today.getMonth();
+    // Only Kandidaten from a past month can be reactivated; the menu has nothing else
+    if (group.key >= today.getFullYear() * 12 + today.getMonth()) {
+      this.closeMenu();
+      return;
+    }
+    this.menuKandidat = kandidat;
     this.menuX = event.clientX;
     this.menuY = event.clientY;
   }
@@ -430,9 +449,9 @@ export class KandidatenPermBestandComponent implements OnInit {
     this.menuKandidat = null;
   }
 
-  openKandidatDialog(): void {
-    this.dialogKandidat = this.menuKandidat;
+  openKandidatDialog(kandidat: Kandidat): void {
     this.closeMenu();
+    this.dialogKandidat = kandidat;
   }
 
   /** Archives all Verknüpfungen of the Kandidat and brings it back to the current month. */
