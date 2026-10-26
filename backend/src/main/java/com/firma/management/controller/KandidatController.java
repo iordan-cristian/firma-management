@@ -1,5 +1,6 @@
 package com.firma.management.controller;
 
+import com.firma.management.dto.KandidatUebersichtResponse;
 import com.firma.management.entity.Kandidat;
 import com.firma.management.service.KandidatService;
 import jakarta.validation.Valid;
@@ -22,6 +23,11 @@ public class KandidatController {
     @GetMapping
     public List<Kandidat> getAll() {
         return service.getAll();
+    }
+
+    @GetMapping("/uebersicht")
+    public List<KandidatUebersichtResponse> getUebersicht() {
+        return service.getUebersicht();
     }
 
     @GetMapping("/{id}")

@@ -23,4 +23,14 @@ public interface VerknuepfungRepository extends JpaRepository<Verknuepfung, UUID
             WHERE v.suchauftragId IS NOT NULL
             """)
     List<Object[]> findSuchauftragLinksMitKandidat();
+
+    /** Rows of [Verknuepfung, Firma name, Suchauftrag sucheNach] for every Verknüpfung of a Kandidat. */
+    @Query("""
+            SELECT v, f.name, s.sucheNach
+            FROM Verknuepfung v
+            LEFT JOIN Firma f ON f.id = v.firmaId
+            LEFT JOIN Suchauftrag s ON s.id = v.suchauftragId
+            WHERE v.kandidatId IS NOT NULL
+            """)
+    List<Object[]> findKandidatLinksMitNamen();
 }

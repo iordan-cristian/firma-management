@@ -1,5 +1,6 @@
 export { AllgemeinerSchwerpunkt, SCHWERPUNKT_OPTIONS } from './allgemeiner-schwerpunkt.model';
 import { AllgemeinerSchwerpunkt } from './allgemeiner-schwerpunkt.model';
+import { Verknuepfung, VerknuepfungArchiviert } from './verknuepfung.model';
 
 export type Geschlecht = 'männlich' | 'weiblich' | 'divers' | 'Bevorzuge nicht zu sagen';
 export type Titel = 'Dr.' | 'Ing.';
@@ -74,6 +75,21 @@ export interface Kandidat {
   deutschKOKriterium?: boolean;
   englischKOKriterium?: boolean;
   sonstigeSprachenKOKriterium?: boolean;
+}
+
+/** A Verknüpfung with the names shown in the Bestand. */
+export interface KandidatUebersichtVerknuepfung<V extends Verknuepfung = Verknuepfung> {
+  verknuepfung: V;
+  firmaName?: string;
+  sucheNach?: string;
+}
+
+/** One Kandidat of GET /api/kandidat/uebersicht. */
+export interface KandidatUebersicht {
+  kandidat: Kandidat;
+  verknuepfungen: KandidatUebersichtVerknuepfung[];
+  /** Links archived by "Reaktivieren". */
+  ehemaligeVerknuepfungen: KandidatUebersichtVerknuepfung<VerknuepfungArchiviert>[];
 }
 
 export type DokumentTyp = 'CV' | 'DSGVO' | 'INTERVIEW';

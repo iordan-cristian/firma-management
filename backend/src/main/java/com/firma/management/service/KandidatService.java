@@ -1,12 +1,18 @@
 package com.firma.management.service;
 
+import com.firma.management.dto.KandidatUebersichtResponse;
 import com.firma.management.entity.DokumentTyp;
 import com.firma.management.entity.Kandidat;
 import com.firma.management.entity.KandidatDokument;
+import com.firma.management.entity.Verknuepfung;
+import com.firma.management.entity.VerknuepfungArchiviert;
 import com.firma.management.repository.KandidatDokumentRepository;
 import com.firma.management.repository.KandidatRepository;
+import com.firma.management.repository.VerknuepfungArchiviertRepository;
+import com.firma.management.repository.VerknuepfungRepository;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -16,6 +22,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class KandidatService {
@@ -23,12 +31,45 @@ public class KandidatService {
     private final KandidatRepository repo;
     private final KandidatDokumentService dokumentService;
     private final KandidatDokumentRepository dokumentRepo;
+    private final VerknuepfungRepository verknuepfungRepo;
+    private final VerknuepfungArchiviertRepository verknuepfungArchiviertRepo;
 
     public KandidatService(KandidatRepository repo, @Lazy KandidatDokumentService dokumentService,
-                           KandidatDokumentRepository dokumentRepo) {
+                           KandidatDokumentRepository dokumentRepo, VerknuepfungRepository verknuepfungRepo,
+                           VerknuepfungArchiviertRepository verknuepfungArchiviertRepo) {
         this.repo = repo;
         this.dokumentService = dokumentService;
         this.dokumentRepo = dokumentRepo;
+        this.verknuepfungRepo = verknuepfungRepo;
+        this.verknuepfungArchiviertRepo = verknuepfungArchiviertRepo;
+    }
+
+    /**
+     * All Kandidaten with their current and archived Verknüpfungen (incl. Firma name and
+     * Suchauftrag "Suche nach"), in four queries.
+     */
+    @Transactional(readOnly = true)
+    public List<KandidatUebersichtResponse> getUebersicht() {
+        Map<UUID, List<KandidatUebersichtResponse.VerknuepfungInfo<Verknuepfung>>> linksByKandidat =
+                groupByKandidat(verknuepfungRepo.findKandidatLinksMitNamen(), Verknuepfung::getKandidatId);
+        Map<UUID, List<KandidatUebersichtResponse.VerknuepfungInfo<VerknuepfungArchiviert>>> archivedLinksByKandidat =
+                groupByKandidat(verknuepfungArchiviertRepo.findKandidatLinksMitNamen(), VerknuepfungArchiviert::getKandidatId);
+
+        return getAll().stream()
+                .map(k -> new KandidatUebersichtResponse(k,
+                        linksByKandidat.getOrDefault(k.getId(), List.of()),
+                        archivedLinksByKandidat.getOrDefault(k.getId(), List.of())))
+                .toList();
+    }
+
+    /** Groups rows of [link, Firma name, sucheNach] by the link's Kandidat. */
+    @SuppressWarnings("unchecked")
+    private static <V> Map<UUID, List<KandidatUebersichtResponse.VerknuepfungInfo<V>>> groupByKandidat(
+            List<Object[]> rows, Function<V, UUID> kandidatId) {
+        return rows.stream().collect(Collectors.groupingBy(
+                row -> kandidatId.apply((V) row[0]),
+                Collectors.mapping(row -> new KandidatUebersichtResponse.VerknuepfungInfo<>(
+                        (V) row[0], (String) row[1], (String) row[2]), Collectors.toList())));
     }
 
     public List<Kandidat> getAll() {

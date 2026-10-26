@@ -2,11 +2,8 @@ import {Component, DestroyRef, inject, OnInit} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {forkJoin} from 'rxjs';
-import {map} from 'rxjs/operators';
 import {KandidatService} from '../../../services/kandidat.service';
 import {VerknuepfungService} from '../../../services/verknuepfung.service';
-import {VerknuepfungArchiviertService} from '../../../services/verknuepfung-archiviert.service';
 import {FirmaService} from '../../../services/firma.service';
 import {SuchauftragService} from '../../../services/suchauftrag.service';
 import {DataChangedKandidatenPermService} from '../../../services/data-changed-kandidaten-perm.service';
@@ -387,7 +384,6 @@ interface MonthGroup {
 export class KandidatenPermBestandComponent implements OnInit {
   private kandidatService = inject(KandidatService);
   private verknuepfungService = inject(VerknuepfungService);
-  private verknuepfungArchiviertService = inject(VerknuepfungArchiviertService);
   private firmaService = inject(FirmaService);
   private suchauftragService = inject(SuchauftragService);
   private dataChangedKandidatenPermService = inject(DataChangedKandidatenPermService);
@@ -433,41 +429,27 @@ export class KandidatenPermBestandComponent implements OnInit {
     this.dataChangedKandidatenPermService.notify(this);
   }
 
+  /** Everything in one request: Kandidaten with their (archived) Verknüpfungen incl. Firma and Suchauftrag names. */
   load(): void {
-    forkJoin({
-      kandidaten: this.kandidatService.getAll(),
-      firmen: this.firmaService.getAll(),
-      suchauftraege: this.suchauftragService.getAll(),
-    }).subscribe(({ kandidaten, firmen, suchauftraege }) => {
-      this.firmaNameById = new Map<string, string>(
-        firmen.filter(f => !!f.id).map(f => [f.id as string, f.name ?? ''])
-      );
-      this.sucheNachById = new Map<string, string>(
-        suchauftraege.filter(s => !!s.id).map(s => [s.id as string, s.sucheNach ?? ''])
-      );
-
-      const withLinks$ = kandidaten
-        .filter(k => !!k.id)
-        .map(k =>
-          forkJoin({
-            links: this.verknuepfungService.getVerknuepfungenForKandidat(k.id as string),
-            archivedLinks: this.verknuepfungArchiviertService.get(k.id as string),
-          }).pipe(
-            map(({ links, archivedLinks }) => ({ kandidat: k, links, archivedLinks }))
-          )
-        );
-
-      // forkJoin([]) completes without emitting, so the empty case is handled here
-      if (withLinks$.length === 0) {
-        this.groups = [];
-        this.loading = false;
-        return;
+    this.kandidatService.getUebersicht().subscribe(items => {
+      this.firmaNameById = new Map<string, string>();
+      this.sucheNachById = new Map<string, string>();
+      for (const item of items) {
+        for (const info of [...item.verknuepfungen, ...item.ehemaligeVerknuepfungen]) {
+          const { firmaId, suchauftragId } = info.verknuepfung;
+          if (firmaId) this.firmaNameById.set(firmaId, info.firmaName ?? '');
+          if (suchauftragId) this.sucheNachById.set(suchauftragId, info.sucheNach ?? '');
+        }
       }
 
-      forkJoin(withLinks$).subscribe(results => {
-        this.groups = this.buildGroups(results);
-        this.loading = false;
-      });
+      this.groups = this.buildGroups(items
+        .filter(item => !!item.kandidat.id)
+        .map(item => ({
+          kandidat: item.kandidat,
+          links: item.verknuepfungen.map(info => info.verknuepfung),
+          archivedLinks: item.ehemaligeVerknuepfungen.map(info => info.verknuepfung),
+        })));
+      this.loading = false;
     });
   }
 
@@ -571,6 +553,14 @@ export class KandidatenPermBestandComponent implements OnInit {
     if (!row) return;
     // The Firma may have just been created in the dialog
     if (firma.id) this.firmaNameById.set(firma.id, firma.name ?? '');
+    // Only names of linked Suchaufträge are loaded, so a newly linked one is fetched
+    const suchauftragId = verknuepfung.suchauftragId;
+    if (suchauftragId && !this.sucheNachById.has(suchauftragId)) {
+      this.suchauftragService.getById(suchauftragId).subscribe(s => {
+        this.sucheNachById.set(suchauftragId, s.sucheNach ?? '');
+        this.refreshAggregates(row);
+      });
+    }
     row.links.push(verknuepfung);
     this.refreshAggregates(row);
     this.updateHighestStatus(row);
