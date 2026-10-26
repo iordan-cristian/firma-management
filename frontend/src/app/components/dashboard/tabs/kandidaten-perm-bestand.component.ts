@@ -24,6 +24,10 @@ import {
   NeueVerknuepfungFirmaAuswaehlenComponent
 } from '../../verknuepfungen/neue-verknuepfung-firma-auswaehlen.component';
 import {KandidatDialogComponent} from '../../kandidaten/kandidat-dialog.component';
+import {SuchauftragDialogComponent} from '../../suchauftraege/suchauftrag-dialog.component';
+import {NeueFirmaDialogComponent} from '../../firmen/neue-firma-dialog.component';
+import {Suchauftrag} from '../../../models/suchauftrag.model';
+import {Firma} from '../../../models/firma.model';
 
 interface KandidatRow {
   kandidat: Kandidat;
@@ -54,7 +58,7 @@ interface MonthGroup {
 @Component({
   selector: 'app-kandidaten-perm-bestand',
   standalone: true,
-  imports: [CommonModule, FormsModule, NeueVerknuepfungFirmaAuswaehlenComponent, KandidatDialogComponent],
+  imports: [CommonModule, FormsModule, NeueVerknuepfungFirmaAuswaehlenComponent, KandidatDialogComponent, SuchauftragDialogComponent, NeueFirmaDialogComponent],
   host: { '(document:click)': 'closeMenu()' },
   template: `
     <div class="wrap">
@@ -148,8 +152,14 @@ interface MonthGroup {
                         [class.status-colored]="!!link.verknuepfungStatus"
                         [style]="statusStyle(link.verknuepfungStatus)"
                       >
-                        <td>{{ firmaName(link.firmaId) }}</td>
-                        <td>{{ sucheNach(link.suchauftragId) }}</td>
+                        <td>
+                          {{ firmaName(link.firmaId) }}
+                          <button *ngIf="link.firmaId" type="button" class="open-btn" title="Firma anzeigen" (click)="openFirmaDialog(link)">↗</button>
+                        </td>
+                        <td>
+                          {{ sucheNach(link.suchauftragId) }}
+                          <button *ngIf="link.suchauftragId" type="button" class="open-btn" title="Suchauftrag anzeigen" (click)="openSuchauftragDialog(link)">↗</button>
+                        </td>
                         <td contenteditable="true" [textContent]="link.gebuehren ?? ''" (blur)="onGebuehrenEdited(row, link, $event)"></td>
                         <td contenteditable="true" [textContent]="link.mainAnteil ?? ''" (blur)="onMainAnteilEdited(row, link, $event)"></td>
                         <td>
@@ -197,8 +207,14 @@ interface MonthGroup {
                           [class.status-colored]="!!link.verknuepfungStatus"
                           [style]="statusStyle(link.verknuepfungStatus)"
                         >
-                          <td>{{ firmaName(link.firmaId) }}</td>
-                          <td>{{ sucheNach(link.suchauftragId) }}</td>
+                          <td>
+                            {{ firmaName(link.firmaId) }}
+                            <button *ngIf="link.firmaId" type="button" class="open-btn" title="Firma anzeigen" (click)="openFirmaDialog(link)">↗</button>
+                          </td>
+                          <td>
+                            {{ sucheNach(link.suchauftragId) }}
+                            <button *ngIf="link.suchauftragId" type="button" class="open-btn" title="Suchauftrag anzeigen" (click)="openSuchauftragDialog(link)">↗</button>
+                          </td>
                           <td>{{ link.gebuehren ?? '' }}</td>
                           <td>{{ link.mainAnteil ?? '' }}</td>
                           <td>{{ link.verknuepfungStatus ?? '-' }}</td>
@@ -235,6 +251,22 @@ interface MonthGroup {
            (click)="$event.stopPropagation()">
         <button (click)="reaktivieren()">Reaktivieren</button>
       </div>
+
+      <app-suchauftrag-dialog
+        *ngIf="dialogSuchauftrag && dialogSuchauftragFirma"
+        [firma]="dialogSuchauftragFirma"
+        [suchauftrag]="dialogSuchauftrag"
+        (saved)="dialogChanged = true"
+        (verknuepfungenChanged)="dialogChanged = true"
+        (close)="closeSuchauftragDialog()"
+      ></app-suchauftrag-dialog>
+
+      <app-neue-firma-dialog
+        *ngIf="dialogFirma"
+        [firma]="dialogFirma"
+        (saved)="onFirmaSaved()"
+        (close)="dialogFirma = null"
+      ></app-neue-firma-dialog>
 
       <app-kandidat-dialog
         *ngIf="dialogKandidat"
@@ -372,6 +404,13 @@ export class KandidatenPermBestandComponent implements OnInit {
   menuY = 0;
   /** Open Kandidat dialog: null = closed, {} = new Kandidat, otherwise the Kandidat being shown. */
   dialogKandidat: Partial<Kandidat> | null = null;
+  /** Suchauftrag shown in the Suchauftrag dialog, with its Firma (required by the dialog). */
+  dialogSuchauftrag: Suchauftrag | null = null;
+  dialogSuchauftragFirma: Firma | null = null;
+  /** Set when the Suchauftrag dialog stored something; the Bestand is reloaded on close. */
+  dialogChanged = false;
+  /** Firma shown in the Firma dialog. */
+  dialogFirma: Firma | null = null;
 
   private firmaNameById = new Map<string, string>();
   private sucheNachById = new Map<string, string>();
@@ -452,6 +491,33 @@ export class KandidatenPermBestandComponent implements OnInit {
   openKandidatDialog(kandidat: Kandidat): void {
     this.closeMenu();
     this.dialogKandidat = kandidat;
+  }
+
+  openSuchauftragDialog(link: Verknuepfung): void {
+    if (!link.suchauftragId) return;
+    const firma: Firma = { id: link.firmaId, name: this.firmaName(link.firmaId) };
+    this.suchauftragService.getById(link.suchauftragId).subscribe(s => {
+      this.dialogChanged = false;
+      this.dialogSuchauftragFirma = firma;
+      this.dialogSuchauftrag = s;
+    });
+  }
+
+  closeSuchauftragDialog(): void {
+    this.dialogSuchauftrag = null;
+    this.dialogSuchauftragFirma = null;
+    if (this.dialogChanged) this.reloadAndNotify();
+  }
+
+  openFirmaDialog(link: Verknuepfung): void {
+    if (!link.firmaId) return;
+    this.firmaService.getById(link.firmaId).subscribe(f => this.dialogFirma = f);
+  }
+
+  /** Firma names are shown in the Bestand, so it is reloaded after saving. */
+  onFirmaSaved(): void {
+    this.dialogFirma = null;
+    this.reloadAndNotify();
   }
 
   /** Archives all Verknüpfungen of the Kandidat and brings it back to the current month. */
