@@ -1,5 +1,9 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { KandidatSucheComponent } from '../kandidaten/kandidat-suche.component';
+import { DataChangedKandidatenPermService } from '../../services/data-changed-kandidaten-perm.service';
+import { Kandidat } from '../../models/kandidat.model';
 import { InvestorenBestandComponent } from './tabs/investoren-bestand.component';
 import { ImmobilienBestandComponent } from './tabs/immobilien-bestand.component';
 import { KandidatenPermBestandComponent } from './tabs/kandidaten-perm-bestand.component';
@@ -34,28 +38,32 @@ interface DashboardTab {
     KandidatenPermSucheComponent,
     KandidatenFreelancerSucheComponent,
     VertriebSucheComponent,
+    KandidatSucheComponent,
   ],
   template: `
     <div class="dashboard">
       <div class="row header-row">
         <div class="col-left" *ngIf="viewMode !== 'right'">
           <h2 class="category-title">Bestand</h2>
-          <button
-            *ngIf="activeLeftTabId === 'kandidaten-perm-bestand'"
-            type="button"
-            class="header-action"
-            (click)="permBestand?.openNeuerKandidat()"
-          >Kandidat anlegen</button>
+          <div class="header-actions" *ngIf="activeLeftTabId === 'kandidaten-perm-bestand'">
+            <app-kandidat-suche (results)="onKandidatSuche($event)"></app-kandidat-suche>
+            <button
+              type="button"
+              class="header-action"
+              (click)="permBestand?.openNeuerKandidat()"
+            >Kandidat anlegen</button>
+          </div>
         </div>
         <div class="col-middle"></div>
         <div class="col-right" *ngIf="viewMode !== 'left'">
           <h2 class="category-title">Suchaufträge</h2>
-          <button
-            *ngIf="activeRightTabId === 'kandidaten-perm-suche'"
-            type="button"
-            class="header-action"
-            (click)="permSuche?.openSuchauftragAnlegen()"
-          >Suchauftrag anlegen</button>
+          <div class="header-actions" *ngIf="activeRightTabId === 'kandidaten-perm-suche'">
+            <button
+              type="button"
+              class="header-action"
+              (click)="permSuche?.openSuchauftragAnlegen()"
+            >Suchauftrag anlegen</button>
+          </div>
         </div>
       </div>
 
@@ -96,7 +104,10 @@ interface DashboardTab {
         <div class="col-left content-col" *ngIf="viewMode !== 'right'" [ngSwitch]="activeLeftTabId">
           <app-investoren-bestand *ngSwitchCase="'investoren-bestand'"></app-investoren-bestand>
           <app-immobilien-bestand *ngSwitchCase="'immobilien-bestand'"></app-immobilien-bestand>
-          <app-kandidaten-perm-bestand *ngSwitchCase="'kandidaten-perm-bestand'"></app-kandidaten-perm-bestand>
+          <app-kandidaten-perm-bestand
+            *ngSwitchCase="'kandidaten-perm-bestand'"
+            [kandidatFilter]="kandidatFilter"
+          ></app-kandidaten-perm-bestand>
           <app-kandidaten-freelancer-bestand *ngSwitchCase="'kandidaten-freelancer-bestand'"></app-kandidaten-freelancer-bestand>
           <app-vertrieb-bestand *ngSwitchCase="'vertrieb-bestand'"></app-vertrieb-bestand>
         </div>
@@ -125,12 +136,25 @@ interface DashboardTab {
       background: #fff;
     }
     .header-row { min-height: 44px; }
-    .header-row .col-left, .header-row .col-right { position: relative; }
+    /* Title centered, actions on the right; the grid keeps them from overlapping */
+    .header-row .col-left, .header-row .col-right {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+    }
+    .header-row .category-title { grid-column: 2; }
+    .header-actions {
+      grid-column: 3;
+      justify-self: end;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 16px 0 12px;
+    }
+    /* Compact search field, same height as the header buttons */
+    .header-actions ::ng-deep .page-header { margin-bottom: 0; }
+    .header-actions ::ng-deep .search-input { width: 220px; padding: 4px 10px; font-size: 13px; }
     .header-action {
-      position: absolute;
-      right: 16px;
-      top: 50%;
-      transform: translateY(-50%);
       background: #3b5bdb;
       color: white;
       border: none;
@@ -206,6 +230,23 @@ interface DashboardTab {
 export class DashboardComponent {
   @ViewChild(KandidatenPermBestandComponent) permBestand?: KandidatenPermBestandComponent;
   @ViewChild(KandidatenPermSucheComponent) permSuche?: KandidatenPermSucheComponent;
+  @ViewChild(KandidatSucheComponent) kandidatSuche?: KandidatSucheComponent;
+
+  /** Ids of the Kandidaten found by the header search, passed to the Bestand; null = no search text. */
+  kandidatFilter: Set<string> | null = null;
+
+  constructor() {
+    // The search loads its own Kandidaten list, so it reloads when the Kandidaten (Perm) tabs change data
+    inject(DataChangedKandidatenPermService).changedByOthers(this)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.kandidatSuche?.reload());
+  }
+
+  onKandidatSuche(results: Kandidat[]): void {
+    this.kandidatFilter = this.kandidatSuche?.searchText.trim()
+      ? new Set(results.filter(k => !!k.id).map(k => k.id as string))
+      : null;
+  }
 
   viewMode: ViewMode = 'both';
   activeLeftTabId = 'investoren-bestand';

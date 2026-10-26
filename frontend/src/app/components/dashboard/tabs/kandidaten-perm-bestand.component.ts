@@ -1,4 +1,4 @@
-import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {Component, DestroyRef, inject, Input, OnInit, Pipe, PipeTransform} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
@@ -52,10 +52,18 @@ interface MonthGroup {
   rows: KandidatRow[];
 }
 
+/** Rows whose Kandidat is in the filter; all rows when there is no filter. Pure, so it only re-runs on new arrays. */
+@Pipe({ name: 'kandidatFilter', standalone: true })
+export class KandidatFilterPipe implements PipeTransform {
+  transform(rows: KandidatRow[], filter: Set<string> | null): KandidatRow[] {
+    return filter ? rows.filter(r => !!r.kandidat.id && filter.has(r.kandidat.id)) : rows;
+  }
+}
+
 @Component({
   selector: 'app-kandidaten-perm-bestand',
   standalone: true,
-  imports: [CommonModule, FormsModule, NeueVerknuepfungFirmaAuswaehlenComponent, KandidatDialogComponent, SuchauftragDialogComponent, NeueFirmaDialogComponent],
+  imports: [CommonModule, FormsModule, NeueVerknuepfungFirmaAuswaehlenComponent, KandidatDialogComponent, SuchauftragDialogComponent, NeueFirmaDialogComponent, KandidatFilterPipe],
   host: { '(document:click)': 'closeMenu()' },
   template: `
     <div class="wrap">
@@ -72,10 +80,11 @@ interface MonthGroup {
         </colgroup>
         <tbody>
           <ng-container *ngFor="let group of groups">
-            <tr class="group-row">
+            <ng-container *ngIf="(group.rows | kandidatFilter: kandidatFilter) as rows">
+            <tr class="group-row" *ngIf="rows.length">
               <td colspan="6">{{ group.label }}</td>
             </tr>
-            <ng-container *ngFor="let row of group.rows; let i = index">
+            <ng-container *ngFor="let row of rows; let i = index">
               <tr
                 [class.entry-odd]="i % 2 === 1"
                 [class.entry-even]="i % 2 === 0"
@@ -225,9 +234,13 @@ interface MonthGroup {
                 </td>
               </tr>
             </ng-container>
+            </ng-container>
           </ng-container>
           <tr *ngIf="groups.length === 0">
             <td colspan="6" class="empty">Keine Kandidaten vorhanden.</td>
+          </tr>
+          <tr *ngIf="groups.length > 0 && kandidatFilter?.size === 0">
+            <td colspan="6" class="empty">Keine Kandidaten gefunden.</td>
           </tr>
         </tbody>
       </table>
@@ -388,6 +401,9 @@ export class KandidatenPermBestandComponent implements OnInit {
   private suchauftragService = inject(SuchauftragService);
   private dataChangedKandidatenPermService = inject(DataChangedKandidatenPermService);
   private destroyRef = inject(DestroyRef);
+
+  /** Ids of the Kandidaten found by the search in the dashboard header; null = show all. */
+  @Input() kandidatFilter: Set<string> | null = null;
 
   loading = true;
   groups: MonthGroup[] = [];
@@ -671,9 +687,9 @@ export class KandidatenPermBestandComponent implements OnInit {
     return dates.length ? new Date(Math.max(...dates.map(d => d.getTime()))) : null;
   }
 
-  /** Highest highest-status first, then oldest Anlagedatum, then name. */
+  /** Highest highest-status first, then oldest Anlagedatum, then name. A new array, so kandidatFilter re-runs. */
   private sortRows(group: MonthGroup): void {
-    group.rows.sort((a, b) =>
+    group.rows = [...group.rows].sort((a, b) =>
       b.highestStatus - a.highestStatus || a.sortDate - b.sortDate || a.name.localeCompare(b.name));
   }
 
