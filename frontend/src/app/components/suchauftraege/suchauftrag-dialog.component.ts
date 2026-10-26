@@ -84,6 +84,9 @@ export interface SuchauftragVerknuepfungenChangedEvent {
             <label>Adresse
               <input [(ngModel)]="draftSuchauftrag.adresse" placeholder="Straße und Nummer" />
             </label>
+            <label>Entfernung (km)
+              <input type="number" min="0" [(ngModel)]="draftSuchauftrag.entfernung" placeholder="z.B. 50" />
+            </label>
             
              <div class="section-title">Kandidat</div>
             <label>

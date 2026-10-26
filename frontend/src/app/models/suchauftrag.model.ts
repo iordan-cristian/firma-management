@@ -17,6 +17,8 @@ export interface Suchauftrag {
   ort?: string;
   postleitzahl?: string;
   adresse?: string;
+  /** In km. */
+  entfernung?: number;
   allgemeinerSchwerpunkt?: AllgemeinerSchwerpunkt;
   allgemeinerSchwerpunktKOKriterium?: boolean;
   fachlicherSkill?: string;

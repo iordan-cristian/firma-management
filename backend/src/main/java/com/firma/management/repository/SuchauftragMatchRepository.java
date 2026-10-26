@@ -106,6 +106,7 @@ public class SuchauftragMatchRepository {
                 .ort(rs.getString("ort"))
                 .postleitzahl(rs.getString("postleitzahl"))
                 .adresse(rs.getString("adresse"))
+                .entfernung(rs.getObject("entfernung", Integer.class))
                 .allgemeinerSchwerpunkt(toEnum(AllgemeinerSchwerpunkt.class, rs.getString("allgemeiner_schwerpunkt")))
                 .allgemeinerSchwerpunktKOKriterium(rs.getBoolean("allgemeiner_schwerpunkt_ko_kriterium"))
                 .fachlicherSkill(rs.getString("fachlicher_skill"))

@@ -514,6 +514,7 @@ import {
             <div class="card-row" *ngIf="s.ort"><span>Ort:</span> {{ s.ort }}</div>
             <div class="card-row" *ngIf="s.postleitzahl"><span>PLZ:</span> {{ s.postleitzahl }}</div>
             <div class="card-row" *ngIf="s.adresse"><span>Adresse:</span> {{ s.adresse }}</div>
+            <div class="card-row" *ngIf="s.entfernung != null"><span>Entfernung:</span> {{ s.entfernung }} km</div>
             <div class="card-row" *ngIf="s.allgemeinerSchwerpunkt"><span>Allgemeiner Schwerpunkt:</span> {{ s.allgemeinerSchwerpunkt }}</div>
             <div class="card-row" *ngIf="s.fachlicherSkill"><span>Fachlicher Skill:</span> {{ s.fachlicherSkill }}</div>
             <div class="card-row" *ngIf="s.gehaltMinimum || s.gehaltMaximum"><span>Gehalt:</span> {{ s.gehaltMinimum }}–{{ s.gehaltMaximum }} (Tausend €)</div>

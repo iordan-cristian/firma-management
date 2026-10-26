@@ -98,6 +98,7 @@ public class SuchauftragService {
             existing.setOrt(input.getOrt());
             existing.setPostleitzahl(input.getPostleitzahl());
             existing.setAdresse(input.getAdresse());
+            existing.setEntfernung(input.getEntfernung());
             existing.setAllgemeinerSchwerpunkt(input.getAllgemeinerSchwerpunkt());
             existing.setAllgemeinerSchwerpunktKOKriterium(input.isAllgemeinerSchwerpunktKOKriterium());
             existing.setFachlicherSkill(input.getFachlicherSkill());

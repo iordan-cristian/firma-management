@@ -102,6 +102,7 @@ type DetailMode = 'ansprechpartner' | 'suchauftraege' | 'vertraege';
                         </div>
                         <div class="card-row" *ngIf="s.postleitzahl || s.ort"><span>Ort:</span> {{ s.postleitzahl }} {{ s.ort }}</div>
                         <div class="card-row" *ngIf="s.adresse"><span>Adresse:</span> {{ s.adresse }}</div>
+                        <div class="card-row" *ngIf="s.entfernung != null"><span>Entfernung:</span> {{ s.entfernung }} km</div>
                         <div class="card-row" *ngIf="s.allgemeinerSchwerpunkt"><span>Allgemeiner Schwerpunkt:</span> {{ s.allgemeinerSchwerpunkt }}</div>
                         <div class="card-row" *ngIf="s.fachlicherSkill"><span>Fachlicher Skill:</span> {{ s.fachlicherSkill }}</div>
                         <div class="card-row" *ngIf="gehaltDisplay(s.gehaltMinimum, s.gehaltMaximum) as g"><span>Gehalt:</span> {{ g }}</div>

@@ -41,6 +41,9 @@ public class Suchauftrag {
     @Column(columnDefinition = "TEXT")
     private String adresse;
 
+    /** In km. */
+    private Integer entfernung;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "allgemeiner_schwerpunkt")
     private AllgemeinerSchwerpunkt allgemeinerSchwerpunkt;
