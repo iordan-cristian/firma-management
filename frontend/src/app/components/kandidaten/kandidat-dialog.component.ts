@@ -1,7 +1,6 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PlzDirective } from '../../validators/plz.directive';
 import { KandidatService } from '../../services/kandidat.service';
 import { KandidatDokumentService } from '../../services/kandidat-dokument.service';
 import { XlsxImportService } from '../../services/xlsx-import.service';
@@ -28,7 +27,7 @@ import {
 @Component({
   selector: 'app-kandidat-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, PlzDirective],
+  imports: [CommonModule, FormsModule],
   template: `
     <!-- Add / Edit Kandidat Modal -->
     <div class="modal-backdrop" *ngIf="addModalOpen">
@@ -88,9 +87,7 @@ import {
           </div>
           <div class="form-row">
             <label>Postleitzahl
-              <input type="number" [(ngModel)]="draft.postleitzahl" placeholder="PLZ" appPlz #plzCheck="appPlz"
-                     data-field="postleitzahl" [class.invalid]="!!(plzCheck.fehler || kandidatErrors['postleitzahl'])" />
-              <span class="field-error" *ngIf="plzCheck.fehler || kandidatErrors['postleitzahl']">{{ plzCheck.fehler || kandidatErrors['postleitzahl'] }}</span>
+              <input type="number" [(ngModel)]="draft.postleitzahl" placeholder="PLZ" />
             </label>
             <label>Ort
               <input [(ngModel)]="draft.ort" placeholder="Ort" />
@@ -856,7 +853,7 @@ export class KandidatDialogComponent implements OnInit {
     const onError = (err: any) => {
       if (err.status !== 400) return;
       this.kandidatErrors = err.error ?? {};
-      const firstInvalid = ['postleitzahl', 'email', 'telefon'].find(field => this.kandidatErrors[field]);
+      const firstInvalid = ['email', 'telefon'].find(field => this.kandidatErrors[field]);
       if (firstInvalid) this.focusField(firstInvalid);
     };
     if (this.editingId) {

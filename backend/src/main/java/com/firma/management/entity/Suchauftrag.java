@@ -1,7 +1,6 @@
 package com.firma.management.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.firma.management.validation.GueltigePostleitzahl;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,7 +35,6 @@ public class Suchauftrag {
     @Column(columnDefinition = "TEXT")
     private String ort;
 
-    @GueltigePostleitzahl
     @Column(columnDefinition = "TEXT")
     private String postleitzahl;
 

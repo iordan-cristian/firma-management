@@ -1,6 +1,5 @@
 package com.firma.management.entity;
 
-import com.firma.management.validation.GueltigePostleitzahl;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -28,7 +27,6 @@ public class Firma {
     @Column(columnDefinition = "TEXT")
     private String standort;
 
-    @GueltigePostleitzahl
     @Column(columnDefinition = "TEXT")
     private String postleitzahl;
 
