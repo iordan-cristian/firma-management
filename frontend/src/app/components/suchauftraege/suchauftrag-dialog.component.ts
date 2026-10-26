@@ -2,6 +2,7 @@ import { Component, EventEmitter, HostListener, Input, OnInit, Output, inject } 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EMPTY, Observable } from 'rxjs';
+import { PlzDirective } from '../../validators/plz.directive';
 import { FirmaService } from '../../services/firma.service';
 import { SuchauftragService } from '../../services/suchauftrag.service';
 import { KandidatService } from '../../services/kandidat.service';
@@ -29,7 +30,7 @@ export interface SuchauftragVerknuepfungenChangedEvent {
 @Component({
   selector: 'app-suchauftrag-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatchedKandidatenPanelComponent],
+  imports: [CommonModule, FormsModule, MatchedKandidatenPanelComponent, PlzDirective],
   template: `
     <div class="modal-backdrop">
       <div [class]="(matchedKandidatenOpen || kandidatDetailOpen) ? 'modal-duo' : ''">
@@ -79,7 +80,8 @@ export interface SuchauftragVerknuepfungenChangedEvent {
               <input [(ngModel)]="draftSuchauftrag.ort" placeholder="Ort" />
             </label>
             <label>Postleitzahl
-              <input [(ngModel)]="draftSuchauftrag.postleitzahl" placeholder="PLZ" />
+              <input [(ngModel)]="draftSuchauftrag.postleitzahl" placeholder="PLZ" appPlz #plzCheck="appPlz" />
+              <span class="field-error" *ngIf="plzCheck.fehler || suchauftragErrors['postleitzahl']">{{ plzCheck.fehler || suchauftragErrors['postleitzahl'] }}</span>
             </label>
             <label>Adresse
               <input [(ngModel)]="draftSuchauftrag.adresse" placeholder="Straße und Nummer" />
@@ -294,7 +296,10 @@ export interface SuchauftragVerknuepfungenChangedEvent {
               <label>Nachname <input [(ngModel)]="draftKandidat.nachname" /></label>
             </div>
             <div class="form-row">
-              <label>PLZ <input type="number" [(ngModel)]="draftKandidat.postleitzahl" /></label>
+              <label>PLZ
+                <input type="number" [(ngModel)]="draftKandidat.postleitzahl" appPlz #kandidatPlzCheck="appPlz" />
+                <span class="field-error" *ngIf="kandidatPlzCheck.fehler || kandidatDetailErrors['postleitzahl']">{{ kandidatPlzCheck.fehler || kandidatDetailErrors['postleitzahl'] }}</span>
+              </label>
               <label>Ort <input [(ngModel)]="draftKandidat.ort" /></label>
             </div>
             <div class="form-row">
@@ -506,6 +511,9 @@ export class SuchauftragDialogComponent implements OnInit {
   anlageDatumInput = '';
 
   matchedKandidatenOpen = false;
+  /** Field errors from the backend (400) when storing the Suchauftrag / the Kandidat in the detail view. */
+  suchauftragErrors: Record<string, string> = {};
+  kandidatDetailErrors: Record<string, string> = {};
   matchedKandidaten: MatchKandidatResult[] = [];
   matchKriterienExplained = '';
   matchMaxScore = 0;
@@ -559,15 +567,23 @@ export class SuchauftragDialogComponent implements OnInit {
 
   // ── Suchauftrag ──────────────────────────────────────────
   saveSuchauftrag(): void {
-    this.buildSuchauftragSaveRequest().subscribe(saved => {
-      this.saved.emit(saved);
-      this.close.emit();
+    this.buildSuchauftragSaveRequest().subscribe({
+      next: saved => {
+        this.saved.emit(saved);
+        this.close.emit();
+      },
+      error: err => this.onSuchauftragSaveError(err),
     });
+  }
+
+  private onSuchauftragSaveError(err: any): void {
+    if (err.status === 400) this.suchauftragErrors = err.error ?? {};
   }
 
   /** Builds (but does not subscribe to) the create/update request for the current draftSuchauftrag. */
   private buildSuchauftragSaveRequest(): Observable<Suchauftrag> {
     if (!this.draftSuchauftrag.ansprechpartnerId) return EMPTY;
+    this.suchauftragErrors = {};
     [this.draftSuchauftrag.gehaltMinimum, this.draftSuchauftrag.gehaltMaximum] = this.parseGehalt(this.draftSuchauftrag.gehalt, 'suchauftrag');
     if (this.anlageDatumInput) {
       const [y, m, d] = this.anlageDatumInput.split('-');
@@ -652,11 +668,18 @@ export class SuchauftragDialogComponent implements OnInit {
     this.matchedKandidatenOpen = true;
     this.kandidatDetailOpen = false;
     this.selectedKandidat = null;
-    this.buildSuchauftragSaveRequest().subscribe(saved => {
-      this.draftSuchauftrag = { ...this.draftSuchauftrag, ...saved };
-      this.editingSuchauftragId = saved.id ?? null;
-      this.saved.emit(saved);
-      this.runMatch(saved.id!);
+    this.buildSuchauftragSaveRequest().subscribe({
+      next: saved => {
+        this.draftSuchauftrag = { ...this.draftSuchauftrag, ...saved };
+        this.editingSuchauftragId = saved.id ?? null;
+        this.saved.emit(saved);
+        this.runMatch(saved.id!);
+      },
+      error: err => {
+        // Matching needs a stored Suchauftrag: stay in the form and show the errors there
+        this.matchedKandidatenOpen = false;
+        this.onSuchauftragSaveError(err);
+      },
     });
   }
 
@@ -676,16 +699,23 @@ export class SuchauftragDialogComponent implements OnInit {
     this.draftKandidat.gehalt = this.gehaltDisplay(k.gehaltMinimum, k.gehaltMaximum) ?? undefined;
     this.kandidatExportMenuOpen = false;
     this.kandidatExportStatus = '';
+    this.kandidatDetailErrors = {};
     this.kandidatDetailOpen = true;
   }
 
   saveKandidatDetail(): void {
     if (!this.selectedKandidat?.id) return;
     [this.draftKandidat.gehaltMinimum, this.draftKandidat.gehaltMaximum] = this.parseGehalt(this.draftKandidat.gehalt, 'kandidat');
-    this.kandidatService.update(this.selectedKandidat.id, this.draftKandidat as Kandidat).subscribe(updated => {
-      this.matchedKandidaten = this.matchedKandidaten.map(r => r.kandidat.id === updated.id ? { ...r, kandidat: updated } : r);
-      this.kandidatDetailOpen = false;
-      this.selectedKandidat = null;
+    this.kandidatDetailErrors = {};
+    this.kandidatService.update(this.selectedKandidat.id, this.draftKandidat as Kandidat).subscribe({
+      next: updated => {
+        this.matchedKandidaten = this.matchedKandidaten.map(r => r.kandidat.id === updated.id ? { ...r, kandidat: updated } : r);
+        this.kandidatDetailOpen = false;
+        this.selectedKandidat = null;
+      },
+      error: err => {
+        if (err.status === 400) this.kandidatDetailErrors = err.error ?? {};
+      },
     });
   }
 

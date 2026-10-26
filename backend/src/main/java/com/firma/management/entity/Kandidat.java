@@ -2,6 +2,7 @@ package com.firma.management.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.firma.management.validation.GueltigePostleitzahl;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -48,6 +49,7 @@ public class Kandidat {
     @Column(columnDefinition = "TEXT")
     private String nachname;
 
+    @GueltigePostleitzahl
     private Integer postleitzahl;
 
     @Column(columnDefinition = "TEXT")

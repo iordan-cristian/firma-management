@@ -1,13 +1,14 @@
 import { Component, EventEmitter, HostListener, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PlzDirective } from '../../validators/plz.directive';
 import { FirmaService } from '../../services/firma.service';
 import { Firma } from '../../models/firma.model';
 
 @Component({
   selector: 'app-neue-firma-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PlzDirective],
   template: `
     <div class="modal-backdrop">
       <div class="modal">
@@ -19,7 +20,8 @@ import { Firma } from '../../models/firma.model';
           <input [(ngModel)]="draftFirma.standort" placeholder="Standort" />
         </label>
         <label>Postleitzahl
-          <input [(ngModel)]="draftFirma.postleitzahl" placeholder="PLZ" />
+          <input [(ngModel)]="draftFirma.postleitzahl" placeholder="PLZ" appPlz #plzCheck="appPlz" />
+          <span class="field-error" *ngIf="plzCheck.fehler || firmaErrors['postleitzahl']">{{ plzCheck.fehler || firmaErrors['postleitzahl'] }}</span>
         </label>
         <label>Adresse
           <input [(ngModel)]="draftFirma.adresse" placeholder="Straße und Nummer" />
