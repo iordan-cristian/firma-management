@@ -3,7 +3,6 @@ package com.firma.management.service;
 import com.firma.management.dto.SuchauftragUebersichtResponse;
 import com.firma.management.entity.Ansprechpartner;
 import com.firma.management.entity.Geschlecht;
-import com.firma.management.entity.Status;
 import com.firma.management.entity.Suchauftrag;
 import com.firma.management.entity.Titel;
 import com.firma.management.entity.Verknuepfung;
@@ -73,13 +72,6 @@ public class SuchauftragService {
                     return new SuchauftragUebersichtResponse.KandidatLink<>(kandidatId.apply(v),
                             (Geschlecht) row[1], (Titel) row[2], (String) row[3], (String) row[4], v);
                 }, Collectors.toList())));
-    }
-
-    public List<Suchauftrag> getAll(Status statusFilter) {
-        if (statusFilter == null) {
-            return repo.findAll();
-        }
-        return repo.findAllByStatus(statusFilter);
     }
 
     public Optional<Suchauftrag> getById(UUID id) { return repo.findById(id); }

@@ -26,10 +26,6 @@ public class VertragService {
         return repo.findAllByFirmaId(firmaId);
     }
 
-    public List<Vertrag> getAllForAnsprechpartner(UUID ansprechpartnerId) {
-        return repo.findAllByAnsprechpartnerId(ansprechpartnerId);
-    }
-
     public Vertrag create(Vertrag v) {
         v.setId(null);
         if (v.getBezahlt() == null) v.setBezahlt(false);

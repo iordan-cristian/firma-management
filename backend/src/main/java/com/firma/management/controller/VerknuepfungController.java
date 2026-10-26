@@ -29,11 +29,6 @@ public class VerknuepfungController {
         return service.getKandidatenForSuchauftrag(suchauftragId);
     }
 
-    @GetMapping("/kandidat/{kandidatId}")
-    public List<Verknuepfung> getVerknuepfungenForKandidat(@PathVariable UUID kandidatId) {
-        return service.getVerknuepfungenForKandidat(kandidatId);
-    }
-
     @PostMapping("/kandidat/{kandidatId}/reaktivieren")
     public ResponseEntity<Void> reaktivieren(@PathVariable UUID kandidatId) {
         return service.reaktivieren(kandidatId)

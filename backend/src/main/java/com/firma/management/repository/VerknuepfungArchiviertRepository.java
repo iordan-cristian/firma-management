@@ -10,8 +10,6 @@ import java.util.UUID;
 
 @Repository
 public interface VerknuepfungArchiviertRepository extends JpaRepository<VerknuepfungArchiviert, UUID> {
-    List<VerknuepfungArchiviert> findAllByKandidatId(UUID kandidatId);
-
     /** Rows of [VerknuepfungArchiviert, Geschlecht, Titel, vorname, nachname] for every archived Verknüpfung between a Suchauftrag and an existing Kandidat. */
     @Query("""
             SELECT v, k.geschlecht, k.titel, k.vorname, k.nachname

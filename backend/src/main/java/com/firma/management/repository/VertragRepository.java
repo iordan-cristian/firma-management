@@ -10,6 +10,5 @@ import java.util.UUID;
 @Repository
 public interface VertragRepository extends JpaRepository<Vertrag, UUID> {
     List<Vertrag> findAllByFirmaId(UUID firmaId);
-    List<Vertrag> findAllByAnsprechpartnerId(UUID ansprechpartnerId);
     List<Vertrag> findAllByOrderByBezahlbarAmAsc();
 }

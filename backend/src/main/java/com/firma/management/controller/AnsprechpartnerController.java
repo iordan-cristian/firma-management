@@ -1,9 +1,7 @@
 package com.firma.management.controller;
 
 import com.firma.management.entity.Ansprechpartner;
-import com.firma.management.entity.Vertrag;
 import com.firma.management.service.AnsprechpartnerService;
-import com.firma.management.service.VertragService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +14,9 @@ import java.util.UUID;
 public class AnsprechpartnerController {
 
     private final AnsprechpartnerService service;
-    private final VertragService vertragService;
 
-    public AnsprechpartnerController(AnsprechpartnerService service, VertragService vertragService) {
+    public AnsprechpartnerController(AnsprechpartnerService service) {
         this.service = service;
-        this.vertragService = vertragService;
     }
 
     @GetMapping
@@ -51,11 +47,5 @@ public class AnsprechpartnerController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         return service.delete(id) ? ResponseEntity.noContent().build()
                 : ResponseEntity.notFound().build();
-    }
-
-    /** getallVertragForAnsprechpartner. */
-    @GetMapping("/{id}/vertrag")
-    public List<Vertrag> getVertragForAnsprechpartner(@PathVariable("id") UUID ansprechpartnerId) {
-        return vertragService.getAllForAnsprechpartner(ansprechpartnerId);
     }
 }

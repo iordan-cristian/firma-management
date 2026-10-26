@@ -1,7 +1,6 @@
 package com.firma.management.controller;
 
 import com.firma.management.dto.SuchauftragUebersichtResponse;
-import com.firma.management.entity.Status;
 import com.firma.management.entity.Suchauftrag;
 import com.firma.management.service.SuchauftragService;
 import jakarta.validation.Valid;
@@ -19,16 +18,6 @@ public class SuchauftragController {
 
     public SuchauftragController(SuchauftragService service) {
         this.service = service;
-    }
-
-    /**
-     * getallSuchauftrag — optional `status` query parameter filters by status.
-     * Accepts the label form ("in Arbeit", "Fertig") or the enum name (IN_ARBEIT, FERTIG).
-     */
-    @GetMapping
-    public List<Suchauftrag> getAll(@RequestParam(value = "status", required = false) String status) {
-        Status statusEnum = (status == null || status.isBlank()) ? null : Status.fromLabel(status);
-        return service.getAll(statusEnum);
     }
 
     /** Overview for the "Kandidaten (Perm) - Suche" dashboard tab: Suchauftrag + Firma, Ansprechpartner and linked Kandidaten. */

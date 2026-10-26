@@ -58,10 +58,6 @@ public class VerknuepfungService {
                 .toList();
     }
 
-    public List<Verknuepfung> getVerknuepfungenForKandidat(UUID kandidatId) {
-        return repo.findAllByKandidatId(kandidatId);
-    }
-
     public java.util.Optional<Verknuepfung> update(UUID id, Verknuepfung input) {
         return repo.findById(id).map(existing -> {
             existing.setGebuehren(input.getGebuehren());

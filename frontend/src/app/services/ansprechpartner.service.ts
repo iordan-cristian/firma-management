@@ -2,7 +2,6 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Ansprechpartner } from '../models/ansprechpartner.model';
-import { Vertrag } from '../models/vertrag.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -15,8 +14,4 @@ export class AnsprechpartnerService {
   create(a: Ansprechpartner): Observable<Ansprechpartner> { return this.http.post<Ansprechpartner>(this.baseUrl, a); }
   update(id: string, a: Ansprechpartner): Observable<Ansprechpartner> { return this.http.put<Ansprechpartner>(`${this.baseUrl}/${id}`, a); }
   delete(id: string): Observable<void> { return this.http.delete<void>(`${this.baseUrl}/${id}`); }
-
-  getVertragForAnsprechpartner(id: string): Observable<Vertrag[]> {
-    return this.http.get<Vertrag[]>(`${this.baseUrl}/${id}/vertrag`);
-  }
 }
