@@ -44,6 +44,9 @@ public class Suchauftrag {
     /** In km. */
     private Integer entfernung;
 
+    @Column(name = "entfernung_ko_kriterium", nullable = false)
+    private boolean entfernungKOKriterium;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "allgemeiner_schwerpunkt")
     private AllgemeinerSchwerpunkt allgemeinerSchwerpunkt;

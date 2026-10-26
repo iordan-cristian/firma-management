@@ -77,6 +77,16 @@ class WhereClause {
         conditions.add(column + " IN (" + String.join(", ", placeholders) + ")");
     }
 
+    /**
+     * The straight-line distance between {@code plzColumn} and {@code plz} must be at most {@code km}.
+     * An unknown or missing PLZ gives NULL, so the row is excluded (see plz_entfernung_km, V37).
+     */
+    void maxEntfernung(String plzColumn, String plz, int km) {
+        conditions.add("plz_entfernung_km(" + plzColumn + ", ?) <= ?");
+        params.add(plz);
+        params.add(km);
+    }
+
     String whereSql() {
         return conditions.isEmpty() ? "1=1" : String.join(" AND ", conditions);
     }

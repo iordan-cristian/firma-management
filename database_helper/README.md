@@ -63,6 +63,32 @@ Typical test of "Reaktivieren":
 2. Run `kandidat_in_vergangenheit.sql` with a date in a past month.
 3. Reload the Bestand: the Kandidat is in that month, right-click shows *Reaktivieren*.
 
+## `generate_plz_koordinate.sh` – PLZ coordinates for the KO-Kriterium "Entfernung"
+
+Not a psql script: a bash script (Git Bash or Linux, needs `curl`, `unzip`, `awk`) that downloads
+the German postal codes from GeoNames and writes the Flyway migration
+`V37__add_plz_koordinate.sql` (table `plz_koordinate` + function `plz_entfernung_km`).
+It has already been run; V37 is in the repo. Run it again only to refresh the data.
+
+```
+bash database_helper/generate_plz_koordinate.sh [output.sql]
+```
+
+Things to know:
+- Data: [GeoNames](https://www.geonames.org/) postal codes DE, licensed under
+  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) – the attribution must stay.
+- Several places per PLZ are averaged into one coordinate.
+- Distance = straight line (Luftlinie). A missing or unknown PLZ gives no distance, so the
+  KO-Kriterium excludes that Kandidat / Suchauftrag.
+- An applied migration must not change: for a refresh, write a new version (see the comment
+  at the top of the script).
+
+Check a distance:
+
+```sql
+SELECT plz_entfernung_km('10115', '80331');  -- Berlin – München, about 505 km
+```
+
 ## `revert_reaktivieren.sql` – undo "Reaktivieren"
 
 Moves the Verknüpfungen of the Kandidat's latest "Reaktivieren" round (newest

@@ -75,6 +75,9 @@ export interface Kandidat {
   deutschKOKriterium?: boolean;
   englischKOKriterium?: boolean;
   sonstigeSprachenKOKriterium?: boolean;
+  /** Maximum distance in km between the PLZ of Kandidat and Suchauftrag. */
+  entfernung?: number;
+  entfernungKOKriterium?: boolean;
 }
 
 /** A Verknüpfung with the names shown in the Bestand. */

@@ -69,6 +69,9 @@ public class KandidatMatchRepository {
         if (s.isSonstigeSprachenKOKriterium() && isNotBlank(s.getSonstigeSprachen())) {
             where.allTermsMatch("sonstige_sprachen", s.getSonstigeSprachen());
         }
+        if (s.isEntfernungKOKriterium() && s.getEntfernung() != null) {
+            where.maxEntfernung("postleitzahl::text", s.getPostleitzahl(), s.getEntfernung());
+        }
 
         return query(where);
     }
@@ -144,6 +147,7 @@ public class KandidatMatchRepository {
                 .xingProfil(rs.getString("xing_profil"))
                 .gehaltMinimum(rs.getBigDecimal("gehalt_minimum"))
                 .gehaltMaximum(rs.getBigDecimal("gehalt_maximum"))
+                .entfernung(rs.getObject("entfernung", Integer.class))
                 .allgemeinerSchwerpunktKOKriterium(rs.getBoolean("allgemeiner_schwerpunkt_ko_kriterium"))
                 .fachlicherSkillKOKriterium(rs.getBoolean("fachlicher_skill_ko_kriterium"))
                 .fachlicherSkillMindestensEin(rs.getBoolean("fachlicher_skill_mindestens_ein"))
@@ -156,6 +160,7 @@ public class KandidatMatchRepository {
                 .deutschKOKriterium(rs.getBoolean("deutsch_ko_kriterium"))
                 .englischKOKriterium(rs.getBoolean("englisch_ko_kriterium"))
                 .sonstigeSprachenKOKriterium(rs.getBoolean("sonstige_sprachen_ko_kriterium"))
+                .entfernungKOKriterium(rs.getBoolean("entfernung_ko_kriterium"))
                 .build();
     }
 

@@ -69,6 +69,10 @@ public class SuchauftragMatchRepository {
         if (k.isSonstigeSprachenKOKriterium() && isNotBlank(k.getSonstigeSprachen())) {
             where.allTermsMatch("sonstige_sprachen", k.getSonstigeSprachen());
         }
+        if (k.isEntfernungKOKriterium() && k.getEntfernung() != null) {
+            String plz = k.getPostleitzahl() != null ? String.valueOf(k.getPostleitzahl()) : null;
+            where.maxEntfernung("postleitzahl", plz, k.getEntfernung());
+        }
 
         return query(where);
     }
@@ -107,6 +111,7 @@ public class SuchauftragMatchRepository {
                 .postleitzahl(rs.getString("postleitzahl"))
                 .adresse(rs.getString("adresse"))
                 .entfernung(rs.getObject("entfernung", Integer.class))
+                .entfernungKOKriterium(rs.getBoolean("entfernung_ko_kriterium"))
                 .allgemeinerSchwerpunkt(toEnum(AllgemeinerSchwerpunkt.class, rs.getString("allgemeiner_schwerpunkt")))
                 .allgemeinerSchwerpunktKOKriterium(rs.getBoolean("allgemeiner_schwerpunkt_ko_kriterium"))
                 .fachlicherSkill(rs.getString("fachlicher_skill"))

@@ -136,6 +136,7 @@ public class KandidatService {
             existing.setXingProfil(input.getXingProfil());
             existing.setGehaltMinimum(input.getGehaltMinimum());
             existing.setGehaltMaximum(input.getGehaltMaximum());
+            existing.setEntfernung(input.getEntfernung());
             existing.setAllgemeinerSchwerpunktKOKriterium(input.isAllgemeinerSchwerpunktKOKriterium());
             existing.setFachlicherSkillKOKriterium(input.isFachlicherSkillKOKriterium());
             existing.setFachlicherSkillMindestensEin(input.isFachlicherSkillMindestensEin());
@@ -148,6 +149,7 @@ public class KandidatService {
             existing.setDeutschKOKriterium(input.isDeutschKOKriterium());
             existing.setEnglischKOKriterium(input.isEnglischKOKriterium());
             existing.setSonstigeSprachenKOKriterium(input.isSonstigeSprachenKOKriterium());
+            existing.setEntfernungKOKriterium(input.isEntfernungKOKriterium());
             return repo.save(existing);
         });
     }

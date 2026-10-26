@@ -391,6 +391,19 @@ import {
 
             <label>
               <span class="label-row">
+                Entfernung (km)
+                <span class="ko-checkbox-label">
+                  <input type="checkbox" class="ko-checkbox" title="KO Kriterium" [(ngModel)]="draft.entfernungKOKriterium" />
+                  KO Kriterium
+                </span>
+              </span>
+              <input type="number" min="0" [(ngModel)]="draft.entfernung" placeholder="z.B. 50" />
+              <span class="field-error" *ngIf="koError(draft.entfernung, draft.entfernungKOKriterium)">Entfernung ist als KO-Kriterium markiert und darf nicht leer sein.</span>
+              <span class="field-error" *ngIf="koError(draft.postleitzahl, draft.entfernungKOKriterium)">Für das KO-Kriterium Entfernung wird eine Postleitzahl benötigt.</span>
+            </label>
+
+            <label>
+              <span class="label-row">
                 Branchenkenntnisse
                 <span class="ko-checkbox-group">
                   <span class="ko-checkbox-label">
@@ -800,7 +813,9 @@ export class KandidatDialogComponent implements OnInit {
       || this.koError(k.zertifikate, k.zertifikateKOKriterium)
       || this.koError(k.deutsch, k.deutschKOKriterium)
       || this.koError(k.englisch, k.englischKOKriterium)
-      || this.koError(k.sonstigeSprachen, k.sonstigeSprachenKOKriterium);
+      || this.koError(k.sonstigeSprachen, k.sonstigeSprachenKOKriterium)
+      || this.koError(k.entfernung, k.entfernungKOKriterium)
+      || this.koError(k.postleitzahl, k.entfernungKOKriterium);
   }
 
   filterGehalt(e: Event): void {

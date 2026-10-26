@@ -168,6 +168,9 @@ public class Kandidat {
     @Column(name = "gehalt_maximum", precision = 10, scale = 2)
     private BigDecimal gehaltMaximum;
 
+    /** Maximum distance in km between the PLZ of Kandidat and Suchauftrag. */
+    private Integer entfernung;
+
     // --- Matching criterion flags (mirror Suchauftrag): drive matchSuchauftrag(kandidatId) ---
 
     @Builder.Default
@@ -206,6 +209,9 @@ public class Kandidat {
 
     @Column(name = "sonstige_sprachen_ko_kriterium", nullable = false)
     private boolean sonstigeSprachenKOKriterium;
+
+    @Column(name = "entfernung_ko_kriterium", nullable = false)
+    private boolean entfernungKOKriterium;
 
     @Transient
     @com.fasterxml.jackson.annotation.JsonProperty("dokumentTypen")

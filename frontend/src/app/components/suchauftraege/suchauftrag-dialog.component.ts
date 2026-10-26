@@ -84,8 +84,17 @@ export interface SuchauftragVerknuepfungenChangedEvent {
             <label>Adresse
               <input [(ngModel)]="draftSuchauftrag.adresse" placeholder="Straße und Nummer" />
             </label>
-            <label>Entfernung (km)
+            <label>
+              <span class="label-row">
+                Entfernung (km)
+                <span class="ko-checkbox-label">
+                  <input type="checkbox" class="ko-checkbox" name="entfernungKOKriterium" title="KO Kriterium" [(ngModel)]="draftSuchauftrag.entfernungKOKriterium" />
+                  KO Kriterium
+                </span>
+              </span>
               <input type="number" min="0" [(ngModel)]="draftSuchauftrag.entfernung" placeholder="z.B. 50" />
+              <span class="field-error" *ngIf="koError(draftSuchauftrag.entfernung, draftSuchauftrag.entfernungKOKriterium)">Entfernung ist als KO-Kriterium markiert und darf nicht leer sein.</span>
+              <span class="field-error" *ngIf="koError(draftSuchauftrag.postleitzahl, draftSuchauftrag.entfernungKOKriterium)">Für das KO-Kriterium Entfernung wird eine Postleitzahl benötigt.</span>
             </label>
             
              <div class="section-title">Kandidat</div>
@@ -585,7 +594,9 @@ export class SuchauftragDialogComponent implements OnInit {
       || this.koError(s.zertifikate, s.zertifikateKOKriterium)
       || this.koError(s.deutsch, s.deutschKOKriterium)
       || this.koError(s.englisch, s.englischKOKriterium)
-      || this.koError(s.sonstigeSprachen, s.sonstigeSprachenKOKriterium);
+      || this.koError(s.sonstigeSprachen, s.sonstigeSprachenKOKriterium)
+      || this.koError(s.entfernung, s.entfernungKOKriterium)
+      || this.koError(s.postleitzahl, s.entfernungKOKriterium);
   }
 
   setExclusive(target: any, changedField: string, otherField: string, value: boolean): void {
