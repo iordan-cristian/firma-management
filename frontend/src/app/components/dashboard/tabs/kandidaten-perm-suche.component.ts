@@ -33,7 +33,6 @@ interface SuchauftragRow {
   links: SuchauftragUebersichtKandidat[];
   /** Archived by "Reaktivieren"; shown read-only, not counted for sorting or color. */
   archivedLinks: SuchauftragUebersichtKandidat<VerknuepfungArchiviert>[];
-  ehemaligeKandidaten: string;
   sortDate: number;
   highestStatus: number;
   highestStatusName?: VerknuepfungStatus;
@@ -132,7 +131,6 @@ export class FirmaFilterPipe implements PipeTransform {
                 [class.entry-odd]="i % 2 === 1"
                 [class.entry-even]="i % 2 === 0"
                 class="entry-row-2"
-                [class.has-archiv]="row.archivedLinks.length > 0"
                 [class.status-colored]="!!row.highestStatusName"
                 [style]="statusStyle(row.highestStatusName)"
                 (dblclick)="toggleExpanded(row.suchauftrag)"
@@ -140,17 +138,6 @@ export class FirmaFilterPipe implements PipeTransform {
                 <td><strong>Kandidaten: </strong> {{ row.kandidaten }}</td>
                 <td colspan="2"><strong>K.O.-Faktoren: </strong> {{ row.koFaktoren }}</td>
                 <td><strong>Standort: </strong> {{ row.standort }}</td>
-              </tr>
-              <tr
-                *ngIf="row.archivedLinks.length > 0"
-                [class.entry-odd]="i % 2 === 1"
-                [class.entry-even]="i % 2 === 0"
-                class="entry-row-3"
-                [class.status-colored]="!!row.highestStatusName"
-                [style]="statusStyle(row.highestStatusName)"
-                (dblclick)="toggleExpanded(row.suchauftrag)"
-              >
-                <td colspan="4"><strong>Ehemalige Kandidaten: </strong> {{ row.ehemaligeKandidaten }}</td>
               </tr>
               <tr class="detail-row" *ngIf="isExpanded(row.suchauftrag)">
                 <td colspan="4">
@@ -310,11 +297,9 @@ export class FirmaFilterPipe implements PipeTransform {
     td strong { font-weight: 700; color: #1f2a44; }
     .entry-row-1 td { border-top: 1px solid #e5e9f3; border-bottom: none; padding-bottom: 2px; }
     .entry-row-2 td { border-top: none; border-bottom: 1px solid #d7ddec; padding-top: 2px; }
-    .entry-row-2.has-archiv td { border-bottom: none; padding-bottom: 2px; }
-    .entry-row-3 td { border-top: none; border-bottom: 1px solid #d7ddec; padding-top: 2px; }
     .entry-even td { background: #fff; }
     .entry-odd td { background: #f7f8fc; }
-    .entry-row-1, .entry-row-2, .entry-row-3 { cursor: pointer; }
+    .entry-row-1, .entry-row-2 { cursor: pointer; }
     tr.status-colored > td { background: var(--status-bg); color: var(--status-fg); }
     tr.status-colored > td strong { color: inherit; }
     .group-row td {
@@ -619,12 +604,11 @@ export class KandidatenPermSucheComponent implements OnInit {
         item.ansprechpartnerVorname, item.ansprechpartnerNachname),
       sucheNach: s.sucheNach?.trim() || '-',
       gehalt: formatGehalt(s) ?? '-',
-      kandidaten: this.formatKandidaten(item.kandidaten),
+      kandidaten: this.formatKandidaten([...item.kandidaten, ...(item.ehemaligeKandidaten ?? [])]),
       koFaktoren: this.formatKoFaktoren(s),
       standort: s.ort?.trim() || '-',
       links: item.kandidaten,
       archivedLinks: item.ehemaligeKandidaten ?? [],
-      ehemaligeKandidaten: this.formatKandidaten(item.ehemaligeKandidaten ?? []),
       sortDate: date ? date.getTime() : Number.NEGATIVE_INFINITY,
       ...this.findHighestStatus(item.kandidaten),
     };
@@ -650,8 +634,10 @@ export class KandidatenPermSucheComponent implements OnInit {
     return date ? KandidatenPermSucheComponent.DATE_FORMATTER.format(date) : '-';
   }
 
+  /** Names of the Kandidaten, each Kandidat once (it can be linked and archived for the same Suchauftrag). */
   private formatKandidaten(kandidaten: SuchauftragUebersichtKandidat[]): string {
-    return kandidaten.map(k => this.formatName(k.geschlecht, k.titel, k.vorname, k.nachname)).join(', ') || '-';
+    const unique = [...new Map(kandidaten.map(k => [k.kandidatId, k])).values()];
+    return unique.map(k => this.formatName(k.geschlecht, k.titel, k.vorname, k.nachname)).join(', ') || '-';
   }
 
   private formatKoFaktoren(s: Suchauftrag): string {
