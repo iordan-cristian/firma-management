@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, Input, OnInit, Pipe, PipeTransform, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -67,10 +67,24 @@ function formatGehalt(s: Suchauftrag): string | undefined {
   return undefined;
 }
 
+/** True when the row's Firma name contains the search text (case-insensitive) or the text is empty. */
+function matchesFirma(row: SuchauftragRow, text: string): boolean {
+  const q = text.trim().toLowerCase();
+  return !q || (!!row.firmaId && row.firma.toLowerCase().includes(q));
+}
+
+/** Rows matching the Firma search text. Pure, so it only re-runs on new arrays or text. */
+@Pipe({ name: 'firmaFilter', standalone: true })
+export class FirmaFilterPipe implements PipeTransform {
+  transform(rows: SuchauftragRow[], text: string): SuchauftragRow[] {
+    return text.trim() ? rows.filter(r => matchesFirma(r, text)) : rows;
+  }
+}
+
 @Component({
   selector: 'app-kandidaten-perm-suche',
   standalone: true,
-  imports: [CommonModule, FormsModule, SuchauftragDialogComponent, KandidatDialogComponent, NeueFirmaDialogComponent, AnsprechpartnerDialogComponent, ChoseFirmaAndAnsprechpartnerForSuchauftragComponent],
+  imports: [CommonModule, FormsModule, SuchauftragDialogComponent, KandidatDialogComponent, NeueFirmaDialogComponent, AnsprechpartnerDialogComponent, ChoseFirmaAndAnsprechpartnerForSuchauftragComponent, FirmaFilterPipe],
   template: `
     <div class="wrap">
       <p class="hint" *ngIf="loading">Lade Daten...</p>
@@ -84,10 +98,11 @@ function formatGehalt(s: Suchauftrag): string | undefined {
         </colgroup>
         <tbody>
           <ng-container *ngFor="let group of groups">
-            <tr class="group-row">
+            <ng-container *ngIf="(group.rows | firmaFilter: firmaFilter) as rows">
+            <tr class="group-row" *ngIf="rows.length">
               <td colspan="4">{{ group.label }}</td>
             </tr>
-            <ng-container *ngFor="let row of group.rows; let i = index">
+            <ng-container *ngFor="let row of rows; let i = index">
               <tr
                 [class.entry-odd]="i % 2 === 1"
                 [class.entry-even]="i % 2 === 0"
@@ -228,9 +243,13 @@ function formatGehalt(s: Suchauftrag): string | undefined {
                 </td>
               </tr>
             </ng-container>
+            </ng-container>
           </ng-container>
           <tr *ngIf="groups.length === 0">
             <td colspan="4" class="empty">Keine Suchaufträge vorhanden.</td>
+          </tr>
+          <tr *ngIf="groups.length > 0 && !hasFirmaTreffer">
+            <td colspan="4" class="empty">Keine Suchaufträge gefunden.</td>
           </tr>
         </tbody>
       </table>
@@ -382,9 +401,17 @@ export class KandidatenPermSucheComponent implements OnInit {
   private dataChangedKandidatenPermService = inject(DataChangedKandidatenPermService);
   private destroyRef = inject(DestroyRef);
 
+  /** Firma search text from the dashboard header; empty = show all. */
+  @Input() firmaFilter = '';
+
   loading = true;
   groups: MonthGroup[] = [];
   statusOptions = VERKNUEPFUNG_STATUS_OPTIONS;
+
+  /** False when the Firma search hides every Suchauftrag. */
+  get hasFirmaTreffer(): boolean {
+    return !this.firmaFilter.trim() || this.groups.some(g => g.rows.some(r => matchesFirma(r, this.firmaFilter)));
+  }
   saveError: string | null = null;
   /** Row whose Suchauftrag is shown in the Suchauftrag dialog. */
   dialogSuchauftragRow: SuchauftragRow | null = null;
@@ -576,9 +603,9 @@ export class KandidatenPermSucheComponent implements OnInit {
     return groups;
   }
 
-  /** Highest highest-status first, then oldest Anlagedatum, then Suche nach. */
+  /** Highest highest-status first, then oldest Anlagedatum, then Suche nach. A new array, so firmaFilter re-runs. */
   private sortRows(group: MonthGroup): void {
-    group.rows.sort((a, b) =>
+    group.rows = [...group.rows].sort((a, b) =>
       b.highestStatus - a.highestStatus || a.sortDate - b.sortDate || a.sucheNach.localeCompare(b.sucheNach));
   }
 

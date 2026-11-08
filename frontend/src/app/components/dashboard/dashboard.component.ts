@@ -1,6 +1,7 @@
 import { Component, ViewChild, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { KandidatSucheComponent } from '../kandidaten/kandidat-suche.component';
 import { DataChangedKandidatenPermService } from '../../services/data-changed-kandidaten-perm.service';
 import { Kandidat } from '../../models/kandidat.model';
@@ -28,6 +29,7 @@ interface DashboardTab {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     InvestorenBestandComponent,
     ImmobilienBestandComponent,
     KandidatenPermBestandComponent,
@@ -58,6 +60,12 @@ interface DashboardTab {
         <div class="col-right" *ngIf="viewMode !== 'left'">
           <h2 class="category-title">Suchaufträge</h2>
           <div class="header-actions" *ngIf="activeRightTabId === 'kandidaten-perm-suche'">
+            <input
+              class="search-input"
+              type="text"
+              placeholder="Suche nach Firma..."
+              [(ngModel)]="firmaFilter"
+            />
             <button
               type="button"
               class="header-action"
@@ -117,7 +125,10 @@ interface DashboardTab {
         <div class="col-right content-col" *ngIf="viewMode !== 'left'" [ngSwitch]="activeRightTabId">
           <app-investoren-suche *ngSwitchCase="'investoren-suche'"></app-investoren-suche>
           <app-immobilien-suche *ngSwitchCase="'immobilien-suche'"></app-immobilien-suche>
-          <app-kandidaten-perm-suche *ngSwitchCase="'kandidaten-perm-suche'"></app-kandidaten-perm-suche>
+          <app-kandidaten-perm-suche
+            *ngSwitchCase="'kandidaten-perm-suche'"
+            [firmaFilter]="firmaFilter"
+          ></app-kandidaten-perm-suche>
           <app-kandidaten-freelancer-suche *ngSwitchCase="'kandidaten-freelancer-suche'"></app-kandidaten-freelancer-suche>
           <app-vertrieb-suche *ngSwitchCase="'vertrieb-suche'"></app-vertrieb-suche>
         </div>
@@ -154,6 +165,8 @@ interface DashboardTab {
     /* Compact search field, same height as the header buttons */
     .header-actions ::ng-deep .page-header { margin-bottom: 0; }
     .header-actions ::ng-deep .search-input { width: 220px; padding: 4px 10px; font-size: 13px; }
+    .header-actions > .search-input { border: 1px solid #dfe3ee; border-radius: 6px; }
+    .header-actions > .search-input:focus { outline: none; border-color: #3b5bdb; }
     .header-action {
       background: #3b5bdb;
       color: white;
@@ -234,6 +247,9 @@ export class DashboardComponent {
 
   /** Ids of the Kandidaten found by the header search, passed to the Bestand; null = no search text. */
   kandidatFilter: Set<string> | null = null;
+
+  /** Firma search text from the header, passed to the Kandidaten (Perm) Suchaufträge; empty = no filter. */
+  firmaFilter = '';
 
   constructor() {
     // The search loads its own Kandidaten list, so it reloads when the Kandidaten (Perm) tabs change data
